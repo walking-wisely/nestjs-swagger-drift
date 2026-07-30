@@ -1,4 +1,7 @@
-# nestjs-endpoint-doctor — implementation plan
+# nestjs-swagger-drift — implementation plan
+
+> Renamed 2026-07-30 from `nestjs-endpoint-doctor`. See §1.1 — the existing
+> `nestjs-doctor` package made the original name a collision risk.
 
 > Static analysis for NestJS controllers: every HTTP status code the handler can
 > actually produce must be documented with a `@ApiResponse`-family decorator.
@@ -27,15 +30,79 @@ Three deliverables, in this order:
 
 | # | Deliverable | Package name | When |
 |---|---|---|---|
-| 1 | Analysis engine | `@nestjs-endpoint-doctor/core` (or private `src/core`) | Phase 1–3 |
-| 2 | CLI | `nestjs-endpoint-doctor` | Phase 4 |
-| 3 | ESLint plugin | `eslint-plugin-nestjs-endpoint-doctor` | Phase 6 |
+| 1 | Analysis engine | `nestjs-swagger-drift/core` (subpath export) | Phase 1–3 |
+| 2 | CLI | `nestjs-swagger-drift` | Phase 4 |
+| 3 | ESLint plugin | `eslint-plugin-nestjs-swagger-drift` | Phase 6 |
 
-Both npm names are currently unregistered (checked 2026-07-30).
+Both npm names were unregistered as of 2026-07-30.
 
-Ship 1+2 as a single package initially (`nestjs-endpoint-doctor`, with the core
-exported from a subpath) to avoid monorepo overhead before it earns its keep.
-Split only when the ESLint plugin lands.
+Ship 1+2 as a single package initially (with the core exported from a subpath)
+to avoid monorepo overhead before it earns its keep. Split only when the ESLint
+plugin lands.
+
+## 1.1 Prior art and why the name changed
+
+Researched 2026-07-30. **The check does not exist anywhere. The plumbing for it
+mostly does, inside a fast-moving competitor.**
+
+**`nestjs-doctor`** (RoloBits, MIT, ~7k weekly downloads, 419 commits in 5
+months, releases several times a week, VS Code extension + GitHub Action +
+`nestjs.doctor` domain) is a 50-rule health-score CLI for NestJS —
+security/correctness/architecture/performance/schema. **None of its 50 rules
+touch Swagger, status codes, or exception documentation.**
+
+But its `endpoint-graph.ts` (~2,200 lines) already builds most of what Phases
+1–3 here budget for: it enumerates handlers into an `EndpointNode` (controller,
+HTTP method, route path, return type), traces calls cross-file into services
+with a depth bound and a node-count cap, extracts `ThrowStatement` class names,
+*and* extracts `@ApiResponse` status numbers. Both halves of our diff already sit
+in the same data structure.
+
+What it does **not** have (verified by grep across the package):
+
+- No exception-class → status-code mapping. It stores the class *name* string
+  only; there is no `NotFoundException`→404 table anywhere.
+- No produced-vs-documented diff. **Zero rules consume `endpointGraph`** — it
+  feeds only the HTML report and the public Node API.
+- Swagger extraction covers only `{ApiOperation, ApiParam, ApiQuery, ApiResponse,
+  ApiBody}`. The entire shorthand family (`@ApiNotFoundResponse`,
+  `@ApiConflictResponse`, `@ApiOkResponse`, …) is unparsed, and `@ApiResponse`
+  without an explicit `status` defaults to 200.
+- No ESLint plugin, no autofix.
+
+**Treat this as a race, not a gap.** They are one `if` statement and a lookup
+table from our idea. Lead with what they'd have to build from scratch: the
+exception→status mapping (`extends` chains, `super(msg, 409)`, `HttpStatus.X`),
+the full shorthand decorator family, and the autofix.
+
+Other prior art:
+
+- **`@darraghor/eslint-plugin-nestjs-typed`** — the incumbent NestJS ESLint
+  plugin. Its `api-method-should-specify-api-response` is a **presence check
+  only**: does the handler have *any* `@ApiResponse*` decorator. No status or
+  exception analysis. This is the current state of the art, and it is much weaker
+  than ours — but it's also the natural home a competitor would add ours to.
+- **`@nanogiants/nestjs-swagger-api-exception-decorator`** — *runtime*
+  `@ApiException(NotFoundException)` that derives the OpenAPI response from the
+  exception class. Adjacent, not competing: it makes documenting cheap but still
+  requires you to remember. It cannot tell you what you forgot. Its
+  exception→status logic is a good reference for our table, and we should treat
+  `@ApiException(...)` as a *documented* source to avoid false positives for its
+  users.
+- Searches for tools diffing thrown-exception status codes against
+  `@ApiResponse` returned nothing. The wedge is unclaimed.
+
+**Why the rename:** `nestjs-endpoint-doctor` vs `nestjs-doctor` is one word
+apart, both NestJS static-analysis CLIs over the TS AST, surfacing in the same
+searches. Users would reasonably assume a fork, plugin, or typosquat. The name
+was free on npm — availability was never the problem, confusability was.
+`nestjs-swagger-drift` names the *check* (docs drifting out of sync with code)
+rather than the genre.
+
+Worth stealing from `nestjs-doctor`'s graph design: the `GuardThrow` merge for
+the ubiquitous `const x = await find(); if (!x) throw new NotFoundException()`
+idiom; `branchGroupId`/`branchKind` for conditional throws; and an explicit
+truncation flag on the traversal so it degrades honestly instead of hanging.
 
 ---
 
@@ -348,10 +415,10 @@ like `nestjs/nest`'s sample apps or `amplication`) with **zero false positives**
 Zero is the bar; anything else means tightening §4.2's unknown handling.
 
 ### Phase 4 — CLI polish (1–2 days)
-`npx nestjs-endpoint-doctor [paths]`, flags: `--project`, `--reporter
+`npx nestjs-swagger-drift [paths]`, flags: `--project`, `--reporter
 pretty|json`, `--max-depth`, `--fail-on`, `--ignore`, per-rule enable/disable.
-Inline suppression comments: `// endpoint-doctor-disable-next-line 404`.
-Config file: `endpoint-doctor.config.{ts,json}` — but keep it optional; the
+Inline suppression comments: `// swagger-drift-disable-next-line 404`.
+Config file: `swagger-drift.config.{ts,json}` — but keep it optional; the
 zero-config path must work.
 **Exit:** usable in CI on a real repo.
 
@@ -362,8 +429,8 @@ before/after examples.
 **Exit:** v0.1.0 published to npm.
 
 ### Phase 6 — ESLint plugin (1–2 days)
-`eslint-plugin-nestjs-endpoint-doctor`, flat-config only (`recommended` config
-export). One rule: `nestjs-endpoint-doctor/documented-status-codes`, options
+`eslint-plugin-nestjs-swagger-drift`, flat-config only (`recommended` config
+export). One rule: `nestjs-swagger-drift/documented-status-codes`, options
 mirroring the CLI's. `RuleTester` suite. Adapter is:
 `getParserServices` → `esTreeNodeToTSNodeMap.get(node)` → `analyzeHandler` →
 `context.report({ node, messageId, data })`.
@@ -392,6 +459,12 @@ or doesn't; budget slack there.
   out of scope; would need a per-library mapping table.
 - Monorepos with multiple tsconfigs — CLI takes `--project` repeatedly; ESLint
   path needs `projectService`.
+- **TypeScript 7 is not supported, and this is not a small gap.** TS 7's root
+  export is a version-string module; `ts.createProgram` / `ts.TypeChecker` /
+  `ts.Node` are gone, with the native port exposing only `unstable/*` subpaths.
+  The peer range is therefore `>=5.0.0 <7.0.0`. Supporting TS 7 means retargeting
+  the whole core at `typescript/unstable/ast` — effectively a rewrite, and its
+  own project. Track upstream stability before attempting it.
 
 ---
 
@@ -425,10 +498,25 @@ where they already are) → autofix (the thing that makes it beloved).
 
 ## 9. Open decisions
 
+- [x] License: **MIT** (decided 2026-07-30).
+- [x] Name: **`nestjs-swagger-drift`** (decided 2026-07-30, see §1.1).
+- [ ] **Distribution strategy — the big one, deferred to Phase 5/6.** Three
+      routes, and the pure-core architecture (§2.1) means the engine is identical
+      under all of them, so this genuinely can be decided late:
+      1. *Standalone* CLI + ESLint plugin. Full control, hardest distribution.
+      2. *Ship as a `nestjs-doctor` custom rule* — it supports `customRulesDir`
+         with a `meta`+`check` contract and already exposes `endpointGraph` on
+         the analysis context. Instant reach to ~7k weekly users.
+      3. *Contribute the rule to `@darraghor/eslint-plugin-nestjs-typed`*, which
+         already has a Swagger rule group and the audience.
+      Routes 2 and 3 trade the differentiator away — it becomes a feature of
+      someone else's product. Not necessarily wrong; decide with real usage data.
 - [ ] Package layout: single package with subpath exports vs. monorepo from the
       start. *Lean: single package until Phase 6.*
 - [ ] Is `documented-but-unreachable` valuable enough to build? It catches
       copy-pasted decorator blocks, which is a real AI failure mode.
 - [ ] Should success-code checking (`@ApiOkResponse` presence) be on by default?
       *Lean: yes — it's the most common miss and has no false-positive risk.*
-- [ ] License: MIT (assumed) — confirm.
+- [ ] Support `@ApiException(...)` from
+      `@nanogiants/nestjs-swagger-api-exception-decorator` as a *documented*
+      source (§4.3). Cheap, and avoids false positives for that library's users.
