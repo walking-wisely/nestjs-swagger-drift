@@ -1,0 +1,12 @@
+[
+  { "httpMethod": "GET", "path": "/", "className": "HealthController", "methodName": "check" },
+  { "httpMethod": "GET", "path": "/orders", "className": "OrdersController", "methodName": "findAll" },
+  { "httpMethod": "GET", "path": "/orders/:id", "className": "OrdersController", "methodName": "findOne" },
+  { "httpMethod": "GET", "path": "/orders/ping", "className": "OrdersController", "methodName": "ping" },
+  { "httpMethod": "POST", "path": "/orders/ping", "className": "OrdersController", "methodName": "ping" },
+  { "httpMethod": "GET", "path": "/users", "className": "UsersController", "methodName": "findAll" },
+  { "httpMethod": "POST", "path": "/users", "className": "UsersController", "methodName": "create" },
+  { "httpMethod": "DELETE", "path": "/users/:id", "className": "UsersController", "methodName": "remove" },
+  { "httpMethod": "GET", "path": "/users/:id", "className": "UsersController", "methodName": "findOne" },
+  { "httpMethod": "PUT", "path": "/users/:id", "className": "UsersController", "methodName": "update" }
+]

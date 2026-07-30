@@ -18,6 +18,7 @@ describe('core types', () => {
       classPath: 'users',
       methodPath: '',
       path: '/users',
+      unresolvedPath: false,
       node,
     };
 

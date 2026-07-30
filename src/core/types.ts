@@ -116,6 +116,14 @@ export type HttpMethod =
  * - `path`: `classPath` and `methodPath` fully joined with a single leading
  *   slash and no trailing slash (e.g. `/users/:id`), the form used in
  *   reports.
+ * - `unresolvedPath`: `true` if either `classPath` or `methodPath` could not
+ *   be fully resolved to a literal string at analysis time (e.g. a template
+ *   literal with an interpolation, a `const` reference the checker couldn't
+ *   pin to a literal type, string concatenation, or an array path with a
+ *   non-literal element). When `true`, `path` is a best-effort value, not a
+ *   guarantee — callers (the CLI, future rules) must not present it as fact.
+ *   This exists because a silently-wrong `path` is worse than an honestly
+ *   incomplete one: every later-phase finding is reported through `path`.
  */
 export interface HandlerInfo {
   className: string;
@@ -124,6 +132,7 @@ export interface HandlerInfo {
   classPath: string;
   methodPath: string;
   path: string;
+  unresolvedPath: boolean;
   node: ts.Node;
 }
 

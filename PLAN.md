@@ -414,6 +414,14 @@ This is the first genuinely useful commit.
 like `nestjs/nest`'s sample apps or `amplication`) with **zero false positives**.
 Zero is the bar; anything else means tightening §4.2's unknown handling.
 
+> **Exit-code convention, established in Phase 1.** `0` must mean "the checker
+> verified what it could and there is nothing to flag." A zero-result run reached
+> because `@nestjs/common` itself could not be resolved is a different epistemic
+> state — "I don't know" — and gets its own code, `2` (`EXIT_COULD_NOT_ANALYSE`),
+> fired only when zero handlers were found *and* an unresolved-module diagnostic
+> was seen. Folding that into `0` is the silent-green failure this tool exists to
+> prevent. Phase 4's "found drift" code must be distinct from both.
+
 ### Phase 4 — CLI polish (1–2 days)
 `npx nestjs-swagger-drift [paths]`, flags: `--project`, `--reporter
 pretty|json`, `--max-depth`, `--fail-on`, `--ignore`, per-rule enable/disable.
@@ -454,7 +462,28 @@ or doesn't; budget slack there.
   wrong. Needs a config escape hatch: `ignoreStatuses` / per-file ignores.
 - Dynamically computed status (`throw new HttpException(msg, someVar)`) →
   `unknown`, silent by default.
-- Composed decorators via `applyDecorators` (V1 gap).
+- Composed decorators via `applyDecorators` (V1 gap). Two distinct cases: a
+  composed `@ApiResponse` (§4.3), and a composed *route* decorator — the latter
+  is worse, because a controller or handler declared only through a composed
+  factory is invisible to discovery entirely (nothing is literally named
+  `Controller`/`Get`), so the endpoint is silently absent rather than merely
+  under-documented. Common in real Nest code.
+- **Inherited handlers are not discovered.** NestJS ≥8 walks the whole prototype
+  chain, so `class Derived extends Base` inherits `Base`'s decorated routes.
+  Discovery is currently own-members-only. Generic CRUD base controllers are a
+  common pattern, and in Phase 2 this becomes silent *under*-reporting of drift.
+  Pinned by `test/fixtures/edge-cases/src/derived-controller.ts` so the gap is
+  explicit and cannot silently change.
+- `@Controller({ version })` and global `setGlobalPrefix()` are not reflected in
+  the reported path. Cosmetic while the check is per-handler, but the printed
+  route will not match the served URL.
+- Alias matching covers named-import aliasing (`import { Get as HttpGet }`) but
+  not a renamed default re-export (`export { Controller as default }`).
+- Route paths that cannot be statically resolved (a `let`, a function call) are
+  flagged `unresolvedPath` and reported with an explicit `<unresolved>` marker
+  rather than a confident wrong path. `const` references, string concatenation,
+  and template literals interpolating only `const`s *are* resolved via the
+  checker's literal types.
 - Throws from third-party libraries (Prisma, TypeORM) that Nest maps to 500 —
   out of scope; would need a per-library mapping table.
 - Monorepos with multiple tsconfigs — CLI takes `--project` repeatedly; ESLint

@@ -1,0 +1,19 @@
+[
+  { "httpMethod": "GET", "path": "/a", "className": "MultiPrefixController", "methodName": "root", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/a/x", "className": "MultiPrefixController", "methodName": "multi", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/a/y", "className": "MultiPrefixController", "methodName": "multi", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/aliased/:id", "className": "AliasedController", "methodName": "findOne", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/b", "className": "MultiPrefixController", "methodName": "root", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/b/x", "className": "MultiPrefixController", "methodName": "multi", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/b/y", "className": "MultiPrefixController", "methodName": "multi", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/derived/own", "className": "DerivedController", "methodName": "own", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/filter/normal", "className": "FilterController", "methodName": "normalHandler", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/filter/overload", "className": "FilterController", "methodName": "handler", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/obj", "className": "ObjectPathController", "methodName": "ping", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/tpl", "className": "TemplateController", "methodName": "computedCall", "unresolvedPath": true },
+  { "httpMethod": "GET", "path": "/tpl", "className": "TemplateController", "methodName": "dynamicLet", "unresolvedPath": true },
+  { "httpMethod": "GET", "path": "/tpl/ab", "className": "TemplateController", "methodName": "concatenated", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/tpl/constpath", "className": "TemplateController", "methodName": "constRef", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/tpl/dyn/sub", "className": "TemplateController", "methodName": "templateSub", "unresolvedPath": false },
+  { "httpMethod": "GET", "path": "/tpl/ok", "className": "TemplateController", "methodName": "mixedArray", "unresolvedPath": true }
+]
