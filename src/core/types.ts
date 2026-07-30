@@ -66,9 +66,18 @@ export type StatusSource =
  * by the future diff logic (PLAN §4.4) only from `resolved` statuses in the
  * first place, so "an unresolved status never manufactures a finding" is
  * enforced at the point the diff builds a `Finding`, not by this type.
+ *
+ * `exception` (Phase 2 review, S4) carries the resolved exception *class*
+ * name (`'NotFoundException'`), when `resolve-status.ts`'s strategy that
+ * produced this result knows one — which is every strategy that resolves
+ * something, so in practice this is always set on a `'resolved'` result.
+ * Exists so callers (`analyze.ts`) don't fall back to describing the thrown
+ * *expression* (which, for a rethrown identifier like `throw notFound`,
+ * would be the variable name `'notFound'`, not the exception class) when a
+ * proper class name is available.
  */
 export type ResolvedStatus =
-  | { kind: 'resolved'; status: number; confidence: 'high' | 'low' }
+  | { kind: 'resolved'; status: number; confidence: 'high' | 'low'; exception?: string }
   | { kind: 'unknown'; reason: string };
 
 /**
@@ -81,15 +90,31 @@ export interface ProducibleStatus {
 }
 
 /**
+ * The `NXX` range-wildcard forms `@nestjs/swagger`'s real
+ * `ApiResponseOptions.status` type allows (`'1XX' | '2XX' | ... | '5XX'`),
+ * documenting "any status in this range" rather than one code. (Phase 2
+ * review S2.)
+ */
+export type StatusRange = '1XX' | '2XX' | '3XX' | '4XX' | '5XX';
+
+/**
  * A status code documented on a handler (or its enclosing class) via an
  * `@ApiResponse`-family decorator.
  *
  * `status` is `'default'` for `@ApiDefaultResponse` (PLAN §4.3), which is a
  * wildcard that satisfies nothing specific by default but can be configured
- * to via `AnalysisOptions.treatDefaultAsWildcard`.
+ * to via `AnalysisOptions.treatDefaultAsWildcard` — and also for a generic
+ * `@ApiResponse(...)` call whose argument object contains a spread and no
+ * statically-resolvable `status` (Phase 2 review S2): the argument's real
+ * status is genuinely unknown at analysis time, and unlike an unresolvable
+ * *thrown* status (which must be dropped — PLAN §4.2), an unresolvable
+ * *documented* status is FP-safer treated as "might document anything" than
+ * as "documents nothing", so it's folded into the same wildcard value
+ * `analyzeHandler` already knows how to treat as satisfying everything.
+ * A `StatusRange` (`'4XX'`) documents every status in that range.
  */
 export interface DocumentedStatus {
-  status: number | 'default';
+  status: number | 'default' | StatusRange;
   /** Decorator name, e.g. `'ApiNotFoundResponse'`. */
   decorator: string;
   /** For reporting / autofix anchoring. */

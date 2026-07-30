@@ -8,7 +8,7 @@
 
 import * as ts from 'typescript';
 import type { HandlerInfo } from '../core/index.js';
-import { getDecoratorInfos, getHandlersForClass } from '../core/index.js';
+import { getDecoratorInfos, getHandlerInfosForMethod, getHandlersForClass } from '../core/index.js';
 
 export interface DiscoverOptions {
   /** See `HandlerDiscoveryOptions.strict` in `core/handlers.ts`. */
@@ -53,6 +53,39 @@ export function discoverHandlers(
   }
 
   return handlers;
+}
+
+/**
+ * Every distinct `@Controller` handler *method node* in the program (as
+ * opposed to `discoverHandlers`'s `HandlerInfo[]`, which yields one entry
+ * per HTTP-method decorator / resolved path — a method with two decorators
+ * or an array-form path would otherwise be handed to `analyzeHandler`
+ * more than once for the same throws). `analyzeHandler` itself already
+ * expands back out to one finding per `HandlerInfo` internally (PLAN §2.1),
+ * so callers that need to *run the analyzer* should iterate this, not
+ * `discoverHandlers`.
+ */
+export function discoverHandlerMethodNodes(
+  program: ts.Program,
+  options: DiscoverOptions = {},
+): ts.MethodDeclaration[] {
+  const checker = program.getTypeChecker();
+  const discoveryOptions =
+    options.strict === undefined ? { checker } : { checker, strict: options.strict };
+  const nodes: ts.MethodDeclaration[] = [];
+
+  for (const sourceFile of program.getSourceFiles()) {
+    if (!isProjectSourceFile(sourceFile)) continue;
+    forEachClassLike(sourceFile, (classNode) => {
+      for (const member of classNode.members) {
+        if (!ts.isMethodDeclaration(member)) continue;
+        if (getHandlerInfosForMethod(member, discoveryOptions).length === 0) continue;
+        nodes.push(member);
+      }
+    });
+  }
+
+  return nodes;
 }
 
 /** "Cannot find module ..." diagnostic codes from the TS checker. */

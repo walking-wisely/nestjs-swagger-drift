@@ -1,0 +1,29 @@
+[
+  {
+    "rule": "undocumented-status",
+    "status": 404,
+    "httpMethod": "GET",
+    "path": "/default-wildcard/:id",
+    "className": "DefaultWildcardController",
+    "methodName": "findOne",
+    "sources": [{ "kind": "throw", "exception": "NotFoundException" }]
+  },
+  {
+    "rule": "undocumented-status",
+    "status": 404,
+    "httpMethod": "GET",
+    "path": "/rethrow/:id",
+    "className": "RethrowController",
+    "methodName": "findOne",
+    "sources": [{ "kind": "throw", "exception": "NotFoundException" }]
+  },
+  {
+    "rule": "undocumented-status",
+    "status": 404,
+    "httpMethod": "GET",
+    "path": "/widgets/:id",
+    "className": "UndocumentedController",
+    "methodName": "findOne",
+    "sources": [{ "kind": "throw", "exception": "NotFoundException" }]
+  }
+]

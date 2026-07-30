@@ -52,9 +52,16 @@ describe('a genuinely unresolved @nestjs/common import (no stub, nothing install
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
+      // `--routes` for the plain route-table assertion below: Phase 2 makes
+      // findings (not the route table) the CLI's default output, but this
+      // fixture's single handler doesn't throw anything, so the default
+      // findings mode would print nothing distinctive to assert against —
+      // `--routes` keeps this test's original intent (routes were still
+      // discovered despite the unresolved module) exercisable.
       const code = main([
         '--project',
         join(__dirname, '../fixtures/unresolved-module/tsconfig.json'),
+        '--routes',
       ]);
       expect(code).toBe(0);
       expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('GET /users'));

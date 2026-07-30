@@ -60,6 +60,7 @@
 
 import * as ts from 'typescript';
 import type { HttpMethod } from './types.js';
+import { checkProvenance, type Provenance } from './provenance.js';
 
 /** Decorator names @nestjs/common exports for HTTP route handlers, mapped to `HttpMethod`. */
 export const HTTP_METHOD_DECORATOR_NAMES: Record<string, HttpMethod> = {
@@ -76,129 +77,13 @@ export const HTTP_METHOD_DECORATOR_NAMES: Record<string, HttpMethod> = {
 
 const DEFAULT_MODULE = '@nestjs/common';
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
- * True if `declaration` lives inside `moduleName`, checked two ways:
- *
- * 1. Its source file's path is under `node_modules/<moduleName>` — the real
- *    published package.
- * 2. It's nested inside an ambient `declare module '<moduleName>' { ... }`
- *    block, regardless of which physical file that block lives in — the
- *    shape used by hand-written `.d.ts` stubs (including this project's own
- *    test fixtures, which don't have `@nestjs/common` installed; see this
- *    module's doc comment).
- *
- * Generalized over `moduleName` (rather than hardcoded to `@nestjs/common`)
- * because Phase 2 needs the identical check for `@nestjs/swagger`'s
- * `@ApiResponse` family.
- */
-function isDeclarationFromModule(declaration: ts.Declaration, moduleName: string): boolean {
-  const pathPattern = new RegExp(`[\\\\/]node_modules[\\\\/]${escapeRegExp(moduleName)}[\\\\/]`);
-  if (pathPattern.test(declaration.getSourceFile().fileName)) return true;
-  for (let node: ts.Node | undefined = declaration; node !== undefined; node = node.parent) {
-    if (
-      ts.isModuleDeclaration(node) &&
-      ts.isStringLiteral(node.name) &&
-      node.name.text === moduleName
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Result of checking whether a decorator identifier resolves to a symbol
- * declared by the target module (`@nestjs/common` unless overridden):
- *
- * - `'verified'`   — the checker resolved the symbol (following import
- *                    aliases) and its declaration lives under the target
- *                    module.
- * - `'mismatch'`   — the checker resolved the symbol to an actual
- *                    declaration, but it's declared somewhere else (a
- *                    same-named local/other-library symbol). Treated as
- *                    *not* a NestJS decorator.
- * - `'unverified'` — the checker could not pin the symbol down at all, or
- *                    only found the import site of an unresolved module
- *                    (see this module's doc comment). Name-based fallback.
- */
-export type Provenance = 'verified' | 'mismatch' | 'unverified';
-
-interface ProvenanceResult {
-  provenance: Provenance;
-  /**
-   * The resolved symbol's own name (i.e. what the target module actually
-   * calls this export), when the checker could determine one. Lets callers
-   * match on semantic identity rather than the locally-written name, so
-   * `import { Get as HttpGet } from '@nestjs/common'` isn't dropped just
-   * because the local name isn't `'Get'`. `undefined` when unresolved.
-   */
-  resolvedName: string | undefined;
-}
-
-function isImportSite(declaration: ts.Declaration): boolean {
-  return (
-    ts.isImportSpecifier(declaration) ||
-    ts.isImportClause(declaration) ||
-    ts.isNamespaceImport(declaration)
-  );
-}
-
-function checkProvenance(
-  nameNode: ts.Expression,
-  checker: ts.TypeChecker,
-  moduleName: string,
-): ProvenanceResult {
-  let symbol: ts.Symbol | undefined;
-  try {
-    symbol = checker.getSymbolAtLocation(nameNode);
-  } catch {
-    symbol = undefined;
-  }
-  if (!symbol) return { provenance: 'unverified', resolvedName: undefined };
-
-  let resolved = symbol;
-  let aliasAdvanced = (symbol.flags & ts.SymbolFlags.Alias) === 0; // non-alias: nothing to advance past
-  if (!aliasAdvanced) {
-    try {
-      const aliased = checker.getAliasedSymbol(symbol);
-      // B2 (round 2): for an unresolved module, `getAliasedSymbol` neither
-      // throws nor returns `symbol` back — it returns TS's internal
-      // "unknown symbol", a real, distinct `ts.Symbol` object with zero
-      // declarations. `aliased !== symbol` alone is therefore NOT proof the
-      // alias resolved to something real; only a non-empty declaration list
-      // is. (Verified directly against the checker — see the Phase 1
-      // review's B2-round-2 diagnosis. Deliberately not checking
-      // `aliased.getName() === 'unknown'` or a `Transient` flag: those are
-      // compiler internals that could change across TS versions; "did we
-      // actually land on a declaration" is the stable, meaningful test.)
-      if (aliased !== symbol && (aliased.getDeclarations()?.length ?? 0) > 0) {
-        resolved = aliased;
-        aliasAdvanced = true;
-      }
-    } catch {
-      // resolved stays `symbol`; aliasAdvanced stays false.
-    }
-  }
-
-  const declarations = resolved.getDeclarations() ?? symbol.getDeclarations() ?? [];
-  if (declarations.length === 0) return { provenance: 'unverified', resolvedName: undefined };
-
-  // B2: an alias that never resolved, whose only evidence is the import
-  // site itself, means the checker couldn't find the other end of the
-  // import (unresolved module) — not "resolved to something that isn't
-  // @nestjs/common". Must not be classified `mismatch`.
-  if (!aliasAdvanced && declarations.every(isImportSite)) {
-    return { provenance: 'unverified', resolvedName: undefined };
-  }
-
-  const fromModule = declarations.some((d) => isDeclarationFromModule(d, moduleName));
-  if (!fromModule) return { provenance: 'mismatch', resolvedName: resolved.getName() };
-  return { provenance: 'verified', resolvedName: resolved.getName() };
-}
+// `Provenance`, `checkProvenance`, and the module-membership check they rely
+// on now live in `provenance.ts` — Phase 2's `resolve-status.ts` needs the
+// identical strategy for non-decorator expressions (a thrown exception's
+// `new X(...)` callee, an `HttpStatus.X` member access), so it was extracted
+// rather than duplicated. Re-exported here so existing importers of
+// `decorators.ts`'s `Provenance` type keep working.
+export type { Provenance };
 
 /** A single decorator recognized on a class or method (path-agnostic; see `RoutePathInfo`). */
 export interface DecoratorInfo {

@@ -1,20 +1,47 @@
 #!/usr/bin/env node
 /**
- * Minimal Phase 1 CLI entry: `--project <tsconfig>` in, a sorted route table
- * out. Full flag surface (reporters, `--fail-on`, config file, `--strict`,
- * ...) is PLAN.md Phase 4 — deliberately not built here. The `strict`
- * plumbing already threaded through `discoverHandlers`/core is there so
- * Phase 4 only has to add a flag, not new wiring.
+ * `--project <tsconfig>` in; by default, `undocumented-status` findings out
+ * (PLAN §4.4) — this is Phase 2's exit criterion: a real undocumented `404`
+ * in a fixture must be found and the process must exit `1`. `--routes`
+ * keeps Phase 1's plain route-table output available since it's cheap to.
+ * Full flag surface (reporters, `--fail-on`, config file, `--strict`,
+ * `--max-depth`, `--ignore`, suppression comments, ...) is PLAN.md Phase 4 —
+ * deliberately not built here.
  */
 
 import * as ts from 'typescript';
 import { pathToFileURL } from 'node:url';
+import { relative } from 'node:path';
 import { createProgramFromTsConfig } from './program.js';
-import { collectDiscoveryWarnings, discoverHandlers } from './discover.js';
-import type { HandlerInfo } from '../core/index.js';
+import {
+  collectDiscoveryWarnings,
+  discoverHandlerMethodNodes,
+  discoverHandlers,
+} from './discover.js';
+import type { AnalysisOptions, Finding, HandlerInfo, StatusSource } from '../core/index.js';
+import { analyzeHandler, createAnalysisContext } from '../core/index.js';
 
 function printUsage(): void {
-  console.log('Usage: nestjs-swagger-drift --project <path-to-tsconfig-or-dir>');
+  console.log('Usage: nestjs-swagger-drift --project <path-to-tsconfig-or-dir> [--routes]');
+}
+
+/**
+ * Phase 2's default `AnalysisOptions`. `treatDefaultAsWildcard: false`
+ * matches `DocumentedStatus`'s own doc comment ("satisfies nothing specific
+ * *by default*"); the opt-in rules stay off; `ignoreStatuses` is empty.
+ * `maxDepth` is unused until Phase 3's call graph exists but is set to the
+ * value PLAN §4.1b names as the eventual default.
+ */
+function defaultAnalysisOptions(): AnalysisOptions {
+  return {
+    maxDepth: 2,
+    rules: {
+      'documented-but-unreachable': false,
+      'unresolvable-status': false,
+    },
+    treatDefaultAsWildcard: false,
+    ignoreStatuses: [],
+  };
 }
 
 /**
@@ -58,14 +85,89 @@ function formatHandler(handler: HandlerInfo): string {
   return `${handler.httpMethod} ${path} → ${handler.className}.${handler.methodName}`;
 }
 
-function parseArgs(argv: string[]): { project?: string } {
-  const result: { project?: string } = {};
+/**
+ * `core/` hands out `ts.Node`s whose source files carry whatever absolute
+ * (or cwd-relative-as-given-to-the-compiler) path `ts.createProgram` used —
+ * `core/` itself stays Node-free and must not know about `cwd` at all (PLAN
+ * §3), so the relative-path conversion PLAN §4.4's report format wants
+ * (`src/users/users.controller.ts:42:3`, not an absolute path — breaks
+ * editor/CI annotation linking otherwise) lives here, in `cli/`, only.
+ */
+function locationOf(node: ts.Node, baseDir: string): string {
+  const sourceFile = node.getSourceFile();
+  const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+  const relativePath = relative(baseDir, sourceFile.fileName) || sourceFile.fileName;
+  return `${relativePath}:${line + 1}:${character + 1}`;
+}
+
+/** Label for a `StatusSource`, for the `└ ...` report line under each status. */
+function describeSource(source: StatusSource, baseDir: string): string {
+  switch (source.kind) {
+    case 'throw':
+      return `direct throw  ${locationOf(source.node, baseDir)}`;
+    case 'service-throw':
+      return `${source.via.map((hop) => hop.name).join(' → ')}  ${locationOf(source.node, baseDir)}`;
+    case 'implicit':
+      return `implicit (${source.reason})  ${locationOf(source.node, baseDir)}`;
+  }
+}
+
+/**
+ * PLAN §4.4's report shape. Phase 2 only ever produces `undocumented-status`
+ * findings (the opt-in rules aren't implemented yet), but this switches on
+ * `rule` so a future rule can't silently print nothing.
+ */
+function formatFinding(finding: Finding, baseDir: string): string {
+  if (finding.rule === 'undocumented-status') {
+    const { handler, status, sources } = finding;
+    const exceptionNames = [
+      ...new Set(sources.map((s) => (s.kind === 'implicit' ? s.reason : s.exception))),
+    ];
+    const lines = [
+      `${locationOf(handler.node, baseDir)}  error`,
+      `  ${handler.httpMethod} ${handler.path} (${handler.className}.${handler.methodName}) is missing @ApiResponse for:`,
+      `    ${status} ${exceptionNames.join(', ')}`,
+      ...sources.map((s) => `       └ ${describeSource(s, baseDir)}`),
+    ];
+    return lines.join('\n');
+  }
+  // `documented-but-unreachable` / `unresolvable-status`: opt-in, unimplemented in Phase 2.
+  return `${locationOf(finding.node, baseDir)}  error  ${finding.rule}`;
+}
+
+/**
+ * Stable sort for findings: by handler path/method/class/method name, then
+ * status — matches `sortHandlers`'s ordering so the report reads in route
+ * order.
+ */
+function sortFindings(findings: Finding[]): Finding[] {
+  return [...findings].sort((a, b) => {
+    if (a.handler.path !== b.handler.path) return a.handler.path < b.handler.path ? -1 : 1;
+    if (a.handler.httpMethod !== b.handler.httpMethod) {
+      return a.handler.httpMethod < b.handler.httpMethod ? -1 : 1;
+    }
+    if (a.handler.className !== b.handler.className) {
+      return a.handler.className < b.handler.className ? -1 : 1;
+    }
+    if (a.handler.methodName !== b.handler.methodName) {
+      return a.handler.methodName < b.handler.methodName ? -1 : 1;
+    }
+    const statusA = a.rule === 'unresolvable-status' ? -1 : a.status;
+    const statusB = b.rule === 'unresolvable-status' ? -1 : b.status;
+    return statusA - statusB;
+  });
+}
+
+function parseArgs(argv: string[]): { project?: string; routes: boolean } {
+  const result: { project?: string; routes: boolean } = { routes: false };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--project' || arg === '-p') {
       const value = argv[i + 1];
       if (value !== undefined) result.project = value;
       i++;
+    } else if (arg === '--routes') {
+      result.routes = true;
     }
   }
   return result;
@@ -136,11 +238,36 @@ export function main(argv: string[]): number {
     return 0;
   }
 
-  for (const handler of handlers) {
-    console.log(formatHandler(handler));
+  if (args.routes) {
+    for (const handler of handlers) {
+      console.log(formatHandler(handler));
+    }
+    return 0;
   }
 
-  return 0;
+  // Findings are the primary output (PLAN §4.4). Analyzed once per distinct
+  // method node — not once per already-expanded `HandlerInfo` — since
+  // `analyzeHandler` itself expands back out over every `HandlerInfo` a
+  // method yields; analyzing per-`HandlerInfo` here too would duplicate
+  // findings for a method with two HTTP decorators or an array-form path.
+  const ctx = createAnalysisContext(program, defaultAnalysisOptions());
+  const methodNodes = discoverHandlerMethodNodes(program);
+  const findings = sortFindings(methodNodes.flatMap((node) => analyzeHandler(node, ctx)));
+
+  if (findings.length === 0) {
+    console.log('No undocumented status codes found.');
+    return 0;
+  }
+
+  const baseDir = process.cwd();
+  for (const finding of findings) {
+    console.log(formatFinding(finding, baseDir));
+  }
+  console.error(
+    `nestjs-swagger-drift: found ${findings.length} undocumented status code finding(s).`,
+  );
+
+  return 1;
 }
 
 /* c8 ignore start -- exercised via the built CLI binary, not unit tests */
