@@ -5,7 +5,7 @@
 // family Phase 2 needs to exercise, and `@ApiDefaultResponse`.
 declare module '@nestjs/swagger' {
   export interface ApiResponseOptions {
-    status?: number;
+    status?: number | '1XX' | '2XX' | '3XX' | '4XX' | '5XX';
     description?: string;
   }
 
@@ -30,6 +30,18 @@ declare module '@nestjs/swagger' {
     options?: ApiResponseOptions,
   ): MethodDecorator & ClassDecorator;
   export function ApiDefaultResponse(options?: ApiResponseOptions): MethodDecorator & ClassDecorator;
+  // Shorthands beyond the common four (Phase 2 review adversarial pass):
+  // these are live false-positive risks because they're less commonly
+  // hand-rolled in test stubs, so they're easy to forget to wire up.
+  export function ApiPreconditionFailedResponse(
+    options?: ApiResponseOptions,
+  ): MethodDecorator & ClassDecorator;
+  export function ApiIAmATeapotResponse(
+    options?: ApiResponseOptions,
+  ): MethodDecorator & ClassDecorator;
+  export function ApiHttpVersionNotSupportedResponse(
+    options?: ApiResponseOptions,
+  ): MethodDecorator & ClassDecorator;
 
   export function ApiTags(...tags: string[]): ClassDecorator;
 }

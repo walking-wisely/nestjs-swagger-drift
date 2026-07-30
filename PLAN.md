@@ -426,6 +426,9 @@ Zero is the bar; anything else means tightening §4.2's unknown handling.
 `npx nestjs-swagger-drift [paths]`, flags: `--project`, `--reporter
 pretty|json`, `--max-depth`, `--fail-on`, `--ignore`, per-rule enable/disable.
 Inline suppression comments: `// swagger-drift-disable-next-line 404`.
+Finding paths are currently relative to `cwd`, which degrades to
+`../../../..` when analysing a project elsewhere; make the base directory the
+tsconfig's directory, or make it configurable.
 Config file: `swagger-drift.config.{ts,json}` — but keep it optional; the
 zero-config path must work.
 **Exit:** usable in CI on a real repo.

@@ -32,9 +32,12 @@ declare module '@nestjs/common' {
     UNAUTHORIZED = 401,
     FORBIDDEN = 403,
     NOT_FOUND = 404,
+    PRECONDITION_FAILED = 412,
+    I_AM_A_TEAPOT = 418,
     CONFLICT = 409,
     UNPROCESSABLE_ENTITY = 422,
     INTERNAL_SERVER_ERROR = 500,
+    HTTP_VERSION_NOT_SUPPORTED = 505,
   }
 
   export class HttpException extends Error {
@@ -64,6 +67,15 @@ declare module '@nestjs/common' {
     constructor(message?: string);
   }
   export class ServiceUnavailableException extends HttpException {
+    constructor(message?: string);
+  }
+  export class PreconditionFailedException extends HttpException {
+    constructor(message?: string);
+  }
+  export class ImATeapotException extends HttpException {
+    constructor(message?: string);
+  }
+  export class HttpVersionNotSupportedException extends HttpException {
     constructor(message?: string);
   }
 }
