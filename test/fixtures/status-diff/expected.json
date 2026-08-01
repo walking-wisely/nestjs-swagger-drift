@@ -1,6 +1,24 @@
 [
   {
     "rule": "undocumented-status",
+    "status": 409,
+    "httpMethod": "POST",
+    "path": "/custom-exception",
+    "className": "CustomExceptionController",
+    "methodName": "update",
+    "sources": [{ "kind": "throw", "exception": "ConflictingUpdateException" }]
+  },
+  {
+    "rule": "undocumented-status",
+    "status": 404,
+    "httpMethod": "GET",
+    "path": "/custom-exception/:id",
+    "className": "CustomExceptionController",
+    "methodName": "findOne",
+    "sources": [{ "kind": "throw", "exception": "CustomNotFoundException" }]
+  },
+  {
+    "rule": "undocumented-status",
     "status": 404,
     "httpMethod": "GET",
     "path": "/default-wildcard/:id",

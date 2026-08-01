@@ -348,6 +348,21 @@ Ordered strategies, first hit wins:
 5. Otherwise → `unknown`. Reported only under the opt-in
    `unresolvable-status` rule, never as a false `undocumented-status`.
 
+Two clarifications found while implementing (2026-08-01), because the list
+above reads as five independent strategies when steps 1–4 actually interact:
+
+- **Nearest wins.** In a chain like `A extends B extends HttpException` where
+  `A`'s constructor passes an explicit literal and `B`'s only has a default,
+  the status is resolved by walking *down* from the instantiated class and
+  taking the nearest explicit `super(msg, …)` literal. An explicit argument
+  always beats an inherited default.
+- **Only `HttpException` gets constructor inspection.** The concrete built-ins
+  (`NotFoundException` et al.) take only a message — their real constructors
+  never accept a status — so "extends a built-in *and* calls `super(msg, 409)`"
+  is not a meaningful case for them. Ancestors found in the built-in table are
+  treated as fixed and unoverridable; only a chain terminating at
+  `HttpException` itself is routed through steps 2–4.
+
 **Bias: silence over noise.** An unresolvable status must never manufacture a
 finding under the default config. The tool dies the moment a NestJS team gets
 one false positive per file.

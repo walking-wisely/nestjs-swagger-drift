@@ -114,11 +114,146 @@ describe('resolveThrownStatus', () => {
     expect(result.kind).toBe('unknown');
   });
 
-  it('a custom exception extending a built-in resolves to unknown (extends chains are Phase 3)', () => {
+  it('a custom exception directly extending a built-in inherits its status', () => {
     const result = resolveFirstThrow(
       `import { NotFoundException } from '@nestjs/common';
        class MyNotFound extends NotFoundException {}
        function f() { throw new MyNotFound('x'); }`,
+    );
+    expect(result).toEqual({
+      kind: 'resolved',
+      status: 404,
+      confidence: 'high',
+      exception: 'MyNotFound',
+    });
+  });
+
+  it('walks the whole extends chain (A extends B extends NotFoundException)', () => {
+    const result = resolveFirstThrow(
+      `import { NotFoundException } from '@nestjs/common';
+       class B extends NotFoundException {}
+       class A extends B {}
+       function f() { throw new A('x'); }`,
+    );
+    expect(result).toEqual({
+      kind: 'resolved',
+      status: 404,
+      confidence: 'high',
+      exception: 'A',
+    });
+  });
+
+  it('extends HttpException with an explicit numeric literal super() status', () => {
+    const result = resolveFirstThrow(
+      `import { HttpException } from '@nestjs/common';
+       class RateLimited extends HttpException {
+         constructor() { super('slow down', 429); }
+       }
+       function f() { throw new RateLimited(); }`,
+    );
+    expect(result).toEqual({
+      kind: 'resolved',
+      status: 429,
+      confidence: 'high',
+      exception: 'RateLimited',
+    });
+  });
+
+  it('extends HttpException with super(msg, HttpStatus.X)', () => {
+    const result = resolveFirstThrow(
+      `import { HttpException, HttpStatus } from '@nestjs/common';
+       class MyConflict extends HttpException {
+         constructor() { super('conflict', HttpStatus.CONFLICT); }
+       }
+       function f() { throw new MyConflict(); }`,
+    );
+    expect(result).toEqual({
+      kind: 'resolved',
+      status: 409,
+      confidence: 'high',
+      exception: 'MyConflict',
+    });
+  });
+
+  it('extends HttpException with a constructor status parameter default is low confidence', () => {
+    const result = resolveFirstThrow(
+      `import { HttpException } from '@nestjs/common';
+       class MaybeConflict extends HttpException {
+         constructor(status = 409) { super('conflict', status); }
+       }
+       function f() { throw new MaybeConflict(); }`,
+    );
+    expect(result).toEqual({
+      kind: 'resolved',
+      status: 409,
+      confidence: 'low',
+      exception: 'MaybeConflict',
+    });
+  });
+
+  it('an explicit nearer super(msg, <literal>) wins over an inherited default further up', () => {
+    const result = resolveFirstThrow(
+      `import { HttpException } from '@nestjs/common';
+       class BaseError extends HttpException {
+         constructor(msg: string, status = 500) { super(msg, status); }
+       }
+       class ConflictError extends BaseError {
+         constructor() { super('conflict', 409); }
+       }
+       function f() { throw new ConflictError(); }`,
+    );
+    expect(result).toEqual({
+      kind: 'resolved',
+      status: 409,
+      confidence: 'high',
+      exception: 'ConflictError',
+    });
+  });
+
+  it('extends HttpException with a dynamically computed status resolves to unknown', () => {
+    const result = resolveFirstThrow(
+      `import { HttpException } from '@nestjs/common';
+       class Weird extends HttpException {
+         constructor(cond: boolean) { super('x', cond ? 400 : 409); }
+       }
+       function f(cond: boolean) { throw new Weird(cond); }`,
+    );
+    expect(result.kind).toBe('unknown');
+  });
+
+  it('extends HttpException with super(...args) spread forwarding resolves to unknown', () => {
+    const result = resolveFirstThrow(
+      `import { HttpException } from '@nestjs/common';
+       class Forwarding extends HttpException {
+         constructor(...args: [string, number]) { super(...args); }
+       }
+       function f() { throw new Forwarding('x', 409); }`,
+    );
+    expect(result.kind).toBe('unknown');
+  });
+
+  it('extends HttpException with no resolvable status anywhere in the chain resolves to unknown', () => {
+    const result = resolveFirstThrow(
+      `import { HttpException } from '@nestjs/common';
+       class NoStatus extends HttpException {}
+       function f() { throw new NoStatus(); }`,
+    );
+    expect(result.kind).toBe('unknown');
+  });
+
+  it('a class extending something that only looks like a Nest exception (not checker-verified) resolves to unknown', () => {
+    const result = resolveFirstThrow(
+      `class NotFoundException { constructor(public msg?: string) {} }
+       class MyNotFound extends NotFoundException {}
+       function f() { throw new MyNotFound('x'); }`,
+    );
+    expect(result.kind).toBe('unknown');
+  });
+
+  it('a custom exception with no extends clause at all resolves to unknown', () => {
+    const result = resolveFirstThrow(
+      `class PlainError extends Error {}
+       function f() { throw new PlainError('x'); }`,
     );
     expect(result.kind).toBe('unknown');
   });

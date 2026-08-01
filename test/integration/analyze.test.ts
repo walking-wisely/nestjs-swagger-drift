@@ -98,9 +98,33 @@ describe('analyzeHandler over the status-diff fixture', () => {
     expect(findings.some((f) => f.handler.className === 'CallbackThrowController')).toBe(false);
   });
 
-  it('a custom exception class and a dynamic HttpException status both resolve to unknown (no finding)', () => {
+  it('a dynamic (non-literal) HttpException status resolves to unknown (no finding)', () => {
     const findings = analyzeFixture(FIXTURE_DIR);
     expect(findings.some((f) => f.handler.className === 'UnresolvableController')).toBe(false);
+  });
+
+  it('a custom exception class extending a built-in (extends chain) produces a finding (Phase 3)', () => {
+    const findings = analyzeFixture(FIXTURE_DIR);
+    const finding = findings.find(
+      (f) =>
+        f.rule === 'undocumented-status' &&
+        f.handler.className === 'CustomExceptionController' &&
+        f.handler.methodName === 'findOne',
+    );
+    expect(finding).toBeDefined();
+    if (finding?.rule === 'undocumented-status') expect(finding.status).toBe(404);
+  });
+
+  it('a custom exception class extending HttpException with super(msg, 409) produces a finding (Phase 3)', () => {
+    const findings = analyzeFixture(FIXTURE_DIR);
+    const finding = findings.find(
+      (f) =>
+        f.rule === 'undocumented-status' &&
+        f.handler.className === 'CustomExceptionController' &&
+        f.handler.methodName === 'update',
+    );
+    expect(finding).toBeDefined();
+    if (finding?.rule === 'undocumented-status') expect(finding.status).toBe(409);
   });
 
   it('@ApiDefaultResponse does not suppress findings by default (treatDefaultAsWildcard: false)', () => {

@@ -16,6 +16,42 @@
 
 import * as ts from 'typescript';
 
+/**
+ * Resolves an arbitrary expression (an `extends` clause's expression, or a
+ * `new X(...)` callee) to the class declaration it statically refers to,
+ * following import aliases the same way `provenance.ts`'s `checkProvenance`
+ * does. Factored out of `getBaseClassDeclaration` in Phase 3 so
+ * `resolve-status.ts`'s custom-exception strategy (PLAN §4.2 step 1) can
+ * resolve the class a `new SomeCustomException(...)` expression instantiates
+ * with the identical alias-resolution logic, rather than a second copy of it.
+ */
+export function resolveClassDeclaration(
+  expr: ts.Expression,
+  checker: ts.TypeChecker,
+): ts.ClassLikeDeclaration | undefined {
+  let symbol: ts.Symbol | undefined;
+  try {
+    symbol = checker.getSymbolAtLocation(expr);
+  } catch {
+    symbol = undefined;
+  }
+  if (!symbol) return undefined;
+
+  let resolved = symbol;
+  if ((symbol.flags & ts.SymbolFlags.Alias) !== 0) {
+    try {
+      const aliased = checker.getAliasedSymbol(symbol);
+      if (aliased !== symbol && (aliased.getDeclarations()?.length ?? 0) > 0) {
+        resolved = aliased;
+      }
+    } catch {
+      // `resolved` stays `symbol`.
+    }
+  }
+
+  return resolved.getDeclarations()?.find(ts.isClassLike);
+}
+
 export function getBaseClassDeclaration(
   classNode: ts.ClassLikeDeclaration,
   checker: ts.TypeChecker,
@@ -24,28 +60,7 @@ export function getBaseClassDeclaration(
     if (clause.token !== ts.SyntaxKind.ExtendsKeyword) continue;
     const expr = clause.types[0]?.expression;
     if (!expr) return undefined;
-
-    let symbol: ts.Symbol | undefined;
-    try {
-      symbol = checker.getSymbolAtLocation(expr);
-    } catch {
-      symbol = undefined;
-    }
-    if (!symbol) return undefined;
-
-    let resolved = symbol;
-    if ((symbol.flags & ts.SymbolFlags.Alias) !== 0) {
-      try {
-        const aliased = checker.getAliasedSymbol(symbol);
-        if (aliased !== symbol && (aliased.getDeclarations()?.length ?? 0) > 0) {
-          resolved = aliased;
-        }
-      } catch {
-        // `resolved` stays `symbol`.
-      }
-    }
-
-    return resolved.getDeclarations()?.find(ts.isClassLike);
+    return resolveClassDeclaration(expr, checker);
   }
   return undefined;
 }
