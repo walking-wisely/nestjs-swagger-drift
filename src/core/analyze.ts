@@ -1,11 +1,13 @@
 /**
  * `analyzeHandler()` — the public entry point (PLAN §2.1).
  *
- * Phase 2 scope: diff direct throws (§4.1a) against documented statuses
- * (§4.3), honoring `AnalysisOptions.ignoreStatuses`, and emit one
- * `undocumented-status` finding per undocumented status code, carrying every
- * `StatusSource` that can produce it (§4.4). No call graph (§4.1b, Phase 3),
- * no implicit codes (§4.1c, Phase 5), and the opt-in
+ * Diffs producible statuses against documented statuses (§4.3), honoring
+ * `AnalysisOptions.ignoreStatuses`, and emits one `undocumented-status`
+ * finding per undocumented status code, carrying every `StatusSource` that
+ * can produce it (§4.4). Producible statuses come from two sources: direct
+ * throws in the handler body (§4.1a) and, as of Phase 3, throws reached by
+ * bounded traversal into methods the handler calls (§4.1b, `call-graph.ts`).
+ * No implicit codes (§4.1c, Phase 5); the opt-in
  * `documented-but-unreachable`/`unresolvable-status` rules are left
  * unimplemented — `AnalysisOptions.rules` exists but is not consulted here
  * yet.
@@ -24,6 +26,7 @@ import { getHandlerInfosForMethod } from './handlers.js';
 import { collectDirectThrows } from './thrown.js';
 import { resolveThrownStatus } from './resolve-status.js';
 import { getDocumentedStatuses } from './documented.js';
+import { collectCallGraphStatuses } from './call-graph.js';
 
 /**
  * Constructs the opaque `AnalysisCache` (see `types.ts`'s doc comment on
@@ -90,19 +93,34 @@ function describeThrownExpression(expression: ts.Expression): string {
   return expression.getText();
 }
 
+function addSource(
+  byStatus: Map<number, StatusSource[]>,
+  status: number,
+  source: StatusSource,
+): void {
+  const existing = byStatus.get(status);
+  if (existing) {
+    existing.push(source);
+  } else {
+    byStatus.set(status, [source]);
+  }
+}
+
 /**
- * Direct-throw producible statuses for `methodNode`. Unresolvable throws
- * (`ResolvedStatus.kind === 'unknown'`) are silently dropped here — per PLAN
- * §4.2's invariant, they must never reach the diff.
+ * Producible statuses for `methodNode`: its own direct throws (§4.1a) plus,
+ * as of Phase 3, every status reached by bounded traversal into methods it
+ * calls (§4.1b — see `call-graph.ts`). Unresolvable throws
+ * (`ResolvedStatus.kind === 'unknown'`) are silently dropped in both cases —
+ * per PLAN §4.2's invariant, they must never reach the diff.
  */
 function collectProducibleStatuses(
   methodNode: ts.MethodDeclaration,
-  checker: ts.TypeChecker,
+  ctx: AnalysisContext,
 ): ProducibleStatus[] {
   const byStatus = new Map<number, StatusSource[]>();
 
   for (const { node, expression } of collectDirectThrows(methodNode)) {
-    const result = resolveThrownStatus(expression, checker);
+    const result = resolveThrownStatus(expression, ctx.checker);
     if (result.kind !== 'resolved') continue;
 
     const source: StatusSource = {
@@ -110,12 +128,11 @@ function collectProducibleStatuses(
       node,
       exception: result.exception ?? describeThrownExpression(expression),
     };
-    const existing = byStatus.get(result.status);
-    if (existing) {
-      existing.push(source);
-    } else {
-      byStatus.set(result.status, [source]);
-    }
+    addSource(byStatus, result.status, source);
+  }
+
+  for (const { resolved, source } of collectCallGraphStatuses(methodNode, ctx)) {
+    addSource(byStatus, resolved.status, source);
   }
 
   return [...byStatus.entries()].map(([status, sources]) => ({
@@ -136,7 +153,7 @@ export function analyzeHandler(methodNode: ts.MethodDeclaration, ctx: AnalysisCo
   const handlers = getHandlerInfosForMethod(methodNode, { checker: ctx.checker });
   if (handlers.length === 0) return [];
 
-  const producible = collectProducibleStatuses(methodNode, ctx.checker);
+  const producible = collectProducibleStatuses(methodNode, ctx);
   if (producible.length === 0) return [];
 
   const documented = getDocumentedStatuses(methodNode, ctx.checker, ctx.options);

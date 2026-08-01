@@ -28,12 +28,30 @@
   },
   {
     "rule": "undocumented-status",
+    "status": 409,
+    "httpMethod": "POST",
+    "path": "/orgs",
+    "className": "TwoHopController",
+    "methodName": "create",
+    "sources": [{ "kind": "service-throw", "exception": "ConflictException" }]
+  },
+  {
+    "rule": "undocumented-status",
     "status": 404,
     "httpMethod": "GET",
     "path": "/rethrow/:id",
     "className": "RethrowController",
     "methodName": "findOne",
     "sources": [{ "kind": "throw", "exception": "NotFoundException" }]
+  },
+  {
+    "rule": "undocumented-status",
+    "status": 404,
+    "httpMethod": "GET",
+    "path": "/service-widgets/:id",
+    "className": "ServiceThrowController",
+    "methodName": "findOne",
+    "sources": [{ "kind": "service-throw", "exception": "NotFoundException" }]
   },
   {
     "rule": "undocumented-status",

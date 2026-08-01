@@ -38,9 +38,12 @@ export {
 } from './nest-exceptions.js';
 
 export type { ThrownExpression } from './thrown.js';
-export { collectDirectThrows } from './thrown.js';
+export { collectDirectThrows, walkProducibleNodes } from './thrown.js';
 
 export { resolveThrownStatus } from './resolve-status.js';
+
+export type { CallGraphFinding } from './call-graph.js';
+export { collectCallGraphStatuses } from './call-graph.js';
 
 export { resolveStatusExpression } from './status-value.js';
 

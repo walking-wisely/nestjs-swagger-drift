@@ -104,22 +104,36 @@ function isFalsyLiteral(expr: ts.Expression): boolean {
 }
 
 /**
- * Collects every `throw` statement that is part of `fn`'s own control flow —
- * i.e. reachable without crossing into a nested function body, not swallowed
- * by an enclosing `try`/`catch`, and not trivially unreachable (see module
- * doc). Returns `[]` if `fn` has no body, or its body isn't a `Block` (an
- * arrow function's concise `() => expr` body can't syntactically contain a
- * `throw` statement).
+ * Walks `fn`'s body applying the exact same reachability rules
+ * `collectDirectThrows` documents above (own-control-flow only, try/catch
+ * suppression, the two trivial-unreachability checks) and invokes `onNode`
+ * for every node visited, tagged with whether it's currently in "producible"
+ * territory (i.e. NOT inside a caught `try` block, and not trivially
+ * unreachable).
+ *
+ * Factored out in Phase 3 (PLAN §4.1b) so `call-graph.ts` can find the exact
+ * same set of producible `CallExpression`s a call graph should traverse —
+ * `try { await this.svc.find() } catch {}` must suppress a call the same way
+ * it suppresses a direct `throw`, and duplicating this walk for calls would
+ * let the two rulesets drift. `collectDirectThrows` below is now a thin
+ * `ThrowStatement`-filtering wrapper over this.
+ *
+ * Returns without calling `onNode` at all if `fn` has no body, or its body
+ * isn't a `Block` (an arrow function's concise `() => expr` body can't
+ * syntactically contain a `throw` statement or a statement-level call site
+ * the same way).
  */
-export function collectDirectThrows(fn: ts.FunctionLikeDeclarationBase): ThrownExpression[] {
+export function walkProducibleNodes(
+  fn: ts.FunctionLikeDeclarationBase,
+  onNode: (node: ts.Node, producible: boolean) => void,
+): void {
   const body = fn.body;
-  if (body === undefined || !ts.isBlock(body)) return [];
-
-  const results: ThrownExpression[] = [];
+  if (body === undefined || !ts.isBlock(body)) return;
 
   function visit(node: ts.Node, producible: boolean): void {
+    onNode(node, producible);
+
     if (ts.isThrowStatement(node)) {
-      if (node.expression && producible) results.push({ node, expression: node.expression });
       return;
     }
 
@@ -160,5 +174,22 @@ export function collectDirectThrows(fn: ts.FunctionLikeDeclarationBase): ThrownE
   }
 
   visit(body, true);
+}
+
+/**
+ * Collects every `throw` statement that is part of `fn`'s own control flow —
+ * i.e. reachable without crossing into a nested function body, not swallowed
+ * by an enclosing `try`/`catch`, and not trivially unreachable (see module
+ * doc). Returns `[]` if `fn` has no body, or its body isn't a `Block` (an
+ * arrow function's concise `() => expr` body can't syntactically contain a
+ * `throw` statement).
+ */
+export function collectDirectThrows(fn: ts.FunctionLikeDeclarationBase): ThrownExpression[] {
+  const results: ThrownExpression[] = [];
+  walkProducibleNodes(fn, (node, producible) => {
+    if (ts.isThrowStatement(node) && node.expression && producible) {
+      results.push({ node, expression: node.expression });
+    }
+  });
   return results;
 }

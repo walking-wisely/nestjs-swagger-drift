@@ -504,6 +504,12 @@ or doesn't; budget slack there.
   checker's literal types.
 - Throws from third-party libraries (Prisma, TypeORM) that Nest maps to 500 —
   out of scope; would need a per-library mapping table.
+- Calls inside a thrown expression's own arguments (`throw new X(this.helper())`)
+  are not traversed, since the walker does not descend into a `ThrowStatement`'s
+  expression. Deliberate and FP-safe; under-collects only.
+- A callback's throw reached *through* an otherwise-traversable call
+  (`svc.each(() => { throw … })`) is still not collected — the pre-existing
+  nested-function gap, now inherited transitively by the call graph.
 - Monorepos with multiple tsconfigs — CLI takes `--project` repeatedly; ESLint
   path needs `projectService`.
 - **TypeScript 7 is not supported, and this is not a small gap.** TS 7's root
