@@ -19,6 +19,7 @@ import type {
   AnalysisContext,
   AnalysisOptions,
   Finding,
+  HandlerInfo,
   ProducibleStatus,
   StatusSource,
 } from './types.js';
@@ -27,6 +28,7 @@ import { collectDirectThrows } from './thrown.js';
 import { resolveThrownStatus } from './resolve-status.js';
 import { getDocumentedStatuses } from './documented.js';
 import { collectCallGraphStatuses } from './call-graph.js';
+import { checkHandlerSuppression, checkSourceSuppression } from './suppress.js';
 
 /**
  * Constructs the opaque `AnalysisCache` (see `types.ts`'s doc comment on
@@ -141,6 +143,16 @@ function collectProducibleStatuses(
   }));
 }
 
+/** A finding `analyzeHandler` dropped because of a `swagger-drift-disable-next-line` directive. */
+export interface SuppressedFinding {
+  handler: HandlerInfo;
+  status: number;
+  /** File the suppressing directive lives in (may differ from the handler's own file — see `suppress.ts`). */
+  file: string;
+  /** 1-based line of the directive comment that suppressed this finding. */
+  line: number;
+}
+
 /**
  * Analyzes a single method declaration: PLAN §2.1's `analyzeHandler(method,
  * ctx)`. Returns `[]` if `methodNode` isn't an HTTP handler on a
@@ -148,13 +160,53 @@ function collectProducibleStatuses(
  * `getHandlerInfosForMethod`, so discovery rules never drift between the
  * route table and the analyzer), or if it produces no resolvable statuses at
  * all.
+ *
+ * `onSuppressed`, when given, is invoked once per finding a
+ * `swagger-drift-disable-next-line` directive silenced (post-Phase-4-review
+ * fix — cross-file suppression, in particular, was previously invisible: a
+ * directive in a shared service silently made every calling controller
+ * report clean, with no way to see it happened). Callers that want an
+ * "audit" mode showing what suppressions are hiding should instead set
+ * `ctx.options.ignoreSuppressions`, which skips the suppression checks
+ * entirely rather than merely reporting on them.
+ *
+ * `onAnalyzedFile`, when given, is invoked with the filename of every file
+ * this call actually looked at for suppression purposes — `methodNode`'s own
+ * file plus every `StatusSource`'s file (which, via cross-file suppression,
+ * can be a shared service's file rather than the handler's). A caller doing
+ * the S5/S6 "which directives suppressed nothing" scan (`cli/index.ts`) needs
+ * this to avoid a false positive of its own: without it, ignoring a
+ * controller via `--ignore` makes a shared service's throw — and the
+ * `swagger-drift-disable-next-line` above it — unreachable from every
+ * *remaining* `analyzeHandler` call, and a scan that doesn't know that would
+ * misreport the directive as unused even though it's doing exactly what it
+ * always did for the (now-ignored) caller.
  */
-export function analyzeHandler(methodNode: ts.MethodDeclaration, ctx: AnalysisContext): Finding[] {
+export function analyzeHandler(
+  methodNode: ts.MethodDeclaration,
+  ctx: AnalysisContext,
+  onSuppressed?: (suppressed: SuppressedFinding) => void,
+  onAnalyzedFile?: (fileName: string) => void,
+): Finding[] {
   const handlers = getHandlerInfosForMethod(methodNode, { checker: ctx.checker });
   if (handlers.length === 0) return [];
 
+  // Marked as analyzed here, before either early return below, not only once
+  // `producible` is known non-empty: a handler whose only throw was since
+  // removed (leaving a stale directive behind — the exact PLAN §5 Phase 4
+  // "one left behind after the throw it targeted was removed" case) must
+  // still count as analyzed, or the CLI's unused-directive scan would wrongly
+  // treat its file as never reached and silently stop flagging that directive.
+  onAnalyzedFile?.(methodNode.getSourceFile().fileName);
+
   const producible = collectProducibleStatuses(methodNode, ctx);
   if (producible.length === 0) return [];
+
+  if (onAnalyzedFile !== undefined) {
+    for (const { sources } of producible) {
+      for (const source of sources) onAnalyzedFile(source.node.getSourceFile().fileName);
+    }
+  }
 
   const documented = getDocumentedStatuses(methodNode, ctx.checker, ctx.options);
   const documentedStatuses = new Set<number>();
@@ -189,6 +241,38 @@ export function analyzeHandler(methodNode: ts.MethodDeclaration, ctx: AnalysisCo
       if (documentedStatuses.has(status)) continue;
       if (documentedRangeDigits.has(String(status).charAt(0))) continue;
       if (ignoreStatuses.has(status)) continue;
+      // Inline suppression (`suppress.ts`): a directive directly above the
+      // handler itself suppresses the whole finding; a directive directly
+      // above any individual source (a direct throw, or a service-throw's
+      // origin in the callee's file — see `suppress.ts`'s module doc for why
+      // that's in scope) does too. Checked last, after the cheap Set lookups
+      // above, since it's the only check requiring a source-text scan.
+      // `ignoreSuppressions` (an explicit audit mode) skips both checks
+      // entirely so every real finding surfaces, suppressed or not.
+      if (ctx.options.ignoreSuppressions !== true) {
+        const handlerSuppression = checkHandlerSuppression(handler.node, status);
+        if (handlerSuppression.suppressed) {
+          onSuppressed?.({
+            handler,
+            status,
+            file: handler.node.getSourceFile().fileName,
+            line: handlerSuppression.directiveLine ?? 0,
+          });
+          continue;
+        }
+        const suppressingSource = sources
+          .map((s) => ({ s, check: checkSourceSuppression(s.node, status) }))
+          .find(({ check }) => check.suppressed);
+        if (suppressingSource !== undefined) {
+          onSuppressed?.({
+            handler,
+            status,
+            file: suppressingSource.s.node.getSourceFile().fileName,
+            line: suppressingSource.check.directiveLine ?? 0,
+          });
+          continue;
+        }
+      }
       findings.push({ rule: 'undocumented-status', status, handler, sources, node: methodNode });
     }
   }

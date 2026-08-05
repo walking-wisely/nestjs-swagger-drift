@@ -48,7 +48,7 @@ describe('a genuinely unresolved @nestjs/common import (no stub, nothing install
     expect(warnings.some((w) => w.kind === 'rejected-controller-like')).toBe(false);
   });
 
-  it('the built CLI exits 0 (not the could-not-analyse code) when routes were still found', () => {
+  it('the built CLI exits 0 (not the could-not-analyse code) when routes were still found', async () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
@@ -58,7 +58,7 @@ describe('a genuinely unresolved @nestjs/common import (no stub, nothing install
       // findings mode would print nothing distinctive to assert against —
       // `--routes` keeps this test's original intent (routes were still
       // discovered despite the unresolved module) exercisable.
-      const code = main([
+      const code = await main([
         '--project',
         join(__dirname, '../fixtures/unresolved-module/tsconfig.json'),
         '--routes',
@@ -71,11 +71,11 @@ describe('a genuinely unresolved @nestjs/common import (no stub, nothing install
     }
   });
 
-  it('the built CLI exits EXIT_COULD_NOT_ANALYSE when the module is unresolved AND zero routes were found', () => {
+  it('the built CLI exits EXIT_COULD_NOT_ANALYSE when the module is unresolved AND zero routes were found', async () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
-      const code = main([
+      const code = await main([
         '--project',
         join(__dirname, '../fixtures/unresolved-module-empty/tsconfig.json'),
       ]);

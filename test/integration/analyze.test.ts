@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import * as ts from 'typescript';
 import { createProgramFromTsConfig } from '../../src/cli/program.js';
 import { discoverHandlerMethodNodes } from '../../src/cli/discover.js';
-import { main } from '../../src/cli/index.js';
+import { EXIT_FOUND_DRIFT, main } from '../../src/cli/index.js';
 import {
   analyzeHandler,
   createAnalysisContext,
@@ -142,17 +142,97 @@ describe('analyzeHandler over the status-diff fixture', () => {
     expect(findings.some((f) => f.handler.className === 'UndocumentedController')).toBe(true);
   });
 
+  it('a suppression comment suppresses only the status it names, not its sibling', () => {
+    // Non-vacuous per this repo's testing norm (PLAN §7): the 409 sibling in
+    // the same handler, produced by the exact same mechanism with no
+    // comment, proves this isn't "nothing was detected here at all."
+    const findings = analyzeFixture(FIXTURE_DIR);
+    const suppressed = findings.filter((f) => f.handler.className === 'SuppressedController');
+    expect(suppressed).toHaveLength(1);
+    expect(suppressed[0]).toMatchObject({ status: 409 });
+    expect(suppressed.some((f) => f.rule === 'undocumented-status' && f.status === 404)).toBe(
+      false,
+    );
+  });
+
+  it('a suppression directive in a called service suppresses the finding for every caller (cross-file, Phase 4 review finding S6)', () => {
+    // Non-vacuous the same way as the single-file suppression test above:
+    // the sibling 409 (undirected, no comment, reached through the exact
+    // same call-graph mechanism) must still be reported.
+    const findings = analyzeFixture(FIXTURE_DIR);
+    const crossFile = findings.filter(
+      (f) => f.handler.className === 'CrossFileSuppressedController',
+    );
+    expect(crossFile).toHaveLength(1);
+    expect(crossFile[0]).toMatchObject({ status: 409 });
+    expect(
+      crossFile.some((f) => f.rule === 'undocumented-status' && f.status === 404),
+    ).toBe(false);
+  });
+
+  it('--audit ignores suppression directives, surfacing the finding they would otherwise hide', () => {
+    const findings = analyzeFixture(FIXTURE_DIR, { ...defaultOptions(), ignoreSuppressions: true });
+    const suppressedController = findings.filter((f) => f.handler.className === 'SuppressedController');
+    expect(suppressedController.some((f) => f.rule === 'undocumented-status' && f.status === 404)).toBe(
+      true,
+    );
+    const crossFile = findings.filter((f) => f.handler.className === 'CrossFileSuppressedController');
+    expect(crossFile.some((f) => f.rule === 'undocumented-status' && f.status === 404)).toBe(true);
+  });
+
+  it('analyzeHandler reports suppressed findings via onSuppressed, including which file the directive lives in', () => {
+    const outcome = createProgramFromTsConfig(join(FIXTURE_DIR, 'tsconfig.json'));
+    if (!outcome.ok) throw new Error(`failed to build program for ${FIXTURE_DIR}`);
+    const ctx = createAnalysisContext(outcome.result.program, defaultOptions());
+    const nodes = discoverHandlerMethodNodes(outcome.result.program);
+    const suppressed: Array<{ handler: { className: string }; status: number; file: string; line: number }> = [];
+    for (const node of nodes) {
+      analyzeHandler(node, ctx, (s) => suppressed.push(s));
+    }
+    const crossFileSuppression = suppressed.find(
+      (s) => s.handler.className === 'CrossFileSuppressedController',
+    );
+    expect(crossFileSuppression).toBeDefined();
+    expect(crossFileSuppression?.status).toBe(404);
+    // The directive lives in the SERVICE's file, not the controller's —
+    // this is the "cross-file" part of the observability fix.
+    expect(crossFileSuppression?.file).toContain('cross-file-suppressed.service.ts');
+    expect(crossFileSuppression?.line).toBeGreaterThan(0);
+  });
+
+  it('analyzeHandler reports every file it looked at via onAnalyzedFile, including a cross-file StatusSource', () => {
+    // Backs the CLI's `--ignore`-scoped unused-directive scan (`cli/index.ts`)
+    // — a directive in a file this callback never names must not be
+    // flagged as unused, because this run never actually analyzed it.
+    const outcome = createProgramFromTsConfig(join(FIXTURE_DIR, 'tsconfig.json'));
+    if (!outcome.ok) throw new Error(`failed to build program for ${FIXTURE_DIR}`);
+    const ctx = createAnalysisContext(outcome.result.program, defaultOptions());
+    const nodes = discoverHandlerMethodNodes(outcome.result.program);
+    const analyzedFiles = new Set<string>();
+    for (const node of nodes) {
+      analyzeHandler(node, ctx, undefined, (fileName) => analyzedFiles.add(fileName));
+    }
+    expect([...analyzedFiles].some((f) => f.endsWith('cross-file-suppressed.controller.ts'))).toBe(
+      true,
+    );
+    // The service's file too — not just the calling controller's — since a
+    // suppression directive can live there (cross-file suppression).
+    expect([...analyzedFiles].some((f) => f.endsWith('cross-file-suppressed.service.ts'))).toBe(
+      true,
+    );
+  });
+
   it('ignoreStatuses suppresses a specific status code', () => {
     const findings = analyzeFixture(FIXTURE_DIR, { ...defaultOptions(), ignoreStatuses: [404] });
     expect(findings.some((f) => f.rule === 'undocumented-status' && f.status === 404)).toBe(false);
   });
 
-  it('the built CLI exits 1 and prints the undocumented finding', () => {
+  it('the built CLI exits EXIT_FOUND_DRIFT and prints the undocumented finding', async () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
-      const code = main(['--project', join(FIXTURE_DIR, 'tsconfig.json')]);
-      expect(code).toBe(1);
+      const code = await main(['--project', join(FIXTURE_DIR, 'tsconfig.json')]);
+      expect(code).toBe(EXIT_FOUND_DRIFT);
       expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('404'));
     } finally {
       logSpy.mockRestore();
@@ -160,11 +240,11 @@ describe('analyzeHandler over the status-diff fixture', () => {
     }
   });
 
-  it('the built CLI --routes flag still prints the plain route table and exits 0', () => {
+  it('the built CLI --routes flag still prints the plain route table and exits 0', async () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
-      const code = main(['--project', join(FIXTURE_DIR, 'tsconfig.json'), '--routes']);
+      const code = await main(['--project', join(FIXTURE_DIR, 'tsconfig.json'), '--routes']);
       expect(code).toBe(0);
       expect(logSpy).toHaveBeenCalledWith(
         expect.stringContaining('→ UndocumentedController.findOne'),
@@ -184,11 +264,11 @@ describe('analyzeHandler over the no-false-positives corpus', () => {
     expect(findings).toEqual([]);
   });
 
-  it('the built CLI exits 0 clean', () => {
+  it('the built CLI exits 0 clean', async () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
-      const code = main(['--project', join(FIXTURE_DIR, 'tsconfig.json')]);
+      const code = await main(['--project', join(FIXTURE_DIR, 'tsconfig.json')]);
       expect(code).toBe(0);
     } finally {
       logSpy.mockRestore();
