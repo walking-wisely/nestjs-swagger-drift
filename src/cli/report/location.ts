@@ -11,8 +11,8 @@
  * only.
  *
  * `baseDir` is the tsconfig's own directory by default as of Phase 4 (see
- * `index.ts`'s `resolveBaseDir` and its doc comment for why `cwd` was the
- * wrong default), overridable via `--base-dir`.
+ * `index.ts`'s `main()`, where it's resolved inline from `options.baseDir`,
+ * for why `cwd` was the wrong default), overridable via `--base-dir`.
  */
 
 import * as ts from 'typescript';
