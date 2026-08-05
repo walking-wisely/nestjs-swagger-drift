@@ -203,6 +203,15 @@ export interface AnalysisOptions {
   treatDefaultAsWildcard: boolean;
   /** PLAN §6: escape hatch for exception filters that remap status codes. */
   ignoreStatuses: readonly number[];
+  /**
+   * Audit mode (PLAN §5 Phase 4 review, finding S6): when `true`,
+   * `swagger-drift-disable-next-line` directives are ignored entirely, so
+   * every finding a suppression would otherwise hide surfaces normally.
+   * Optional and defaults to `false` (suppressions apply) so existing
+   * `AnalysisOptions` literals — tests, the CLI, a future ESLint adapter —
+   * don't need to know this exists unless they want it.
+   */
+  ignoreSuppressions?: boolean;
 }
 
 declare const analysisCacheBrand: unique symbol;

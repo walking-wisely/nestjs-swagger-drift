@@ -49,4 +49,13 @@ export { resolveStatusExpression } from './status-value.js';
 
 export { getDocumentedStatuses } from './documented.js';
 
+export {
+  isStatusSuppressed,
+  checkHandlerSuppression,
+  checkSourceSuppression,
+  listDirectiveCommentLines,
+} from './suppress.js';
+export type { SuppressionCheck } from './suppress.js';
+
+export type { SuppressedFinding } from './analyze.js';
 export { analyzeHandler, createAnalysisCache, createAnalysisContext } from './analyze.js';

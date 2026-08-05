@@ -2,6 +2,15 @@
   {
     "rule": "undocumented-status",
     "status": 409,
+    "httpMethod": "GET",
+    "path": "/cross-file-suppressed/:id",
+    "className": "CrossFileSuppressedController",
+    "methodName": "findOne",
+    "sources": [{ "kind": "service-throw", "exception": "ConflictException" }]
+  },
+  {
+    "rule": "undocumented-status",
+    "status": 409,
     "httpMethod": "POST",
     "path": "/custom-exception",
     "className": "CustomExceptionController",
@@ -52,6 +61,15 @@
     "className": "ServiceThrowController",
     "methodName": "findOne",
     "sources": [{ "kind": "service-throw", "exception": "NotFoundException" }]
+  },
+  {
+    "rule": "undocumented-status",
+    "status": 409,
+    "httpMethod": "GET",
+    "path": "/suppressed/:id",
+    "className": "SuppressedController",
+    "methodName": "findOne",
+    "sources": [{ "kind": "throw", "exception": "ConflictException" }]
   },
   {
     "rule": "undocumented-status",
