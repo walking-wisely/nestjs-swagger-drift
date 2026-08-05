@@ -490,12 +490,26 @@ export async function main(argv: string[]): Promise<number> {
   // removed).
   let suppressedCount = 0;
   const usedDirectiveLines = new Set<string>();
+  // Every file an `analyzeHandler` call for a non-ignored handler actually
+  // looked at for suppression purposes (own file + every `StatusSource`
+  // file — see `analyzeHandler`'s `onAnalyzedFile` doc comment). A file
+  // reached only through an `--ignore`d handler's call graph (a shared
+  // service whose only caller was excluded) never lands here, so its
+  // directives are correctly treated as out of scope below rather than
+  // flagged as unused — same "silence over noise" contract `--ignore`
+  // gives everything else.
+  const analyzedFiles = new Set<string>();
   const findings = sortFindings(
     methodNodes.flatMap((node) =>
-      analyzeHandler(node, ctx, (suppressed) => {
-        suppressedCount++;
-        usedDirectiveLines.add(`${suppressed.file}:${suppressed.line}`);
-      }),
+      analyzeHandler(
+        node,
+        ctx,
+        (suppressed) => {
+          suppressedCount++;
+          usedDirectiveLines.add(`${suppressed.file}:${suppressed.line}`);
+        },
+        (fileName) => analyzedFiles.add(fileName),
+      ),
     ),
   );
   const failingFindings = findings.filter((f) => options.failOn.has(f.rule));
@@ -504,9 +518,19 @@ export async function main(argv: string[]): Promise<number> {
     for (const sourceFile of program.getSourceFiles()) {
       if (sourceFile.isDeclarationFile) continue;
       if (sourceFile.fileName.includes('/node_modules/')) continue;
+      const relativePath = relative(baseDir, sourceFile.fileName).split('\\').join('/');
+      // Same exclusion the finding pass already applies to `methodNodes`
+      // above — a file the user excluded via `--ignore` must not surface
+      // "unused directive" warnings either. `analyzedFiles` additionally
+      // covers the file reached only via the call graph of an ignored
+      // handler (see the comment on its declaration above). Without both,
+      // `--ignore`ing a file (e.g. generated or migrating code) that still
+      // carries suppression comments — directly or transitively — produces
+      // permanent, unsilenceable CI log noise.
+      if (isIgnored(relativePath, options.ignore)) continue;
+      if (!analyzedFiles.has(sourceFile.fileName)) continue;
       for (const line of listDirectiveCommentLines(sourceFile)) {
         if (usedDirectiveLines.has(`${sourceFile.fileName}:${line}`)) continue;
-        const relativePath = relative(baseDir, sourceFile.fileName).split('\\').join('/');
         console.error(
           `nestjs-swagger-drift: warning: suppression directive at ${relativePath}:${line} ` +
             'did not suppress anything.',

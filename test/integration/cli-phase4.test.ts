@@ -18,6 +18,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const STATUS_DIFF = join(__dirname, '../fixtures/status-diff');
 const NO_FALSE_POSITIVES = join(__dirname, '../fixtures/no-false-positives');
 const UNRESOLVED_MODULE = join(__dirname, '../fixtures/unresolved-module');
+const SUPPRESS_IGNORE = join(__dirname, '../fixtures/suppress-ignore');
 
 function captureConsole() {
   const logs: string[] = [];
@@ -560,6 +561,62 @@ describe('suppression observability (Phase 4 review, finding S6)', () => {
       // in the fixture (analyze.test.ts asserts on the same fixture), so
       // this is >= 1, not just "the field exists and is 0."
       expect(parsed.summary.suppressed).toBeGreaterThan(0);
+    } finally {
+      console_.restore();
+    }
+  });
+});
+
+describe('unused-directive warning respects --ignore', () => {
+  // Bug report: the "did this directive suppress anything?" scan
+  // (`cli/index.ts`, ~588) walked every source file in the program
+  // unconditionally, never applying `options.ignore` — so `--ignore`ing a
+  // file that still carries a real, working suppression directive produced
+  // a false-positive "did not suppress anything" warning. The
+  // `suppress-ignore` fixture has three cases: a directly-`--ignore`d file
+  // with a real directive (`ignored-direct.controller.ts`), a shared
+  // service's real directive reached only via an `--ignore`d controller's
+  // call graph (`shared.service.ts`, via `call-graph-caller.controller.ts`),
+  // and a genuinely unused directive in a file that's never ignored
+  // (`typo.controller.ts`, whose directive names the wrong status) — so the
+  // fix's scope is provably narrow, not a blanket suppression of the
+  // warning.
+  it('warns only about the genuine typo when the other two files are --ignore-d', async () => {
+    const console_ = captureConsole();
+    try {
+      await main([
+        '--project',
+        join(SUPPRESS_IGNORE, 'tsconfig.json'),
+        '--ignore',
+        '**/ignored-direct.controller.ts',
+        '--ignore',
+        '**/call-graph-caller.controller.ts',
+        '--reporter',
+        'json',
+      ]);
+      const unusedWarnings = console_.errors.filter((e) => e.includes('did not suppress anything'));
+      expect(unusedWarnings).toEqual([
+        expect.stringContaining('typo.controller.ts:12 did not suppress anything.'),
+      ]);
+    } finally {
+      console_.restore();
+    }
+  });
+
+  it('warns about the same typo, and nothing else, when nothing is --ignore-d', async () => {
+    // Baseline for the test above: without `--ignore`, every directive in
+    // this fixture is either genuinely used (suppresses something) or
+    // genuinely unused (the typo) — confirming the warning already
+    // discriminates correctly before `--ignore` enters the picture, so the
+    // `--ignore` test isn't vacuously passing because the warning never
+    // fires on this fixture either way.
+    const console_ = captureConsole();
+    try {
+      await main(['--project', join(SUPPRESS_IGNORE, 'tsconfig.json'), '--reporter', 'json']);
+      const unusedWarnings = console_.errors.filter((e) => e.includes('did not suppress anything'));
+      expect(unusedWarnings).toEqual([
+        expect.stringContaining('typo.controller.ts:12 did not suppress anything.'),
+      ]);
     } finally {
       console_.restore();
     }

@@ -200,6 +200,28 @@ describe('analyzeHandler over the status-diff fixture', () => {
     expect(crossFileSuppression?.line).toBeGreaterThan(0);
   });
 
+  it('analyzeHandler reports every file it looked at via onAnalyzedFile, including a cross-file StatusSource', () => {
+    // Backs the CLI's `--ignore`-scoped unused-directive scan (`cli/index.ts`)
+    // — a directive in a file this callback never names must not be
+    // flagged as unused, because this run never actually analyzed it.
+    const outcome = createProgramFromTsConfig(join(FIXTURE_DIR, 'tsconfig.json'));
+    if (!outcome.ok) throw new Error(`failed to build program for ${FIXTURE_DIR}`);
+    const ctx = createAnalysisContext(outcome.result.program, defaultOptions());
+    const nodes = discoverHandlerMethodNodes(outcome.result.program);
+    const analyzedFiles = new Set<string>();
+    for (const node of nodes) {
+      analyzeHandler(node, ctx, undefined, (fileName) => analyzedFiles.add(fileName));
+    }
+    expect([...analyzedFiles].some((f) => f.endsWith('cross-file-suppressed.controller.ts'))).toBe(
+      true,
+    );
+    // The service's file too — not just the calling controller's — since a
+    // suppression directive can live there (cross-file suppression).
+    expect([...analyzedFiles].some((f) => f.endsWith('cross-file-suppressed.service.ts'))).toBe(
+      true,
+    );
+  });
+
   it('ignoreStatuses suppresses a specific status code', () => {
     const findings = analyzeFixture(FIXTURE_DIR, { ...defaultOptions(), ignoreStatuses: [404] });
     expect(findings.some((f) => f.rule === 'undocumented-status' && f.status === 404)).toBe(false);

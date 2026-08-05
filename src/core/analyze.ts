@@ -169,17 +169,44 @@ export interface SuppressedFinding {
  * "audit" mode showing what suppressions are hiding should instead set
  * `ctx.options.ignoreSuppressions`, which skips the suppression checks
  * entirely rather than merely reporting on them.
+ *
+ * `onAnalyzedFile`, when given, is invoked with the filename of every file
+ * this call actually looked at for suppression purposes — `methodNode`'s own
+ * file plus every `StatusSource`'s file (which, via cross-file suppression,
+ * can be a shared service's file rather than the handler's). A caller doing
+ * the S5/S6 "which directives suppressed nothing" scan (`cli/index.ts`) needs
+ * this to avoid a false positive of its own: without it, ignoring a
+ * controller via `--ignore` makes a shared service's throw — and the
+ * `swagger-drift-disable-next-line` above it — unreachable from every
+ * *remaining* `analyzeHandler` call, and a scan that doesn't know that would
+ * misreport the directive as unused even though it's doing exactly what it
+ * always did for the (now-ignored) caller.
  */
 export function analyzeHandler(
   methodNode: ts.MethodDeclaration,
   ctx: AnalysisContext,
   onSuppressed?: (suppressed: SuppressedFinding) => void,
+  onAnalyzedFile?: (fileName: string) => void,
 ): Finding[] {
   const handlers = getHandlerInfosForMethod(methodNode, { checker: ctx.checker });
   if (handlers.length === 0) return [];
 
+  // Marked as analyzed here, before either early return below, not only once
+  // `producible` is known non-empty: a handler whose only throw was since
+  // removed (leaving a stale directive behind — the exact PLAN §5 Phase 4
+  // "one left behind after the throw it targeted was removed" case) must
+  // still count as analyzed, or the CLI's unused-directive scan would wrongly
+  // treat its file as never reached and silently stop flagging that directive.
+  onAnalyzedFile?.(methodNode.getSourceFile().fileName);
+
   const producible = collectProducibleStatuses(methodNode, ctx);
   if (producible.length === 0) return [];
+
+  if (onAnalyzedFile !== undefined) {
+    for (const { sources } of producible) {
+      for (const source of sources) onAnalyzedFile(source.node.getSourceFile().fileName);
+    }
+  }
 
   const documented = getDocumentedStatuses(methodNode, ctx.checker, ctx.options);
   const documentedStatuses = new Set<number>();
