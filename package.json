@@ -60,7 +60,7 @@
     "prettier": "^3.9.6",
     "reflect-metadata": "^0.2.2",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.65.0",
     "vitest": "^4.1.10"
   }
