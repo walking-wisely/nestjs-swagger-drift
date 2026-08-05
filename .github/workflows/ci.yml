@@ -19,14 +19,18 @@ jobs:
     # behavior does — one version is enough; `test` below covers the matrix.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
 
       - run: npm ci
+      # Fails the build if any package in the resolved tree isn't signed
+      # by the registry, or if the tarball hash doesn't match — catches
+      # tampering between publish and install, not just known CVEs.
+      - run: npm audit signatures
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build
@@ -35,14 +39,22 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20, 22, 24]
+        # Aliases instead of hardcoded numbers so the matrix tracks Node's
+        # LTS schedule automatically — no reminder needed to drop an EOL
+        # version or pick up a new LTS.
+        node-version: [lts/-1, lts/*, current]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
 
       - run: npm ci
+      # Run per Node version, not just once: the resolved dependency tree
+      # (optionalDependencies, platform-specific packages) can differ across
+      # Node/ABI versions, so a vulnerability can be present under one
+      # matrix leg and absent under another.
+      - run: npm audit
       - run: npm test

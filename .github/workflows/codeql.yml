@@ -1,0 +1,35 @@
+name: CodeQL
+
+# NOTE: this repo is currently private. Uploading SARIF results to the
+# Security tab (the `github/codeql-action/analyze` step below) requires
+# GitHub Advanced Security to be enabled for the repo (Settings > Code
+# security), which is free once the repo goes public but is a paid add-on
+# while private. Until then this workflow will run but the analyze step may
+# be rejected by GitHub — enable GHAS or flip the repo to public to unblock
+# it, no workflow change needed either way.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 3 * * 1" # weekly, catches new query packs even with no code changes
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+        with:
+          languages: javascript-typescript
+
+      - uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6

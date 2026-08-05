@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # Keep devDependencies (and the typescript peerDependency range) current.
+  # This package ships zero runtime `dependencies`, so this only ever
+  # touches the dev/build toolchain — nothing that reaches consumers.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      dev-dependencies:
+        patterns:
+          - "*"
+
+  # The CI workflows are a dependency chain too (third-party Actions) —
+  # don't let those go stale/unpatched either.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
