@@ -19,6 +19,7 @@ import type {
   AnalysisContext,
   AnalysisOptions,
   Finding,
+  HandlerInfo,
   ProducibleStatus,
   StatusSource,
 } from './types.js';
@@ -27,6 +28,7 @@ import { collectDirectThrows } from './thrown.js';
 import { resolveThrownStatus } from './resolve-status.js';
 import { getDocumentedStatuses } from './documented.js';
 import { collectCallGraphStatuses } from './call-graph.js';
+import { checkHandlerSuppression, checkSourceSuppression } from './suppress.js';
 
 /**
  * Constructs the opaque `AnalysisCache` (see `types.ts`'s doc comment on
@@ -141,6 +143,16 @@ function collectProducibleStatuses(
   }));
 }
 
+/** A finding `analyzeHandler` dropped because of a `swagger-drift-disable-next-line` directive. */
+export interface SuppressedFinding {
+  handler: HandlerInfo;
+  status: number;
+  /** File the suppressing directive lives in (may differ from the handler's own file — see `suppress.ts`). */
+  file: string;
+  /** 1-based line of the directive comment that suppressed this finding. */
+  line: number;
+}
+
 /**
  * Analyzes a single method declaration: PLAN §2.1's `analyzeHandler(method,
  * ctx)`. Returns `[]` if `methodNode` isn't an HTTP handler on a
@@ -148,8 +160,21 @@ function collectProducibleStatuses(
  * `getHandlerInfosForMethod`, so discovery rules never drift between the
  * route table and the analyzer), or if it produces no resolvable statuses at
  * all.
+ *
+ * `onSuppressed`, when given, is invoked once per finding a
+ * `swagger-drift-disable-next-line` directive silenced (post-Phase-4-review
+ * fix — cross-file suppression, in particular, was previously invisible: a
+ * directive in a shared service silently made every calling controller
+ * report clean, with no way to see it happened). Callers that want an
+ * "audit" mode showing what suppressions are hiding should instead set
+ * `ctx.options.ignoreSuppressions`, which skips the suppression checks
+ * entirely rather than merely reporting on them.
  */
-export function analyzeHandler(methodNode: ts.MethodDeclaration, ctx: AnalysisContext): Finding[] {
+export function analyzeHandler(
+  methodNode: ts.MethodDeclaration,
+  ctx: AnalysisContext,
+  onSuppressed?: (suppressed: SuppressedFinding) => void,
+): Finding[] {
   const handlers = getHandlerInfosForMethod(methodNode, { checker: ctx.checker });
   if (handlers.length === 0) return [];
 
@@ -189,6 +214,38 @@ export function analyzeHandler(methodNode: ts.MethodDeclaration, ctx: AnalysisCo
       if (documentedStatuses.has(status)) continue;
       if (documentedRangeDigits.has(String(status).charAt(0))) continue;
       if (ignoreStatuses.has(status)) continue;
+      // Inline suppression (`suppress.ts`): a directive directly above the
+      // handler itself suppresses the whole finding; a directive directly
+      // above any individual source (a direct throw, or a service-throw's
+      // origin in the callee's file — see `suppress.ts`'s module doc for why
+      // that's in scope) does too. Checked last, after the cheap Set lookups
+      // above, since it's the only check requiring a source-text scan.
+      // `ignoreSuppressions` (an explicit audit mode) skips both checks
+      // entirely so every real finding surfaces, suppressed or not.
+      if (ctx.options.ignoreSuppressions !== true) {
+        const handlerSuppression = checkHandlerSuppression(handler.node, status);
+        if (handlerSuppression.suppressed) {
+          onSuppressed?.({
+            handler,
+            status,
+            file: handler.node.getSourceFile().fileName,
+            line: handlerSuppression.directiveLine ?? 0,
+          });
+          continue;
+        }
+        const suppressingSource = sources
+          .map((s) => ({ s, check: checkSourceSuppression(s.node, status) }))
+          .find(({ check }) => check.suppressed);
+        if (suppressingSource !== undefined) {
+          onSuppressed?.({
+            handler,
+            status,
+            file: suppressingSource.s.node.getSourceFile().fileName,
+            line: suppressingSource.check.directiveLine ?? 0,
+          });
+          continue;
+        }
+      }
       findings.push({ rule: 'undocumented-status', status, handler, sources, node: methodNode });
     }
   }
