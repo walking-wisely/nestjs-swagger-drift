@@ -11,6 +11,7 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   target: 'node20',
-  // Phase 4 adds the full CLI flag surface; the `cli` entry + `bin` field
-  // itself is wired up here already (Phase 1).
+  // The `cli` entry + `bin` field was wired up in Phase 1; Phase 4 filled in
+  // the full flag surface (`args.ts`, `config.ts`, `report/*`) behind it
+  // without needing any build-config changes here.
 });

@@ -14,6 +14,17 @@ export interface ProgramResult {
   program: ts.Program;
   /** Non-fatal config diagnostics (e.g. unknown compilerOptions keys). */
   configDiagnostics: ts.Diagnostic[];
+  /**
+   * Absolute path to the tsconfig actually used to build `program` (resolved
+   * from whatever file-or-directory `--project` was given). Phase 4 uses
+   * this as the default base directory for relativizing finding locations
+   * (`cli/index.ts`'s `baseDir` — see the fix for the bug where finding
+   * paths degraded to `../../../..` when analysing a project outside `cwd`):
+   * the tsconfig's own directory is a far more stable anchor than `cwd`,
+   * since `cwd` depends on where the CLI happened to be invoked from, not
+   * where the project being analysed actually lives.
+   */
+  configPath: string;
 }
 
 export type ProgramError =
@@ -84,5 +95,5 @@ export function createProgramFromTsConfig(
         },
   );
 
-  return { ok: true, result: { program, configDiagnostics: parsed.errors } };
+  return { ok: true, result: { program, configDiagnostics: parsed.errors, configPath } };
 }
