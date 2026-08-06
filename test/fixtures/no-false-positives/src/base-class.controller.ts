@@ -7,7 +7,7 @@
 // own. `documented.ts`'s `collectClassChainStatuses` must walk the `extends`
 // chain to see it.
 import { Controller, Get, NotFoundException } from '@nestjs/common';
-import { ApiNotFoundResponse } from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiOkResponse } from '@nestjs/swagger';
 
 // Deliberately not itself a `@Controller` — a shared abstract base carrying
 // only the documentation, the common real-world shape.
@@ -17,6 +17,7 @@ export class BaseController {}
 @Controller('base-class')
 export class DerivedController extends BaseController {
   @Get(':id')
+  @ApiOkResponse({ description: 'a widget' })
   findOne(id: string): string {
     if (!id) throw new NotFoundException('resource not found');
     return 'widget';

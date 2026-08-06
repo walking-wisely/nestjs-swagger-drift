@@ -89,6 +89,14 @@ function printUsage(): void {
       '      --enable-rule <name>    Enable an opt-in rule (repeatable).',
       '      --disable-rule <name>   Disable an opt-in rule (repeatable).',
       '      --treat-default-as-wildcard / --no-treat-default-as-wildcard',
+      '      --check-success-response / --no-check-success-response',
+      '                               Check for a documented 2xx response (default: on).',
+      '      --check-validation-pipe / --no-check-validation-pipe',
+      '                               Check for an implicit 400 from a class-validator DTO',
+      '                               parameter (default: off).',
+      '      --check-guards / --no-check-guards',
+      '                               Check @UseGuards(...) classes for implicit 401/403',
+      '                               (default: off).',
       '      --base-dir <path>       Base directory for reported file paths',
       '                               (default: the tsconfig\'s own directory).',
       '      --config <path>         Explicit swagger-drift.config.{json,js,mjs,ts} path.',
@@ -216,6 +224,9 @@ interface ResolvedOptions {
   ignoreStatuses: number[];
   rules: Record<OptionalRuleName, boolean>;
   treatDefaultAsWildcard: boolean;
+  checkSuccessResponse: boolean;
+  checkValidationPipe: boolean;
+  checkGuards: boolean;
   baseDir: string | undefined;
   audit: boolean;
 }
@@ -286,6 +297,12 @@ export function mergeOptions(flags: CliFlags, config: CliConfigFile, configPath:
         flags.ignoreStatuses.length > 0 ? flags.ignoreStatuses : (config.ignoreStatuses ?? []),
       rules,
       treatDefaultAsWildcard: flags.treatDefaultAsWildcard ?? config.treatDefaultAsWildcard ?? false,
+      // §4.1c / §9: success-checking is the one implicit-codes check that's
+      // on by default; the other two stay off unless explicitly requested,
+      // matching `AnalysisOptions`'s own field-level defaults in `types.ts`.
+      checkSuccessResponse: flags.checkSuccessResponse ?? config.checkSuccessResponse ?? true,
+      checkValidationPipe: flags.checkValidationPipe ?? config.checkValidationPipe ?? false,
+      checkGuards: flags.checkGuards ?? config.checkGuards ?? false,
       baseDir: flags.baseDir ?? resolveFromConfig(config.baseDir),
       audit: flags.audit,
     },
@@ -461,6 +478,9 @@ export async function main(argv: string[]): Promise<number> {
     rules: options.rules,
     treatDefaultAsWildcard: options.treatDefaultAsWildcard,
     ignoreStatuses: options.ignoreStatuses,
+    checkSuccessResponse: options.checkSuccessResponse,
+    checkValidationPipe: options.checkValidationPipe,
+    checkGuards: options.checkGuards,
     // `--audit` (post-Phase-4-review fix, finding S6): ignore inline
     // suppression directives entirely, so every finding they'd otherwise
     // hide — including a directive in a shared service silently affecting

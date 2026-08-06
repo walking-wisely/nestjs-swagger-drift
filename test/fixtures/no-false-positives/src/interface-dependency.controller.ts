@@ -5,6 +5,7 @@
 // must resolve to nothing rather than guessing at (or unioning) every class
 // that happens to implement the interface.
 import { Controller, Get, NotFoundException } from '@nestjs/common';
+import { ApiOkResponse } from '@nestjs/swagger';
 
 export interface WidgetsRepository {
   findOne(id: string): string;
@@ -25,6 +26,7 @@ export class InterfaceDependencyController {
   constructor(private readonly widgets: WidgetsRepository) {}
 
   @Get(':id')
+  @ApiOkResponse({ description: 'widget' })
   findOne(id: string): string {
     return this.widgets.findOne(id);
   }

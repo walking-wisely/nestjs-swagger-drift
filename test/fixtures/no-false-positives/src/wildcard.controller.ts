@@ -12,11 +12,12 @@
 //   (doesn't itself cause a false positive or crash resolution) without
 //   depending on `treatDefaultAsWildcard: true`.
 import { Controller, Get, Post, NotFoundException, ConflictException } from '@nestjs/common';
-import { ApiResponse, ApiDefaultResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiDefaultResponse, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 
 @Controller('wildcard')
 export class WildcardController {
   @Get(':id')
+  @ApiOkResponse({ description: 'widget' })
   @ApiResponse({ status: '4XX', description: 'any client error' })
   findOne(): string {
     throw new NotFoundException('not found');
@@ -26,6 +27,7 @@ export class WildcardController {
   // explicitly — so this must produce no finding regardless of
   // `treatDefaultAsWildcard`.
   @Post()
+  @ApiCreatedResponse({ description: 'created' })
   @ApiDefaultResponse({ description: 'fallback for anything else' })
   @ApiResponse({ status: 409, description: 'already exists' })
   create(): string {

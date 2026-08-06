@@ -82,13 +82,32 @@ import type { AnalysisContext, AnalysisCache, ResolvedStatus, StatusSource } fro
 import { collectDirectThrows, walkProducibleNodes } from './thrown.js';
 import { resolveThrownStatus } from './resolve-status.js';
 
-/** A function/method declaration with a real, walkable `Block` body. */
-type FunctionDeclWithBody = ts.FunctionLikeDeclarationBase & { body: ts.Block };
+/**
+ * A function/method declaration with a real, walkable `Block` body. Exported
+ * (Phase 5) so `guards.ts` can share the exact predicate/type this module
+ * uses to decide "is this a traversable declaration at all" when resolving a
+ * `@UseGuards(...)` class's `canActivate` method, rather than redefining it.
+ */
+export type FunctionDeclWithBody = ts.FunctionLikeDeclarationBase & { body: ts.Block };
 
 /** One resolved status reached through the call graph, ready to fold into `analyze.ts`'s producible-status map. */
 export interface CallGraphFinding {
   resolved: Extract<ResolvedStatus, { kind: 'resolved' }>;
   source: Extract<StatusSource, { kind: 'service-throw' }>;
+}
+
+/**
+ * One throw reached through the call graph whose status `resolve-status.ts`
+ * could not resolve — surfaced (Phase 5 review) for `analyze.ts`'s opt-in
+ * `unresolvable-status` rule, mirroring `CallGraphFinding`'s shape: `via` is
+ * the same per-hop call path `StatusSource`'s `service-throw` variant
+ * carries, so a report can show where in the call graph the unresolvable
+ * throw actually lives, not just that one exists somewhere.
+ */
+export interface CallGraphUnresolvedThrow {
+  node: ts.Node;
+  reason: string;
+  via: Array<{ name: string; node: ts.Node }>;
 }
 
 interface ResolvedCallTarget {
@@ -99,10 +118,22 @@ interface ResolvedCallTarget {
 
 interface CacheEntry {
   ownThrows: Array<{ node: ts.Node; resolved: Extract<ResolvedStatus, { kind: 'resolved' }> }>;
+  /**
+   * Own throws `resolve-status.ts` could NOT resolve (Phase 5 review, finding
+   * #6): previously dropped here entirely — the same "silently dropped"
+   * posture `analyze.ts` used to have for a handler's own direct unresolved
+   * throws before `unresolvable-status` existed. Computed alongside
+   * `ownThrows` in the same walk over `collectDirectThrows(decl)`, so keeping
+   * this costs nothing beyond storing a result the traversal already
+   * produces — there was no real memory/complexity case for dropping it (see
+   * `analyze.ts`'s module doc for the honest version of that reasoning).
+   */
+  ownUnresolvedThrows: Array<{ node: ts.Node; reason: string }>;
   calls: ResolvedCallTarget[];
 }
 
-function isFunctionLikeWithBody(decl: ts.Declaration): decl is FunctionDeclWithBody {
+/** Exported alongside `FunctionDeclWithBody` — see that type's doc comment. */
+export function isFunctionLikeWithBody(decl: ts.Declaration): decl is FunctionDeclWithBody {
   return (
     (ts.isMethodDeclaration(decl) ||
       ts.isFunctionDeclaration(decl) ||
@@ -190,9 +221,14 @@ function computeCacheEntry(decl: FunctionDeclWithBody, ctx: AnalysisContext): Ca
   computeCount++; // testing-only instrumentation, see `__getCallGraphMemoStatsForTesting`
 
   const ownThrows: CacheEntry['ownThrows'] = [];
+  const ownUnresolvedThrows: CacheEntry['ownUnresolvedThrows'] = [];
   for (const { node, expression } of collectDirectThrows(decl)) {
     const resolved = resolveThrownStatus(expression, ctx.checker);
-    if (resolved.kind === 'resolved') ownThrows.push({ node, resolved });
+    if (resolved.kind === 'resolved') {
+      ownThrows.push({ node, resolved });
+    } else {
+      ownUnresolvedThrows.push({ node, reason: resolved.reason });
+    }
   }
 
   const calls: ResolvedCallTarget[] = [];
@@ -202,7 +238,7 @@ function computeCacheEntry(decl: FunctionDeclWithBody, ctx: AnalysisContext): Ca
     calls.push({ callNode, decl: target.decl, symbol: target.symbol });
   }
 
-  return { ownThrows, calls };
+  return { ownThrows, ownUnresolvedThrows, calls };
 }
 
 const callGraphCaches = new WeakMap<AnalysisCache, Map<ts.Symbol, CacheEntry>>();
@@ -230,18 +266,19 @@ function getOrComputeCacheEntry(
 
 function expand(
   target: { decl: FunctionDeclWithBody; symbol: ts.Symbol },
-  callNode: ts.CallExpression,
+  callNode: ts.Node,
   ctx: AnalysisContext,
   remainingDepth: number,
   pathSoFar: ReadonlyArray<{ name: string; node: ts.Node }>,
   visited: Set<ts.Symbol>,
   cacheMap: Map<ts.Symbol, CacheEntry>,
   results: CallGraphFinding[],
+  unresolvedResults: CallGraphUnresolvedThrow[],
 ): void {
   if (remainingDepth <= 0) return;
   if (visited.has(target.symbol)) return; // cycle guard: mutually recursive services terminate here
 
-  const hop = { name: labelForDeclaration(target.decl), node: callNode as ts.Node };
+  const hop = { name: labelForDeclaration(target.decl), node: callNode };
   const hopPath = [...pathSoFar, hop];
 
   const entry = getOrComputeCacheEntry(cacheMap, target, ctx);
@@ -257,6 +294,9 @@ function expand(
       },
     });
   }
+  for (const { node, reason } of entry.ownUnresolvedThrows) {
+    unresolvedResults.push({ node, reason, via: hopPath });
+  }
 
   visited.add(target.symbol);
   for (const nextCall of entry.calls) {
@@ -269,9 +309,16 @@ function expand(
       visited,
       cacheMap,
       results,
+      unresolvedResults,
     );
   }
   visited.delete(target.symbol);
+}
+
+/** The combined result of a call-graph traversal: resolved statuses, plus (Phase 5 review) unresolved ones. */
+export interface CallGraphResult {
+  findings: CallGraphFinding[];
+  unresolvedThrows: CallGraphUnresolvedThrow[];
 }
 
 /**
@@ -279,15 +326,19 @@ function expand(
  * `handlerBody` (a controller handler's own body, or — recursively — any
  * function-like body reached from it), up to `ctx.options.maxDepth` hops.
  * Does NOT include `handlerBody`'s own direct throws — those are
- * `analyze.ts`'s `kind: 'throw'` sources, collected separately; this only
- * ever produces `kind: 'service-throw'` sources, one hop or more away.
+ * `analyze.ts`'s `kind: 'throw'` sources, collected separately; `findings`
+ * only ever carries `kind: 'service-throw'` sources, one hop or more away.
+ * `unresolvedThrows` is the call-graph counterpart of `analyze.ts`'s own
+ * direct-throw `unresolvedThrows` list, for the opt-in `unresolvable-status`
+ * rule (Phase 5 review, finding #6 — previously dropped here entirely).
  */
 export function collectCallGraphStatuses(
   handlerBody: ts.FunctionLikeDeclarationBase,
   ctx: AnalysisContext,
-): CallGraphFinding[] {
+): CallGraphResult {
   const results: CallGraphFinding[] = [];
-  if (ctx.options.maxDepth <= 0) return results;
+  const unresolvedResults: CallGraphUnresolvedThrow[] = [];
+  if (ctx.options.maxDepth <= 0) return { findings: results, unresolvedThrows: unresolvedResults };
 
   const cacheMap = getCallGraphCache(ctx.cache);
   const visited = new Set<ts.Symbol>();
@@ -295,10 +346,52 @@ export function collectCallGraphStatuses(
   for (const callNode of collectProducibleCallSites(handlerBody)) {
     const target = resolveCallTarget(callNode, ctx.checker, ctx.program);
     if (!target) continue;
-    expand(target, callNode, ctx, ctx.options.maxDepth, [], visited, cacheMap, results);
+    expand(
+      target,
+      callNode,
+      ctx,
+      ctx.options.maxDepth,
+      [],
+      visited,
+      cacheMap,
+      results,
+      unresolvedResults,
+    );
   }
 
-  return results;
+  return { findings: results, unresolvedThrows: unresolvedResults };
+}
+
+/**
+ * PLAN §4.1c / Phase 5: `guards.ts`'s entry point into this module's
+ * traversal machinery, reused rather than duplicated (per the task brief's
+ * explicit "reuse the SAME call-graph machinery already used for services").
+ * Where `collectCallGraphStatuses` starts ONE hop below `handlerBody` (its
+ * own throws are the caller's separate `kind: 'throw'` sources), this starts
+ * `expand` directly ON `target` — a resolved `@UseGuards(...)` class's
+ * `canActivate` method is itself the traversal root, not something reached
+ * by a `CallExpression` inside a body this function walks. `entryNode` is
+ * used only as the first hop's location marker (`StatusSource`'s `via`/
+ * `node` never actually reads a hop's `node` for anything but that): passing
+ * the `@UseGuards(...)` argument expression that named the guard class
+ * anchors that first hop at the point in the controller where the guard was
+ * attached, which reads better than the guard class declaration itself when
+ * a report ever surfaces it.
+ */
+export function collectThrowsFromDeclaration(
+  target: { decl: FunctionDeclWithBody; symbol: ts.Symbol },
+  entryNode: ts.Node,
+  ctx: AnalysisContext,
+  maxDepth: number,
+): CallGraphResult {
+  const results: CallGraphFinding[] = [];
+  const unresolvedResults: CallGraphUnresolvedThrow[] = [];
+  if (maxDepth <= 0) return { findings: results, unresolvedThrows: unresolvedResults };
+
+  const cacheMap = getCallGraphCache(ctx.cache);
+  const visited = new Set<ts.Symbol>();
+  expand(target, entryNode, ctx, maxDepth, [], visited, cacheMap, results, unresolvedResults);
+  return { findings: results, unresolvedThrows: unresolvedResults };
 }
 
 // --- Testing-only instrumentation -----------------------------------------

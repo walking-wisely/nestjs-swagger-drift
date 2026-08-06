@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiOkResponse,
+  ApiCreatedResponse,
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiConflictResponse,
@@ -33,6 +34,7 @@ export class ProductsController {
   }
 
   @Post()
+  @ApiCreatedResponse({ description: 'created' })
   @ApiBadRequestResponse({ status: 400, description: 'invalid payload' })
   @ApiNotFoundResponse({ description: 'related resource missing' })
   create(name: string): string {
@@ -53,6 +55,7 @@ export class ProductsController {
 @ApiConflictResponse({ description: 'duplicate order' })
 export class OrdersController {
   @Post()
+  @ApiCreatedResponse({ description: 'created' })
   create(): string {
     throw new ConflictException('duplicate order');
   }

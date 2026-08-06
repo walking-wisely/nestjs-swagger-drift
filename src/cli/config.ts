@@ -31,6 +31,12 @@ export interface CliConfigFile {
   ignoreStatuses?: number[];
   rules?: Partial<Record<'documented-but-unreachable' | 'unresolvable-status', boolean>>;
   treatDefaultAsWildcard?: boolean;
+  /** PLAN §4.1c / §5. Mirrors `--check-success-response`/`--no-check-success-response`. */
+  checkSuccessResponse?: boolean;
+  /** PLAN §4.1c / §5. Mirrors `--check-validation-pipe`. */
+  checkValidationPipe?: boolean;
+  /** PLAN §4.1c / §5. Mirrors `--check-guards`. */
+  checkGuards?: boolean;
   baseDir?: string;
 }
 
@@ -66,6 +72,9 @@ const CONFIG_KEYS = new Set<string>([
   'ignoreStatuses',
   'rules',
   'treatDefaultAsWildcard',
+  'checkSuccessResponse',
+  'checkValidationPipe',
+  'checkGuards',
   'baseDir',
 ]);
 
@@ -170,6 +179,24 @@ function validateConfig(
       return fail('treatDefaultAsWildcard', 'a boolean', value);
     }
     config.treatDefaultAsWildcard = value;
+  }
+
+  if ('checkSuccessResponse' in raw) {
+    const value = raw['checkSuccessResponse'];
+    if (typeof value !== 'boolean') return fail('checkSuccessResponse', 'a boolean', value);
+    config.checkSuccessResponse = value;
+  }
+
+  if ('checkValidationPipe' in raw) {
+    const value = raw['checkValidationPipe'];
+    if (typeof value !== 'boolean') return fail('checkValidationPipe', 'a boolean', value);
+    config.checkValidationPipe = value;
+  }
+
+  if ('checkGuards' in raw) {
+    const value = raw['checkGuards'];
+    if (typeof value !== 'boolean') return fail('checkGuards', 'a boolean', value);
+    config.checkGuards = value;
   }
 
   if ('baseDir' in raw) {

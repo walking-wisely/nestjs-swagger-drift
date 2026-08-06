@@ -192,12 +192,48 @@ describe('loadConfigFile', () => {
         ignoreStatuses: [404],
         rules: { 'documented-but-unreachable': true },
         treatDefaultAsWildcard: true,
+        checkSuccessResponse: false,
+        checkValidationPipe: true,
+        checkGuards: true,
         baseDir: '.',
       };
       fs.writeFileSync(path.join(dir, 'swagger-drift.config.json'), JSON.stringify(config));
       const result = await loadConfigFile(undefined, dir);
       expect(result.ok).toBe(true);
       if (result.ok) expect(result.config).toEqual(config);
+    });
+
+    it('rejects a non-boolean "checkSuccessResponse"', async () => {
+      const dir = makeTempDir();
+      fs.writeFileSync(
+        path.join(dir, 'swagger-drift.config.json'),
+        JSON.stringify({ checkSuccessResponse: 'no' }),
+      );
+      const result = await loadConfigFile(undefined, dir);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error).toContain('checkSuccessResponse');
+    });
+
+    it('rejects a non-boolean "checkValidationPipe"', async () => {
+      const dir = makeTempDir();
+      fs.writeFileSync(
+        path.join(dir, 'swagger-drift.config.json'),
+        JSON.stringify({ checkValidationPipe: 1 }),
+      );
+      const result = await loadConfigFile(undefined, dir);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error).toContain('checkValidationPipe');
+    });
+
+    it('rejects a non-boolean "checkGuards"', async () => {
+      const dir = makeTempDir();
+      fs.writeFileSync(
+        path.join(dir, 'swagger-drift.config.json'),
+        JSON.stringify({ checkGuards: 'on' }),
+      );
+      const result = await loadConfigFile(undefined, dir);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error).toContain('checkGuards');
     });
   });
 });

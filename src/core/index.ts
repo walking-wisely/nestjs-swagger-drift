@@ -42,8 +42,17 @@ export { collectDirectThrows, walkProducibleNodes } from './thrown.js';
 
 export { resolveThrownStatus } from './resolve-status.js';
 
-export type { CallGraphFinding } from './call-graph.js';
-export { collectCallGraphStatuses } from './call-graph.js';
+export type { CallGraphFinding, FunctionDeclWithBody } from './call-graph.js';
+export {
+  collectCallGraphStatuses,
+  collectThrowsFromDeclaration,
+  isFunctionLikeWithBody,
+} from './call-graph.js';
+
+export { resolveSuccessStatus } from './success.js';
+export { collectValidationPipeSource } from './validation-pipe.js';
+export type { GuardFinding } from './guards.js';
+export { collectGuardStatuses } from './guards.js';
 
 export { resolveStatusExpression } from './status-value.js';
 

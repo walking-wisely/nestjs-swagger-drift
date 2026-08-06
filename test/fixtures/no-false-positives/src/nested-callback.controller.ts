@@ -6,10 +6,12 @@
 // deliberately not collected, so this must produce no finding even though
 // it is undocumented and would resolve cleanly as a direct throw.
 import { Controller, Get, NotFoundException } from '@nestjs/common';
+import { ApiOkResponse } from '@nestjs/swagger';
 
 @Controller('nested-callback')
 export class NestedCallbackController {
   @Get()
+  @ApiOkResponse({ description: 'ids' })
   list(): string[] {
     const ids = ['a', 'missing', 'c'];
     ids.forEach((id) => {

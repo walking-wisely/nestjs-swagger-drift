@@ -2,7 +2,7 @@
 // the call graph must not manufacture a duplicate/incorrect finding once
 // the real 404 it discovers is already covered by `@ApiNotFoundResponse`.
 import { Controller, Get, Injectable, NotFoundException } from '@nestjs/common';
-import { ApiNotFoundResponse } from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiOkResponse } from '@nestjs/swagger';
 
 @Injectable()
 export class DocumentedWidgetsService {
@@ -17,6 +17,7 @@ export class ServiceThrowDocumentedController {
   constructor(private readonly widgets: DocumentedWidgetsService) {}
 
   @Get(':id')
+  @ApiOkResponse({ description: 'widget' })
   @ApiNotFoundResponse({ description: 'widget not found' })
   findOne(id: string): string {
     return this.widgets.findOne(id);

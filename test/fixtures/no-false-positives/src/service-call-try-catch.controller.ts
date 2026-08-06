@@ -5,6 +5,7 @@
 // the service's throw never reaches this handler's caller. Getting this
 // wrong reproduces the worst false positive found in Phase 2, transitively.
 import { Controller, Get, Injectable, NotFoundException } from '@nestjs/common';
+import { ApiOkResponse } from '@nestjs/swagger';
 
 @Injectable()
 export class SwallowedWidgetsService {
@@ -19,6 +20,7 @@ export class ServiceCallTryCatchController {
   constructor(private readonly widgets: SwallowedWidgetsService) {}
 
   @Get(':id')
+  @ApiOkResponse({ description: 'widget, or null if lookup failed' })
   findOne(id: string): string | null {
     try {
       return this.widgets.findOne(id);

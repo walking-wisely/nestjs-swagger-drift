@@ -50,6 +50,27 @@ export type StatusSource =
       kind: 'implicit';
       node: ts.Node;
       reason: 'validation-pipe' | 'guard' | 'success';
+      /**
+       * Optional extra context a report can show alongside `reason` (Phase 5,
+       * PLAN §4.1c). Added as an optional field rather than widening
+       * `'implicit'` into per-reason variants (which would ripple through
+       * every existing `source.kind === 'implicit'` switch in `analyze.ts`/
+       * `report/*.ts`) or bolting on a `via`-shaped call path (which
+       * `service-throw` needs for a *traversal*, whereas a `'guard'` source's
+       * "path" is really just "which guard, and — if it wasn't the guard's
+       * own `canActivate` but something it called — the one-line hop chain
+       * into it," better expressed as text than as a structural field no
+       * other implicit reason has any use for). Populated by:
+       *
+       * - `'success'`: never set — the reason alone is already the whole
+       *   story (`describeSuccessSource` in `success.ts` has nothing to add).
+       * - `'validation-pipe'`: the DTO class name (e.g. `'CreateUserDto'`),
+       *   so the report can say *which* parameter's decorators triggered it.
+       * - `'guard'`: the guard class name, plus (when the throw was found
+       *   more than one call hop into the guard) the hop chain, e.g.
+       *   `'AuthGuard.canActivate'` or `'AuthGuard.canActivate → TokenService.verify'`.
+       */
+      detail?: string;
     };
 
 /**
@@ -212,6 +233,51 @@ export interface AnalysisOptions {
    * don't need to know this exists unless they want it.
    */
   ignoreSuppressions?: boolean;
+
+  /**
+   * PLAN §4.1c / §9's open decision, resolved "yes": check that a handler
+   * documents *some* 2xx success response — `200` for most HTTP methods,
+   * `201` for `@Post()`, or whatever `@HttpCode(n)` overrides it to
+   * (`success.ts`). The one implicit-codes check that's on by default:
+   * unlike `checkValidationPipe`/`checkGuards` below, there is no heuristic
+   * "is this actually wired up" guesswork involved — every NestJS handler
+   * that returns normally produces *some* status code, so documenting none
+   * at all is unconditionally a gap, not a maybe.
+   *
+   * Optional, defaulting to `true` at the point of use (`analyze.ts`), not
+   * given a hard default value here, so existing `AnalysisOptions` literals
+   * across the test suite (written before this field existed) keep
+   * compiling and keep testing exactly what they tested before — an
+   * explicit `false` is how a caller that wants the pre-Phase-5 behavior
+   * asks for it.
+   */
+  checkSuccessResponse?: boolean;
+
+  /**
+   * PLAN §4.1c: treat `400` as producible when a handler parameter is typed
+   * as a class carrying `class-validator` decorators (`@IsString()`,
+   * `@IsNotEmpty()`, ...) AND is itself decorated with `@Body()`/`@Param()`/
+   * `@Query()` (`validation-pipe.ts`). Opt-in, defaulting to `false` at the
+   * point of use: this tool cannot see whether `ValidationPipe` is actually
+   * registered (globally, per-route, or not at all) — a DTO's decorators
+   * alone don't prove NestJS will act on them — so per PLAN §4.2's "silence
+   * over noise" bias this stays off until a caller explicitly opts in.
+   */
+  checkValidationPipe?: boolean;
+
+  /**
+   * PLAN §4.1c: resolve `@UseGuards(...)` classes and recurse into their
+   * `canActivate` with the same bounded call-graph machinery `call-graph.ts`
+   * already uses for services, collecting `401`/`403`-shaped throws
+   * (`guards.ts`). Opt-in, defaulting to `false` at the point of use, for the
+   * same reason as `checkValidationPipe`: a `@UseGuards` reference proves a
+   * guard is *attached*, not that its `canActivate` genuinely throws the way
+   * this analysis assumes (a guard could return `false` without throwing,
+   * for instance, which NestJS turns into its own default `403` this tool
+   * has no way to attribute to a specific line) — real, if smaller, guesswork
+   * versus the unconditional `checkSuccessResponse` case above.
+   */
+  checkGuards?: boolean;
 }
 
 declare const analysisCacheBrand: unique symbol;

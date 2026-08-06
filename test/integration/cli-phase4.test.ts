@@ -353,7 +353,10 @@ describe('--config and swagger-drift.config.json', () => {
     const configPath = path.join(dir, 'my.config.json');
     fs.writeFileSync(
       configPath,
-      JSON.stringify({ project: join(NO_FALSE_POSITIVES, 'tsconfig.json'), reporter: 'pretty' }),
+      JSON.stringify({
+        project: join(NO_FALSE_POSITIVES, 'tsconfig.json'),
+        reporter: 'pretty',
+      }),
     );
     const console_ = captureConsole();
     try {
@@ -383,7 +386,10 @@ describe('--config and swagger-drift.config.json', () => {
     // auto-discovery does.
     const dir = makeTempDir();
     const configPath = path.join(dir, 'my.config.json');
-    fs.writeFileSync(configPath, JSON.stringify({ project: join(NO_FALSE_POSITIVES, 'tsconfig.json') }));
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({ project: join(NO_FALSE_POSITIVES, 'tsconfig.json') }),
+    );
     const console_ = captureConsole();
     try {
       const code = await main(['--config', configPath]);
@@ -419,7 +425,10 @@ describe('--config and swagger-drift.config.json', () => {
     // repo root, not `dir`).
     const relativeProject = path.relative(dir, join(NO_FALSE_POSITIVES, 'tsconfig.json'));
     expect(process.cwd()).not.toBe(dir);
-    fs.writeFileSync(configPath, JSON.stringify({ project: relativeProject }));
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({ project: relativeProject }),
+    );
     const console_ = captureConsole();
     try {
       const code = await main(['--config', configPath]);
@@ -643,9 +652,10 @@ describe('--enable-rule / --disable-rule', () => {
   // actually passed either flag, so neither flag's effect on
   // `AnalysisOptions.rules` was exercised anywhere — a parser that silently
   // dropped `--enable-rule`/`--disable-rule` on the floor would still pass
-  // the whole suite. `analyzeHandler` doesn't consult `rules` yet (Phase 5,
-  // PLAN §4.1c), so `mergeOptions` — where the flags actually land — is the
-  // right (and currently only) place to assert this non-vacuously.
+  // the whole suite. `mergeOptions` — where the flags actually land — is the
+  // right place to assert this non-vacuously (as of Phase 5, `analyzeHandler`
+  // does consult `rules`; see `implicit-codes.test.ts` for the end-to-end
+  // behavior).
   it('--enable-rule/--disable-rule actually reach AnalysisOptions.rules via mergeOptions', () => {
     const base = parseArgs([]);
     if (!base.ok) throw new Error('parseArgs([]) unexpectedly failed');
@@ -676,6 +686,43 @@ describe('--enable-rule / --disable-rule', () => {
       'documented-but-unreachable': false,
       'unresolvable-status': false,
     });
+  });
+});
+
+describe('--check-success-response / --check-validation-pipe / --check-guards', () => {
+  it('default to on/off/off per PLAN §4.1c, §9', () => {
+    const base = parseArgs([]);
+    if (!base.ok) throw new Error('parseArgs([]) unexpectedly failed');
+    const merged = mergeOptions(base.flags, {}, undefined);
+    expect(merged.ok && merged.options.checkSuccessResponse).toBe(true);
+    expect(merged.ok && merged.options.checkValidationPipe).toBe(false);
+    expect(merged.ok && merged.options.checkGuards).toBe(false);
+  });
+
+  it('flags reach AnalysisOptions, flag beating config file', () => {
+    const flags = parseArgs(['--no-check-success-response', '--check-validation-pipe', '--check-guards']);
+    if (!flags.ok) throw new Error('unexpected parse failure');
+    const merged = mergeOptions(
+      flags.flags,
+      { checkSuccessResponse: true, checkValidationPipe: false, checkGuards: false },
+      undefined,
+    );
+    expect(merged.ok && merged.options.checkSuccessResponse).toBe(false);
+    expect(merged.ok && merged.options.checkValidationPipe).toBe(true);
+    expect(merged.ok && merged.options.checkGuards).toBe(true);
+  });
+
+  it('a config file alone (no flag) can also set these', () => {
+    const base = parseArgs([]);
+    if (!base.ok) throw new Error('parseArgs([]) unexpectedly failed');
+    const merged = mergeOptions(
+      base.flags,
+      { checkSuccessResponse: false, checkValidationPipe: true, checkGuards: true },
+      undefined,
+    );
+    expect(merged.ok && merged.options.checkSuccessResponse).toBe(false);
+    expect(merged.ok && merged.options.checkValidationPipe).toBe(true);
+    expect(merged.ok && merged.options.checkGuards).toBe(true);
   });
 });
 
