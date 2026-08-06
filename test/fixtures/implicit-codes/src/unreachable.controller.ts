@@ -1,7 +1,13 @@
 // PLAN §5's `documented-but-unreachable` rule (opt-in): a copy-pasted
 // decorator block claiming a status nothing in this handler can produce.
-import { Controller, Get, HttpCode, UseGuards } from '@nestjs/common';
-import { ApiNotFoundResponse, ApiOkResponse, ApiResponse, ApiForbiddenResponse } from '@nestjs/swagger';
+import { Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
+import {
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { SilentRejectGuard } from './auth.guard.js';
 
 function unknownAtRuntime(): number {
@@ -40,6 +46,21 @@ export class UnreachableController {
   @Get('silent-guard')
   silentGuard(): string[] {
     return [];
+  }
+
+  // CodeRabbit review on PR #4: `documented` is per-method, shared across
+  // every HTTP decorator a method carries. This method serves BOTH `@Get()`
+  // and `@Post()`, so its two documented success statuses (200 and 201) are
+  // each genuinely reachable via the sibling route even though neither
+  // route's own implicit success status is the other one — checking only
+  // the current handler's own success status against the exemption flagged
+  // the sibling's documented code as a false "unreachable".
+  @ApiOkResponse({ status: 200 })
+  @ApiCreatedResponse({ status: 201 })
+  @Get('multi-verb')
+  @Post('multi-verb')
+  multiVerb(): string {
+    return 'ok';
   }
 }
 

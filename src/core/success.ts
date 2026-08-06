@@ -51,7 +51,7 @@
 
 import * as ts from 'typescript';
 import type { HttpMethod } from './types.js';
-import { getDecoratorInfos } from './decorators.js';
+import { getDecoratorInfos, getDecoratorName, getDecoratorNameNode } from './decorators.js';
 import { checkProvenance } from './provenance.js';
 import { resolveStatusExpression } from './status-value.js';
 
@@ -65,19 +65,6 @@ function defaultSuccessStatus(httpMethod: HttpMethod): number {
 function getDecoratorCallArgument(decorator: ts.Decorator): ts.Expression | undefined {
   const expr = decorator.expression;
   return ts.isCallExpression(expr) ? expr.arguments[0] : undefined;
-}
-
-function getDecoratorNameNode(decorator: ts.Decorator): ts.Expression {
-  const expr = decorator.expression;
-  return ts.isCallExpression(expr) ? expr.expression : expr;
-}
-
-function getDecoratorName(nameNode: ts.Expression): string | undefined {
-  if (ts.isIdentifier(nameNode)) return nameNode.text;
-  if (ts.isPropertyAccessExpression(nameNode) && ts.isIdentifier(nameNode.name)) {
-    return nameNode.name.text;
-  }
-  return undefined;
 }
 
 /**

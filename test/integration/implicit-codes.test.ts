@@ -200,6 +200,24 @@ describe('checkGuards (opt-in)', () => {
     const findings = analyze(baseOptions({ checkGuards: false }));
     expect(findings.some((f) => f.handler.className === 'GuardsController')).toBe(false);
   });
+
+  // CodeRabbit review on PR #4: the same guard class applied at both
+  // class-level and method-level (valid, additive NestJS) must be resolved
+  // once, not once per place it's listed — otherwise the same source shows
+  // up twice on one finding.
+  it('does not duplicate a guard listed at both class level and method level', () => {
+    const findings = analyze(baseOptions({ checkGuards: true }));
+    const list = findingsFor(findings, 'RedundantGuardController', 'list');
+    expect(list).toHaveLength(1);
+    if (list[0]?.rule === 'undocumented-status') {
+      expect(list[0].sources).toHaveLength(1);
+      expect(list[0].sources[0]).toMatchObject({
+        kind: 'implicit',
+        reason: 'guard',
+        detail: 'AuthGuard.canActivate',
+      });
+    }
+  });
 });
 
 describe('documented-but-unreachable rule (opt-in)', () => {
@@ -265,6 +283,21 @@ describe('documented-but-unreachable rule (opt-in)', () => {
     );
     expect(findingsFor(off, 'UnreachableController', 'silentGuard')).toEqual([]);
     expect(findingsFor(on, 'UnreachableController', 'silentGuard')).toEqual([]);
+  });
+
+  // CodeRabbit review on PR #4: `documented` is per-method, not per-handler.
+  // A method carrying both `@Get()` and `@Post()` documents both success
+  // codes against that same shared decorator set — each is genuinely
+  // reachable via its own route, even though a single handler's own
+  // implicit success status only ever covers one of them.
+  it('does not flag either documented success status on a method serving two HTTP verbs', () => {
+    const findings = analyze(
+      baseOptions({
+        checkSuccessResponse: true,
+        rules: { 'documented-but-unreachable': true, 'unresolvable-status': false },
+      }),
+    );
+    expect(findingsFor(findings, 'UnreachableController', 'multiVerb')).toEqual([]);
   });
 });
 

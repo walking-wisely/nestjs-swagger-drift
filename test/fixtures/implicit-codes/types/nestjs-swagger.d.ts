@@ -8,6 +8,7 @@ declare module '@nestjs/swagger' {
   }
 
   export function ApiResponse(options?: ApiResponseOptions): MethodDecorator & ClassDecorator;
+  export function ApiDefaultResponse(options?: ApiResponseOptions): MethodDecorator & ClassDecorator;
   export function ApiOkResponse(options?: ApiResponseOptions): MethodDecorator & ClassDecorator;
   export function ApiCreatedResponse(options?: ApiResponseOptions): MethodDecorator & ClassDecorator;
   export function ApiNoContentResponse(options?: ApiResponseOptions): MethodDecorator & ClassDecorator;

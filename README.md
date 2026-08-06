@@ -7,7 +7,7 @@ actually produce — following `throw` statements through your services, mapping
 exception classes (including your own) to status codes — then diffs that
 against what the `@ApiResponse` decorators claim.
 
-```
+```text
 src/users/users.controller.ts:42:3  error
   POST /users (UserController.create) is missing @ApiResponse for:
     409 ConflictException
@@ -81,7 +81,7 @@ file), `2` if it couldn't determine anything at all (zero handlers found
 *and* `@nestjs/common` itself couldn't be resolved — "I don't know," not
 "there's nothing here").
 
-```
+```text
 Usage: nestjs-swagger-drift --project <path-to-tsconfig-or-dir> [options]
 
 Options:

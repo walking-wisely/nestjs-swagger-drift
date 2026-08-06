@@ -126,7 +126,14 @@ export interface HttpHandlerDecoratorInfo extends RoutePathInfo {
   httpMethod: HttpMethod;
 }
 
-function getDecoratorNameNode(decorator: ts.Decorator): ts.Expression {
+/**
+ * The callee of a decorator expression: `@Foo` → `Foo`, `@Foo(...)` → `Foo`.
+ * Exported (CodeRabbit review on PR #4) so `success.ts`/`validation-pipe.ts`
+ * — which need the same "what decorator is this, by name" logic for their
+ * own implicit-status detection — share this implementation instead of each
+ * keeping a byte-identical private copy that could silently drift.
+ */
+export function getDecoratorNameNode(decorator: ts.Decorator): ts.Expression {
   const expr = decorator.expression;
   return ts.isCallExpression(expr) ? expr.expression : expr;
 }
@@ -136,7 +143,8 @@ function getDecoratorCallArgument(decorator: ts.Decorator): ts.Expression | unde
   return ts.isCallExpression(expr) ? expr.arguments[0] : undefined;
 }
 
-function getDecoratorName(nameNode: ts.Expression): string | undefined {
+/** See `getDecoratorNameNode`'s doc comment — shared for the same reason. */
+export function getDecoratorName(nameNode: ts.Expression): string | undefined {
   if (ts.isIdentifier(nameNode)) return nameNode.text;
   if (ts.isPropertyAccessExpression(nameNode) && ts.isIdentifier(nameNode.name))
     return nameNode.name.text;

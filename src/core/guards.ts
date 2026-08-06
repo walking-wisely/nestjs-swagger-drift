@@ -122,11 +122,21 @@ export function collectGuardStatuses(
   if (guardArgs.length === 0) return [];
 
   const results: GuardFinding[] = [];
+  // NestJS applies class-level and method-level `@UseGuards(...)` additively,
+  // so the same guard class can legitimately appear in both `guardArgs`
+  // lists — a common pattern is re-stating an auth guard on a handler for
+  // readability even though the whole controller already carries it.
+  // De-duplicated by resolved class declaration (not by the guard argument's
+  // own AST node) so that case doesn't traverse — and report — the same
+  // `canActivate` twice (CodeRabbit review on PR #4).
+  const seenGuardClasses = new Set<ts.ClassLikeDeclaration>();
   for (const arg of guardArgs) {
     const classExpr = resolveGuardClassExpression(arg);
     if (!classExpr) continue;
     const guardClass = resolveClassDeclaration(classExpr, ctx.checker);
     if (!guardClass) continue;
+    if (seenGuardClasses.has(guardClass)) continue;
+    seenGuardClasses.add(guardClass);
     const canActivate = resolveCanActivateMethod(guardClass, ctx.checker);
     if (!canActivate?.name || !ts.isIdentifier(canActivate.name)) continue;
 

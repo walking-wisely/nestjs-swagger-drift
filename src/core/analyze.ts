@@ -213,11 +213,11 @@ interface CollectedStatuses {
  * yields (see module doc's "why success is per-handler, everything else is
  * per-method"): direct throws (§4.1a), call-graph throws (§4.1b), and — when
  * enabled — guard throws (§4.1c, `guards.ts`) and the `ValidationPipe`
- * implicit `400` (§4.1c, `validation-pipe.ts`). Unresolvable direct throws
- * are no longer silently dropped (Phase 5): they're returned separately as
- * `unresolvedThrows`, for the opt-in `unresolvable-status` rule to consume;
- * an unresolvable call-graph throw is still dropped (see module doc's
- * "unresolvable-status: direct handler throws only").
+ * implicit `400` (§4.1c, `validation-pipe.ts`). Unresolvable throws are no
+ * longer silently dropped (Phase 5): both direct throws and throws reached
+ * through the call graph are returned separately as `unresolvedThrows`, for
+ * the opt-in `unresolvable-status` rule to consume (see module doc's
+ * "unresolvable-status: direct handler throws AND call-graph throws").
  */
 function collectProducibleStatuses(
   methodNode: ts.MethodDeclaration,
@@ -398,6 +398,24 @@ export function analyzeHandler(
   const ignoreStatuses = new Set(ctx.options.ignoreStatuses);
   const findings: Finding[] = [];
 
+  // Success statuses across EVERY handler this method yields, not just
+  // "the current handler in the loop below" (CodeRabbit review on PR #4,
+  // verified: `documented` is per-method, so a method carrying both
+  // `@Get()` and `@Post()` documents both statuses against the SAME
+  // decorator set — a documented 201 is genuinely reachable via the POST
+  // route even while iterating the GET handler, and the per-handler
+  // `resolveSuccessStatus` call below only ever sees its own route's
+  // status). Computed once, up front, so `documented-but-unreachable`'s
+  // exemption (below) can check against the whole set instead of
+  // accidentally flagging a sibling route's success code as unreachable.
+  const allSuccessStatuses = new Set<number>();
+  let anySuccessUnresolvable = false;
+  for (const h of handlers) {
+    const s = resolveSuccessStatus(methodNode, h.httpMethod, ctx.checker);
+    if (s) allSuccessStatuses.add(s.status);
+    else anySuccessUnresolvable = true;
+  }
+
   for (const handler of handlers) {
     // This handler's own view of "producible": the shared statuses above,
     // plus (Phase 5) its own implicit success status, which — unlike
@@ -467,31 +485,31 @@ export function analyzeHandler(
       // `documented-but-unreachable` (Phase 5, opt-in): see module doc for
       // the full "what counts as reachable" reasoning.
       if (unreachableRuleEnabled) {
-        // The handler's own implicit success status, when `resolve-status.ts`
-        // could pin one down (Phase 5 review, finding #1: previously only
-        // computed when `checkSuccessResponse` was OFF, which meant turning
-        // success-checking ON — the default — silently dropped this
-        // exemption and could flag a documented success status as
-        // unreachable the moment `@HttpCode`'s argument wasn't a literal).
-        const success = resolveSuccessStatus(methodNode, handler.httpMethod, ctx.checker);
-        // `@HttpCode(...)` is present but its argument isn't statically
-        // resolvable (`success` is `undefined` — see `resolveSuccessStatus`'s
-        // doc comment): this tool cannot know the handler's real success
-        // status, so per "silence over noise" it must not guess that a
-        // documented 2xx-shaped status is unreachable either. Conservative:
-        // exempts every documented 2xx, not just one, since more than one
-        // 2xx decorator on the same handler is a real (if unusual) shape and
-        // there is no way to tell which one the unresolvable `@HttpCode`
-        // "really" means.
-        const successUnresolvable = success === undefined;
+        // Uses `allSuccessStatuses`/`anySuccessUnresolvable` (computed once,
+        // above the handler loop, across every handler this method yields —
+        // NOT just this one), per CodeRabbit review on PR #4: `documented`
+        // is shared per-method, so a method carrying both `@Get()` and
+        // `@Post()` documents both success codes against that same set. A
+        // documented 201 is genuinely reachable via the POST route even
+        // while this iteration is on the GET handler; checking only the
+        // current handler's own success status flagged the sibling route's
+        // status as a false "unreachable" (Phase 5 review, finding #1's fix
+        // was correct for the single-handler case but missed this one).
+        //
+        // `anySuccessUnresolvable` mirrors finding #1's reasoning: if ANY
+        // handler's `@HttpCode(...)` argument isn't statically resolvable,
+        // this tool cannot know that handler's real success status, so per
+        // "silence over noise" it must not guess that a documented 2xx is
+        // unreachable either — conservative across the whole method, not
+        // just the handler whose `@HttpCode` was unresolvable.
         for (const d of documented) {
           if (typeof d.status !== 'number') continue; // 'default' / a StatusRange: not a specific claim
           if (d.level !== 'method') continue; // class-level: see module doc, finding #2
           if (d.status === 500) continue; // structurally out of scope, PLAN §6 / finding #2
           if (ignoreStatuses.has(d.status)) continue;
           if (byStatus.has(d.status)) continue; // genuinely reachable this run
-          if (d.status === success?.status) continue;
-          if (successUnresolvable && d.status >= 200 && d.status < 300) continue;
+          if (allSuccessStatuses.has(d.status)) continue;
+          if (anySuccessUnresolvable && d.status >= 200 && d.status < 300) continue;
           if (d.status === 400 || d.status === 401 || d.status === 403) continue; // see module doc, finding #5
           findings.push({ rule: 'documented-but-unreachable', status: d.status, handler, node: d.node });
         }

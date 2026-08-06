@@ -21,3 +21,19 @@ export class GuardsController {
     return [];
   }
 }
+
+// CodeRabbit review on PR #4: NestJS applies class-level and method-level
+// `@UseGuards(...)` additively (both run), so re-stating a guard already
+// applied at the class level is valid, if redundant, code — a common
+// pattern for readability. `collectGuardStatuses` must resolve that guard's
+// `canActivate` once, not once per place it's listed, or the same 401
+// source appears twice in a single finding.
+@Controller('guarded-redundant')
+@UseGuards(AuthGuard)
+export class RedundantGuardController {
+  @UseGuards(AuthGuard)
+  @Get()
+  list(): string[] {
+    return [];
+  }
+}

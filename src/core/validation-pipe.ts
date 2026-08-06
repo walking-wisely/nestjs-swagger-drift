@@ -31,23 +31,11 @@
 import * as ts from 'typescript';
 import type { StatusSource } from './types.js';
 import { checkProvenance } from './provenance.js';
+import { getDecoratorName, getDecoratorNameNode } from './decorators.js';
 
 const NEST_COMMON_MODULE = '@nestjs/common';
 const CLASS_VALIDATOR_MODULE = 'class-validator';
 const BODY_LIKE_DECORATOR_NAMES: ReadonlySet<string> = new Set(['Body', 'Param', 'Query']);
-
-function getDecoratorNameNode(decorator: ts.Decorator): ts.Expression {
-  const expr = decorator.expression;
-  return ts.isCallExpression(expr) ? expr.expression : expr;
-}
-
-function getDecoratorName(nameNode: ts.Expression): string | undefined {
-  if (ts.isIdentifier(nameNode)) return nameNode.text;
-  if (ts.isPropertyAccessExpression(nameNode) && ts.isIdentifier(nameNode.name)) {
-    return nameNode.name.text;
-  }
-  return undefined;
-}
 
 /** `true` if `param` carries an accepted `@Body()`/`@Param()`/`@Query()` decorator. */
 function hasBodyLikeDecorator(param: ts.ParameterDeclaration, checker: ts.TypeChecker): boolean {
