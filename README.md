@@ -18,12 +18,13 @@ src/users/users.controller.ts:42:3  error
 
 Deterministic, zero-config, CI-shaped.
 
-**Status: Phase 5 (Hardening) complete.** Route discovery, direct/call-graph
+**Status: Phase 6 (ESLint plugin) complete.** Route discovery, direct/call-graph
 throw resolution, custom exception status resolution, decorator-based
-documentation matching, the CLI, and the implicit-codes/opt-in rules below are
-all implemented. See [PLAN.md](./PLAN.md) for the full design, scope
-boundaries, and prior-art analysis. Publishing to npm (`v0.1.0`) is a manual
-step for the maintainer — this repo is not auto-published.
+documentation matching, the CLI, the implicit-codes/opt-in rules below, and
+the ESLint plugin are all implemented. See [PLAN.md](./PLAN.md) for the full
+design, scope boundaries, and prior-art analysis. Publishing to npm
+(`v0.1.0`) is a manual step for the maintainer — this repo is not
+auto-published.
 
 ## Scope
 
@@ -59,6 +60,8 @@ problem, not a static one.
 - **Inline suppression**: `// swagger-drift-disable-next-line [404[, 409]]`
   above a handler or a throw.
 - **A config file** (`swagger-drift.config.{json,js,mjs,ts}`), fully optional.
+- **An ESLint plugin** (`nestjs-swagger-drift/eslint`, flat config), the same
+  detection logic as the CLI, in-editor and on every PR.
 
 ## Installation
 
@@ -136,6 +139,85 @@ path (`npx nestjs-swagger-drift --project ./tsconfig.json`) always works.
   "checkGuards": true
 }
 ```
+
+## ESLint plugin
+
+`nestjs-swagger-drift/eslint` — the same package as the CLI (subpath export,
+matching `./core`; PLAN §1/§9), so there's nothing extra to install. One rule,
+`nestjs-swagger-drift/documented-status-codes`, a thin adapter over the exact
+same `core/analyzeHandler()` the CLI uses (PLAN §2.1) — same detection logic,
+same findings, different delivery: inline in your editor and on every PR
+instead of (or alongside) a CI-only CLI run. Flat config only.
+
+```js
+// eslint.config.js
+import nestjsSwaggerDrift from 'nestjs-swagger-drift/eslint';
+
+export default [
+  // ...your other config (must already configure type-aware
+  // typescript-eslint parsing for your .ts files)...
+  {
+    languageOptions: {
+      parserOptions: {
+        // Required: this is a type-aware rule (PLAN §2.1) — it needs a real
+        // ts.Program to resolve service calls across files, exactly like any
+        // other type-aware typescript-eslint rule.
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  // `configs.recommended` is an ARRAY of flat-config objects (same shape as
+  // typescript-eslint's own `tseslint.configs.recommended`) — spread it at
+  // the ARRAY level, into the exported config array itself. Spreading it
+  // into a single object literal instead (`{ ...nestjsSwaggerDrift.configs.recommended }`)
+  // silently produces `{'0': {...}}`, which ESLint's flat-config loader
+  // rejects with `ConfigError: Unexpected key "0" found.`
+  ...nestjsSwaggerDrift.configs.recommended,
+];
+```
+
+Or configure the rule manually instead of using `configs.recommended`:
+
+```js
+{
+  // Required — the rule is type-aware and calls `getParserServices()`
+  // unconditionally, so it throws on any file this config applies to that
+  // isn't part of the type-checked TS program (e.g. your own
+  // `eslint.config.js`) unless scoped like this.
+  files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'],
+  plugins: { 'nestjs-swagger-drift': nestjsSwaggerDrift },
+  rules: {
+    'nestjs-swagger-drift/documented-status-codes': [
+      'error',
+      {
+        maxDepth: 2,
+        rules: { 'documented-but-unreachable': true, 'unresolvable-status': true },
+        checkGuards: true,
+      },
+    ],
+  },
+}
+```
+
+The rule's options mirror the CLI's flag surface field-for-field (`maxDepth`,
+`rules`, `treatDefaultAsWildcard`, `ignoreStatuses`, `checkSuccessResponse`,
+`checkValidationPipe`, `checkGuards`), with one deliberate exception
+(`ignoreSuppressions`/`--audit`, see below), and with the same defaults
+described in ["What's on by default vs. opt-in"](#whats-on-by-default-vs-opt-in)
+below. `// swagger-drift-disable-next-line` inline suppression comments
+(above) work identically under the rule as under the CLI — that's core
+logic, not something either driver reimplements.
+
+Not currently wired up: an equivalent to the CLI's `--audit` flag
+(`AnalysisOptions.ignoreSuppressions`). There's no obviously-idiomatic
+"run once in audit mode" shape for an ESLint rule option, and
+`// swagger-drift-disable-next-line` already coexists fine with ESLint's own
+`// eslint-disable-next-line` — use the CLI's `--audit` for that occasional
+"what are suppressions hiding" pass.
+
+Autofix (inserting the missing `@ApiResponse` decorator) is a deliberate
+non-goal of this rule for now — see PLAN §5 Phase 7.
 
 ## What's on by default vs. opt-in
 

@@ -5,6 +5,7 @@ export default defineConfig({
     index: 'src/index.ts',
     'core/index': 'src/core/index.ts',
     'cli/index': 'src/cli/index.ts',
+    'eslint/index': 'src/eslint/index.ts',
   },
   format: ['esm'],
   dts: true,
