@@ -49,9 +49,9 @@
     "format": "prettier --write ."
   },
   "peerDependencies": {
-    "typescript": ">=5.0.0 <7.0.0",
+    "@typescript-eslint/utils": "^8.0.0",
     "eslint": "^9.0.0 || ^10.0.0",
-    "@typescript-eslint/utils": "^8.0.0"
+    "typescript": ">=5.0.0 <7.0.0"
   },
   "peerDependenciesMeta": {
     "eslint": {
@@ -68,6 +68,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.2",
+    "@types/picomatch": "^4.0.3",
     "@typescript-eslint/parser": "^8.66.0",
     "@typescript-eslint/rule-tester": "^8.66.0",
     "@typescript-eslint/utils": "^8.66.0",
@@ -81,5 +82,8 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.66.0",
     "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "picomatch": "^4.0.5"
   }
 }

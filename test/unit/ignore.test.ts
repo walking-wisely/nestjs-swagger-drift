@@ -1,88 +1,81 @@
 import { describe, expect, it } from 'vitest';
-import { globToRegExp, isIgnored } from '../../src/cli/ignore.js';
-
-describe('globToRegExp', () => {
-  it('matches a literal path exactly', () => {
-    expect(globToRegExp('src/foo.ts').test('src/foo.ts')).toBe(true);
-    expect(globToRegExp('src/foo.ts').test('src/bar.ts')).toBe(false);
-  });
-
-  it('* matches within a single path segment only', () => {
-    const re = globToRegExp('src/*.controller.ts');
-    expect(re.test('src/users.controller.ts')).toBe(true);
-    expect(re.test('src/nested/users.controller.ts')).toBe(false);
-  });
-
-  it('** matches across path segments, including zero', () => {
-    const re = globToRegExp('src/**/*.spec.ts');
-    expect(re.test('src/users/users.spec.ts')).toBe(true);
-    expect(re.test('src/users.spec.ts')).toBe(true);
-    expect(re.test('src/a/b/c/users.spec.ts')).toBe(true);
-    expect(re.test('src/users.controller.ts')).toBe(false);
-  });
-
-  it('? matches exactly one non-slash character', () => {
-    const re = globToRegExp('a?.ts');
-    expect(re.test('ab.ts')).toBe(true);
-    expect(re.test('a.ts')).toBe(false);
-    expect(re.test('abc.ts')).toBe(false);
-  });
-
-  it('escapes regex metacharacters in the literal parts of the pattern', () => {
-    const re = globToRegExp('src/foo.bar+baz.ts');
-    expect(re.test('src/foo.bar+baz.ts')).toBe(true);
-    // Without escaping, "." would match any character and "+" would be a
-    // quantifier — both must be treated literally.
-    expect(re.test('srcXfooXbarbaz.ts')).toBe(false);
-  });
-
-  // Phase 4 review, finding S1: `**` used to compile to a bare `.*` with no
-  // `/` anchoring, making `**/X/**` a substring match instead of a
-  // segment match.
-  describe('** is anchored to whole path segments (Phase 4 review, finding S1)', () => {
-    it('**/test/** does not match a path that merely CONTAINS "test" as a substring of a segment', () => {
-      const re = globToRegExp('**/test/**');
-      expect(re.test('src/latest/alpha.controller.ts')).toBe(false);
-      expect(re.test('src/test/alpha.controller.ts')).toBe(true);
-    });
-
-    it('**/node_modules/** does not match a segment that merely contains "node_modules" as a substring', () => {
-      const re = globToRegExp('**/node_modules/**');
-      expect(re.test('xnode_modules/foo.js')).toBe(false);
-      expect(re.test('node_modules/foo.js')).toBe(true);
-      expect(re.test('src/node_modules/foo.js')).toBe(true);
-    });
-
-    it('a ** that is not a standalone segment (src/**.ts) degrades to an ordinary single-segment *', () => {
-      const re = globToRegExp('src/**.ts');
-      expect(re.test('src/foo.ts')).toBe(true);
-      // Must not cross `/` the way a real globstar would.
-      expect(re.test('src/nested/foo.ts')).toBe(false);
-    });
-  });
-
-  // Phase 4 review, finding S12: consecutive globstars compiled to
-  // consecutive independent `.*`s, which backtrack catastrophically.
-  it('a long chain of consecutive ** segments compiles to a single non-backtracking fragment (Phase 4 review, finding S12)', () => {
-    const start = performance.now();
-    const re = globToRegExp('**/**/**/**/**/**/*.spec.ts');
-    const longPath = `${'a/'.repeat(40)}foo.controller.ts`;
-    expect(re.test(longPath)).toBe(false);
-    expect(re.test(`${'a/'.repeat(40)}foo.spec.ts`)).toBe(true);
-    // Generous bound (real fix is near-instant; a regression to the old
-    // per-globstar `.*` chain measured 10s+ for far shorter inputs).
-    expect(performance.now() - start).toBeLessThan(500);
-  });
-
-  it('a leading ./ or / on a pattern is stripped, so it still matches a baseDir-relative path', () => {
-    expect(globToRegExp('./src/**').test('src/foo.ts')).toBe(true);
-    expect(globToRegExp('/src/**').test('src/foo.ts')).toBe(true);
-  });
-});
+import { isIgnored } from '../../src/cli/ignore.js';
 
 describe('isIgnored', () => {
   it('is false with no patterns (non-vacuous default)', () => {
     expect(isIgnored('src/foo.ts', [])).toBe(false);
+  });
+
+  it('matches a literal path exactly', () => {
+    expect(isIgnored('src/foo.ts', ['src/foo.ts'])).toBe(true);
+    expect(isIgnored('src/bar.ts', ['src/foo.ts'])).toBe(false);
+  });
+
+  it('* matches within a single path segment only', () => {
+    expect(isIgnored('src/users.controller.ts', ['src/*.controller.ts'])).toBe(true);
+    expect(isIgnored('src/nested/users.controller.ts', ['src/*.controller.ts'])).toBe(false);
+  });
+
+  it('** matches across path segments, including zero', () => {
+    const pattern = 'src/**/*.spec.ts';
+    expect(isIgnored('src/users/users.spec.ts', [pattern])).toBe(true);
+    expect(isIgnored('src/users.spec.ts', [pattern])).toBe(true);
+    expect(isIgnored('src/a/b/c/users.spec.ts', [pattern])).toBe(true);
+    expect(isIgnored('src/users.controller.ts', [pattern])).toBe(false);
+  });
+
+  it('? matches exactly one non-slash character', () => {
+    const pattern = 'a?.ts';
+    expect(isIgnored('ab.ts', [pattern])).toBe(true);
+    expect(isIgnored('a.ts', [pattern])).toBe(false);
+    expect(isIgnored('abc.ts', [pattern])).toBe(false);
+  });
+
+  it('treats regex metacharacters in the pattern as literal glob characters', () => {
+    const pattern = 'src/foo.bar+baz.ts';
+    expect(isIgnored('src/foo.bar+baz.ts', [pattern])).toBe(true);
+    // Without literal handling, "." would match any character and "+" would
+    // be a quantifier — both must be treated as ordinary characters here.
+    expect(isIgnored('srcXfooXbarbaz.ts', [pattern])).toBe(false);
+  });
+
+  describe('** is anchored to whole path segments', () => {
+    it('**/test/** does not match a path that merely CONTAINS "test" as a substring of a segment', () => {
+      const pattern = '**/test/**';
+      expect(isIgnored('src/latest/alpha.controller.ts', [pattern])).toBe(false);
+      expect(isIgnored('src/test/alpha.controller.ts', [pattern])).toBe(true);
+    });
+
+    it('**/node_modules/** does not match a segment that merely contains "node_modules" as a substring', () => {
+      const pattern = '**/node_modules/**';
+      expect(isIgnored('xnode_modules/foo.js', [pattern])).toBe(false);
+      expect(isIgnored('node_modules/foo.js', [pattern])).toBe(true);
+      expect(isIgnored('src/node_modules/foo.js', [pattern])).toBe(true);
+    });
+
+    it('a ** that is not a standalone segment (src/**.ts) degrades to an ordinary single-segment *', () => {
+      const pattern = 'src/**.ts';
+      expect(isIgnored('src/foo.ts', [pattern])).toBe(true);
+      // Must not cross `/` the way a real globstar would.
+      expect(isIgnored('src/nested/foo.ts', [pattern])).toBe(false);
+    });
+  });
+
+  it('a long chain of consecutive ** segments matches quickly, no catastrophic backtracking', () => {
+    const pattern = '**/**/**/**/**/**/*.spec.ts';
+    const longPath = `${'a/'.repeat(40)}foo.controller.ts`;
+    const start = performance.now();
+    expect(isIgnored(longPath, [pattern])).toBe(false);
+    expect(isIgnored(`${'a/'.repeat(40)}foo.spec.ts`, [pattern])).toBe(true);
+    // Generous bound (real fix is near-instant; a regression to a naive
+    // per-globstar backtracking implementation measured 10s+ for far
+    // shorter inputs).
+    expect(performance.now() - start).toBeLessThan(500);
+  });
+
+  it('a leading ./ or / on a pattern is stripped, so it still matches a baseDir-relative path', () => {
+    expect(isIgnored('src/foo.ts', ['./src/**'])).toBe(true);
+    expect(isIgnored('src/foo.ts', ['/src/**'])).toBe(true);
   });
 
   it('matches a full relative-path glob', () => {

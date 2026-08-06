@@ -32,9 +32,13 @@ Three deliverables, in this order:
 |---|---|---|---|
 | 1 | Analysis engine | `nestjs-swagger-drift/core` (subpath export) | Phase 1–3 |
 | 2 | CLI | `nestjs-swagger-drift` | Phase 4 |
-| 3 | ESLint plugin | `eslint-plugin-nestjs-swagger-drift` | Phase 6 |
+| 3 | ESLint plugin | `nestjs-swagger-drift/eslint` (subpath export, not a separate package — see §9) | Phase 6 |
 
-Both npm names were unregistered as of 2026-07-30.
+The npm name `nestjs-swagger-drift` was unregistered as of 2026-07-30. §9's
+"single package until Phase 6" open question resolved to "single package,
+period" — see `src/eslint/index.ts`'s module doc comment for the rationale;
+`eslint-plugin-nestjs-swagger-drift` as a standalone package was never
+published.
 
 Ship 1+2 as a single package initially (with the core exported from a subpath)
 to avoid monorepo overhead before it earns its keep. Split only when the ESLint
@@ -455,8 +459,9 @@ before/after examples.
 **Exit:** v0.1.0 published to npm.
 
 ### Phase 6 — ESLint plugin (1–2 days)
-`eslint-plugin-nestjs-swagger-drift`, flat-config only (`recommended` config
-export). One rule: `nestjs-swagger-drift/documented-status-codes`, options
+`nestjs-swagger-drift/eslint` (subpath export, not a separate package —
+see §1), flat-config only (`recommended` config export). One rule:
+`nestjs-swagger-drift/documented-status-codes`, options
 mirroring the CLI's. `RuleTester` suite. Adapter is:
 `getParserServices` → `esTreeNodeToTSNodeMap.get(node)` → `analyzeHandler` →
 `context.report({ node, messageId, data })`.
