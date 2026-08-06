@@ -70,7 +70,16 @@ npm install --save-dev nestjs-swagger-drift
 ```
 
 Peer dependency: `typescript >=5.0.0 <7.0.0` (already a dependency of any
-NestJS project).
+NestJS project). This is deliberate: the analysis engine uses *your*
+project's TypeScript, not a bundled copy, so results match your actual
+`tsconfig.json`/compiler target.
+
+> **`npx nestjs-swagger-drift` fails with `Cannot find package 'typescript'`?**
+> npm normally auto-installs peer dependencies (npm ≥7), but that's skipped if
+> you have `legacy-peer-deps=true` in your `.npmrc`, are on npm <7, or are
+> running via `pnpm dlx`/`yarn dlx` in a directory with no TypeScript
+> installed yet. Fix: `npm install -D typescript` (or run it from inside your
+> NestJS project, which already has one) and retry.
 
 ## CLI usage
 
