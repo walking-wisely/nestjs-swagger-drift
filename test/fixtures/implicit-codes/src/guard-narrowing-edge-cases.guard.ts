@@ -76,6 +76,36 @@ export class NestedFactoryGuard implements CanActivate {
   }
 }
 
+// --- 4b: the same nested-factory shape, but with FUNCTION-DECLARATION
+// factories that branch internally (verification round, real bug: an AST-step
+// depth counter exhausted its budget on ordinary syntax nesting —
+// FunctionDeclaration -> Block -> ReturnStatement -> CallExpression is
+// already several steps per factory level — before actually following as
+// many FACTORY hops as the budget was meant to allow; fixed to count only
+// factory-resolution hops, and this is the shape that would have caught it).
+export const NESTED_KEY_2 = 'nested-key-example-2';
+export function InnerRoleFn(v: string) {
+  if (!v) return SetMetadata(NESTED_KEY_2, 'none');
+  return SetMetadata(NESTED_KEY_2, v);
+}
+export function NestedRoleDecoratorFn(v: string) {
+  return applyDecorators(InnerRoleFn(v));
+}
+@Injectable()
+export class NestedFactoryFnGuard implements CanActivate {
+  constructor(private readonly reflector: Reflector) {}
+  canActivate(context: ExecutionContext): boolean {
+    const role = this.reflector.getAllAndOverride<string>(NESTED_KEY_2, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (role) {
+      throw new ForbiddenException('nested-factory-fn gate');
+    }
+    return true;
+  }
+}
+
 // --- 5: an `||` condition must never be narrowed, even when one operand
 // alone would be — `flattenAnd` deliberately only flattens `&&`.
 export const OR_KEY = 'or-key-example';

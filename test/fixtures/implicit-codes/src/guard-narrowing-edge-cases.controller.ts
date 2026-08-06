@@ -5,8 +5,10 @@ import {
   LiteralKeyDecorator,
   LiteralKeyGuard,
   MapLookupGuard,
+  NestedFactoryFnGuard,
   NestedFactoryGuard,
   NestedRoleDecorator,
+  NestedRoleDecoratorFn,
   OrConditionGuard,
 } from './guard-narrowing-edge-cases.guard.js';
 
@@ -55,6 +57,21 @@ export class GuardNarrowingEdgeCasesController {
   @UseGuards(NestedFactoryGuard)
   @Get('nested-factory-absent')
   nestedFactoryAbsent(): string[] {
+    return [];
+  }
+
+  // Same as nested-factory-present/-absent, but with function-declaration
+  // factories that branch internally — locks in the depth-counting fix.
+  @UseGuards(NestedFactoryFnGuard)
+  @NestedRoleDecoratorFn('admin')
+  @Get('nested-factory-fn-present')
+  nestedFactoryFnPresent(): string[] {
+    return [];
+  }
+
+  @UseGuards(NestedFactoryFnGuard)
+  @Get('nested-factory-fn-absent')
+  nestedFactoryFnAbsent(): string[] {
     return [];
   }
 

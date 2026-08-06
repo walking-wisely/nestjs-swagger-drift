@@ -178,6 +178,17 @@ function functionLikeBodyOf(decl: ts.Declaration): ts.Node | undefined {
  * never recurses into a class, an ambient library signature, or anything
  * else whose subtree could be arbitrarily large, which is what keeps this
  * cheap regardless of what a decorator argument happens to resolve to.
+ *
+ * `depth` counts FACTORY-RESOLUTION hops only — incremented exclusively on
+ * the `collectMetadataKeys(body, ...)` recursion into a newly-resolved
+ * factory's own body, NOT on the plain structural `forEachChild` walk over
+ * `node`'s own subtree (verification round, real bug: incrementing on every
+ * AST step meant ordinary syntax nesting — `FunctionDeclaration` → `Block` →
+ * `ReturnStatement` → `CallExpression` is already 4 steps per factory level
+ * — exhausted the budget well before `MAX_FACTORY_RESOLUTION_DEPTH` factory
+ * levels were actually reached, silently missing a key a realistic
+ * `function`-bodied (as opposed to single-expression-arrow) factory sets,
+ * which then wrongly narrowed away a real finding).
  */
 function collectMetadataKeys(
   node: ts.Node,
@@ -207,7 +218,7 @@ function collectMetadataKeys(
       }
     }
   }
-  ts.forEachChild(node, (child) => collectMetadataKeys(child, checker, out, seen, depth + 1));
+  ts.forEachChild(node, (child) => collectMetadataKeys(child, checker, out, seen, depth));
 }
 
 /** Every metadata key identity set by a decorator actually applied to `methodNode` or `classNode`. */

@@ -84,6 +84,15 @@
  * unchanged — so it cannot make anything LESS reachable than before, only
  * more.
  *
+ * "Free" is capped, not unconditional: `SAME_CLASS_HOP_BUDGET` (below
+ * `expand`) bounds how many consecutive same-class hops stay free before
+ * they start costing depth again — see `expand`'s own comment for why
+ * (code-review round: without a separate cap, a class whose methods fan out
+ * into several same-class helpers each turns this into enumerating every
+ * simple path through that fan-out, exponential in the fan-out width and
+ * unbounded by `maxDepth`). The budget is generous enough that realistic
+ * same-class chains (2-4 deep) are unaffected.
+ *
  * ## Memoization
  *
  * The expensive part of visiting a declaration — walking its body for

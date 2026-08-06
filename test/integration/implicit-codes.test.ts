@@ -293,6 +293,19 @@ describe('checkGuards (opt-in)', () => {
       expect(statusesFor('nestedFactoryAbsent', findings)).not.toContain(403);
     });
 
+    // Verification round, real bug: a depth counter that advanced on every
+    // AST step (not just factory-resolution hops) exhausted its budget on
+    // ordinary syntax nesting for a FUNCTION-DECLARATION factory with an
+    // internal branch, before actually following as many factory hops as
+    // intended — silently missing the key. The arrow-function fixture above
+    // happened to land inside the (buggy) budget either way, so it alone
+    // didn't catch this; this shape does.
+    it('traces a nested factory built from branching function-declaration factories', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('nestedFactoryFnPresent', findings)).toContain(403);
+      expect(statusesFor('nestedFactoryFnAbsent', findings)).not.toContain(403);
+    });
+
     it('never narrows an || condition, even when one operand alone would be provably false', () => {
       const findings = analyze(baseOptions({ checkGuards: true }));
       expect(statusesFor('orCondition', findings)).toContain(403);
