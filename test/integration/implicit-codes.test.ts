@@ -218,6 +218,45 @@ describe('checkGuards (opt-in)', () => {
       });
     }
   });
+
+  // Handler-specific narrowing (adversarial-testing finding, post-Phase-6):
+  // `guard-narrowing.guard.ts`'s `ConditionalThrottleGuard` gates one branch
+  // behind a `@OptIn(...)` decorator read via `Reflector`, and another
+  // behind an HTTP-method membership check — see `guard-narrowing.controller.ts`
+  // for the four handlers, one per combination.
+  describe('handler-specific narrowing', () => {
+    function statusesFor(findings: Finding[], methodName: string): number[] {
+      return findingsFor(findings, 'GuardNarrowingController', methodName)
+        .filter((f) => f.rule === 'undocumented-status')
+        .map((f) => f.status)
+        .sort((a, b) => a - b);
+    }
+
+    it('excludes BOTH branches for a handler with neither the decorator nor a write method', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor(findings, 'noOptInRead')).toEqual([]);
+    });
+
+    it('includes BOTH branches for a handler with the decorator AND a write method', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor(findings, 'optInWrite')).toEqual([403, 409]);
+    });
+
+    it('includes only the HTTP-method branch for a write method without the decorator', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor(findings, 'noOptInWrite')).toEqual([409]);
+    });
+
+    it('includes only the metadata branch for a decorated handler that is not a write method', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor(findings, 'optInRead')).toEqual([403]);
+    });
+
+    it('produces no guard findings at all when checkGuards is disabled (sanity control)', () => {
+      const findings = analyze(baseOptions({ checkGuards: false }));
+      expect(findings.some((f) => f.handler.className === 'GuardNarrowingController')).toBe(false);
+    });
+  });
 });
 
 describe('documented-but-unreachable rule (opt-in)', () => {

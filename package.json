@@ -1,6 +1,6 @@
 {
   "name": "nestjs-swagger-drift",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Static analysis for NestJS controllers: fails CI when a handler can produce an HTTP status code that isn't documented with an @ApiResponse-family decorator.",
   "keywords": [
     "nestjs",

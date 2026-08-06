@@ -63,6 +63,27 @@
  * recursive methods, while still allowing a genuine diamond (`A` and `B` both
  * calling `D`) to be traversed from both paths.
  *
+ * ## Same-class hops are free (adversarial-testing finding, post-Phase-6)
+ *
+ * A hop only consumes depth budget when it crosses into a DIFFERENT class
+ * than the one being expanded. A service method that calls a private helper
+ * on `this`, which in turn calls a repository, is two hops by call-site
+ * count but only ONE genuine dependency crossing (service → repository) —
+ * extracting a private helper for readability is exactly the kind of
+ * refactor that must not change what this tool can see. Verified against a
+ * real false positive: a throw reached only through such a private
+ * same-class helper was reported as `documented-but-unreachable` at the
+ * default `maxDepth: 2` purely because the helper hop ate the budget the
+ * repository call needed — not because the throw was actually unreachable.
+ * `getOwnerClass` below identifies "same class" structurally (the declaring
+ * class node, not name-based, so two different classes that happen to share
+ * a method name are never conflated); a declaration with no owning class (a
+ * free function) never counts as "same class" as anything, so it always
+ * costs a hop, matching prior behavior exactly. This is a strict widening —
+ * free-function and cross-class chains still cost one hop per hop,
+ * unchanged — so it cannot make anything LESS reachable than before, only
+ * more.
+ *
  * ## Memoization
  *
  * The expensive part of visiting a declaration — walking its body for
@@ -165,6 +186,28 @@ function labelForDeclaration(decl: FunctionDeclWithBody): string {
   }
   if (ts.isVariableDeclaration(parent) && ts.isIdentifier(parent.name)) return parent.name.text;
   return '<anonymous>';
+}
+
+/**
+ * The class that lexically declares `decl`, or `undefined` for a free
+ * function/exported const helper — see module doc's "same-class hops are
+ * free". Mirrors `labelForDeclaration`'s own owner-finding logic (a method's
+ * parent, or an arrow/function-expression class property's parent) so the
+ * two never disagree about what "belongs to this class" means; kept as a
+ * separate function rather than folded into `labelForDeclaration` because
+ * callers need the class NODE (for identity comparison), not its name.
+ */
+function getOwnerClass(decl: FunctionDeclWithBody): ts.ClassLikeDeclaration | undefined {
+  if (ts.isMethodDeclaration(decl)) {
+    const owner = decl.parent;
+    return ts.isClassLike(owner) ? owner : undefined;
+  }
+  const parent = decl.parent;
+  if (ts.isPropertyDeclaration(parent)) {
+    const owner = parent.parent;
+    return ts.isClassLike(owner) ? owner : undefined;
+  }
+  return undefined;
 }
 
 /**
@@ -299,12 +342,20 @@ function expand(
   }
 
   visited.add(target.symbol);
+  const callerOwnerClass = getOwnerClass(target.decl);
   for (const nextCall of entry.calls) {
+    // Same-class hop: doesn't consume depth budget — see module doc's
+    // "same-class hops are free". `callerOwnerClass` is `undefined` for a
+    // free function, which never equals `getOwnerClass(nextCall.decl)`
+    // (also possibly `undefined`) by this check, so a free-function hop
+    // always costs depth exactly like before this change.
+    const sameClass =
+      callerOwnerClass !== undefined && getOwnerClass(nextCall.decl) === callerOwnerClass;
     expand(
       { decl: nextCall.decl, symbol: nextCall.symbol },
       nextCall.callNode,
       ctx,
-      remainingDepth - 1,
+      sameClass ? remainingDepth : remainingDepth - 1,
       hopPath,
       visited,
       cacheMap,
