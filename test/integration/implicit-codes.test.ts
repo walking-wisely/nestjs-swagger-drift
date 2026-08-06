@@ -257,6 +257,47 @@ describe('checkGuards (opt-in)', () => {
       expect(findings.some((f) => f.handler.className === 'GuardNarrowingController')).toBe(false);
     });
   });
+
+  // Code-review round: every recognizer in `guard-narrowing.ts` must only
+  // ever narrow on a HIGH-CONFIDENCE match — each case here is a shape that
+  // looks superficially like a narrowable gate but must NOT be narrowed
+  // (edge-cases-guard.ts), plus the literal-key/nested-factory resolution
+  // paths that must correctly narrow when the gate genuinely is absent.
+  describe('handler-specific narrowing — edge cases', () => {
+    function statusesFor(methodName: string, findings: Finding[]): number[] {
+      return findingsFor(findings, 'GuardNarrowingEdgeCasesController', methodName)
+        .filter((f) => f.rule === 'undocumented-status')
+        .map((f) => f.status)
+        .sort((a, b) => a - b);
+    }
+
+    it('never narrows a `.get(...)` call on something that is not a Reflector', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('mapLookup', findings)).toContain(403);
+    });
+
+    it('never narrows an HTTP-method gate for an @All() handler', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('allMethod', findings)).toContain(409);
+    });
+
+    it('matches a metadata key by resolved literal value, not only by symbol identity', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('literalKeyPresent', findings)).toContain(403);
+      expect(statusesFor('literalKeyAbsent', findings)).not.toContain(403);
+    });
+
+    it('traces a decorator composed via applyDecorators(otherFactory(...))', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('nestedFactoryPresent', findings)).toContain(403);
+      expect(statusesFor('nestedFactoryAbsent', findings)).not.toContain(403);
+    });
+
+    it('never narrows an || condition, even when one operand alone would be provably false', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('orCondition', findings)).toContain(403);
+    });
+  });
 });
 
 describe('documented-but-unreachable rule (opt-in)', () => {

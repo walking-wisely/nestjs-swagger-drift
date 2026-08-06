@@ -255,8 +255,8 @@ function collectProducibleStatuses(
     for (const { resolved, source } of collectGuardStatuses(
       methodNode,
       classNode,
-      handlerHttpMethods,
       ctx,
+      handlerHttpMethods,
     )) {
       addSource(byStatus, resolved.status, source);
     }

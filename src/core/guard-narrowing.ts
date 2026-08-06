@@ -41,7 +41,29 @@
  * today's behavior (assume reachable). Getting this wrong in the suppressing
  * direction hides a real finding, which is a worse failure than the noise it
  * fixes — every recognizer below only narrows on a positive, high-confidence
- * match, never on "couldn't tell."
+ * match, never on "couldn't tell." Concretely (code-review round, all
+ * verified against a failing probe before the fix):
+ *
+ * - Pattern 1 requires the receiver's TYPE to be named `Reflector`
+ *   (`isReflectorReceiver`) — `this.blocked.get(key)` on a plain `Map` is
+ *   not a metadata read and must never be treated as one, even though it
+ *   matches `.get(IDENT, ...)` syntactically.
+ * - A metadata key is matched by its resolved STRING VALUE when one is
+ *   statically known (`resolveKeyIdentity`), not only by symbol identity —
+ *   `SetMetadata('roles', ...)` written as a literal on one side and read
+ *   via a shared `ROLES_KEY` const on the other name the same key and must
+ *   still match; symbol identity is the fallback for a key that never
+ *   resolves to a literal.
+ * - `collectAppliedMetadataKeys` follows a decorator factory that calls
+ *   ANOTHER decorator factory (`applyDecorators(Roles('admin'))`), not only
+ *   a factory that calls `SetMetadata` directly — bounded by
+ *   `MAX_FACTORY_RESOLUTION_DEPTH` and a `seen` set (factories are never
+ *   deeply nested in practice; the bound is a defensive backstop, not a
+ *   realistic ceiling).
+ * - Pattern 2 never narrows for `httpMethod: 'ALL'` — `@All()`'s real
+ *   semantics aren't knowable from the decorator alone (same reasoning
+ *   `success.ts` already applies to it), so treating it as excluded from
+ *   every concrete-method set would be a guess, not a proof.
  *
  * Deliberately scoped to `canActivate`'s OWN top-level body — not threaded
  * through the call graph into whatever `canActivate` calls. A guard that
@@ -54,6 +76,7 @@
 import * as ts from 'typescript';
 import type { HttpMethod } from './types.js';
 import { getDecoratorNameNode } from './decorators.js';
+import { resolveAliasedSymbol } from './heritage.js';
 
 function safeSymbol(checker: ts.TypeChecker, node: ts.Node): ts.Symbol | undefined {
   try {
@@ -61,26 +84,6 @@ function safeSymbol(checker: ts.TypeChecker, node: ts.Node): ts.Symbol | undefin
   } catch {
     return undefined;
   }
-}
-
-/**
- * Follows an alias symbol (an imported binding) through to the symbol it
- * actually refers to — same alias-following `heritage.ts`'s
- * `resolveClassDeclaration` does. Needed here because a decorator factory
- * referenced through an `import { OptIn } from '...'` resolves, without
- * this, to the IMPORT SPECIFIER's own declaration (which has no body to
- * scan), not the real `export const OptIn = (...) => SetMetadata(...)` this
- * module needs to look inside.
- */
-function resolveAliasedSymbol(symbol: ts.Symbol, checker: ts.TypeChecker): ts.Symbol {
-  if ((symbol.flags & ts.SymbolFlags.Alias) === 0) return symbol;
-  try {
-    const aliased = checker.getAliasedSymbol(symbol);
-    if (aliased !== symbol && (aliased.getDeclarations()?.length ?? 0) > 0) return aliased;
-  } catch {
-    // fall through: stays the alias symbol
-  }
-  return symbol;
 }
 
 function isNestedFunctionLikeOrClass(node: ts.Node): boolean {
@@ -98,79 +101,163 @@ function isNestedFunctionLikeOrClass(node: ts.Node): boolean {
 
 // --- Pattern 1: decorator-metadata gates ------------------------------------
 
-/** Resolves an `Identifier` naming a metadata key to a symbol, following an import alias if it is one. */
-function resolveKeySymbol(node: ts.Identifier, checker: ts.TypeChecker): ts.Symbol | undefined {
-  const sym = safeSymbol(checker, node);
-  return sym ? resolveAliasedSymbol(sym, checker) : undefined;
+/**
+ * A metadata key's identity: its resolved literal string value when one is
+ * statically known, ALWAYS alongside the symbol actually written at the use
+ * site (module doc's "matched by resolved string value ... symbol identity
+ * is the fallback"). Two identities match if either their `literal`s or
+ * their `symbol`s agree — see `keyIdentitiesMatch`.
+ */
+interface KeyIdentity {
+  symbol: ts.Symbol;
+  literal: string | undefined;
 }
 
-/** Every metadata key symbol a `SetMetadata(...)` call anywhere in `node` sets — bounded, see call site. */
-function collectSetMetadataKeys(node: ts.Node, checker: ts.TypeChecker, out: Set<ts.Symbol>): void {
-  if (ts.isCallExpression(node)) {
-    const callee = node.expression;
-    if (ts.isIdentifier(callee) && callee.text === 'SetMetadata') {
-      const keyArg = node.arguments[0];
-      if (keyArg && ts.isIdentifier(keyArg)) {
-        const sym = resolveKeySymbol(keyArg, checker);
-        if (sym) out.add(sym);
-      }
+/** Resolves an identifier to a string-literal VALUE where statically possible — mirrors `decorators.ts`'s own resolver. */
+function resolveStringLiteralValue(expr: ts.Expression, checker: ts.TypeChecker): string | undefined {
+  if (ts.isStringLiteralLike(expr)) return expr.text;
+  if (ts.isIdentifier(expr)) {
+    const sym = safeSymbol(checker, expr);
+    const decl = sym ? resolveAliasedSymbol(sym, checker).valueDeclaration : undefined;
+    if (decl && ts.isVariableDeclaration(decl) && decl.initializer) {
+      return resolveStringLiteralValue(decl.initializer, checker);
+    }
+    try {
+      const type = checker.getTypeAtLocation(expr);
+      if (type.isStringLiteral()) return type.value;
+    } catch {
+      // falls through to undefined
     }
   }
-  ts.forEachChild(node, (child) => collectSetMetadataKeys(child, checker, out));
+  return undefined;
+}
+
+function resolveKeyIdentity(keyArg: ts.Expression, checker: ts.TypeChecker): KeyIdentity | undefined {
+  if (!ts.isIdentifier(keyArg) && !ts.isStringLiteralLike(keyArg)) return undefined;
+  const literal = resolveStringLiteralValue(keyArg, checker);
+  if (!ts.isIdentifier(keyArg)) {
+    // A literal with no identifier to key a symbol off — synthesize nothing;
+    // literal-only matching still works via `keyIdentitiesMatch`'s OR.
+    if (literal === undefined) return undefined;
+    return { symbol: NO_SYMBOL, literal };
+  }
+  const rawSym = safeSymbol(checker, keyArg);
+  if (!rawSym) return literal === undefined ? undefined : { symbol: NO_SYMBOL, literal };
+  return { symbol: resolveAliasedSymbol(rawSym, checker), literal };
+}
+
+/** Placeholder for "no real symbol" (a bare string-literal key) — never equal to any real `ts.Symbol`. */
+const NO_SYMBOL = {} as ts.Symbol;
+
+function keyIdentitiesMatch(a: KeyIdentity, b: KeyIdentity): boolean {
+  if (a.literal !== undefined && a.literal === b.literal) return true;
+  return a.symbol !== NO_SYMBOL && a.symbol === b.symbol;
+}
+
+const MAX_FACTORY_RESOLUTION_DEPTH = 8;
+
+function functionLikeBodyOf(decl: ts.Declaration): ts.Node | undefined {
+  if (
+    ts.isVariableDeclaration(decl) &&
+    decl.initializer &&
+    (ts.isArrowFunction(decl.initializer) || ts.isFunctionExpression(decl.initializer))
+  ) {
+    return decl.initializer;
+  }
+  if (ts.isFunctionDeclaration(decl) && decl.body) return decl;
+  return undefined;
 }
 
 /**
- * Every metadata key symbol set by a decorator actually applied to
- * `methodNode` or `classNode` — resolves each decorator's callee to its
- * declaration and, ONLY when that declaration is itself a function/arrow
- * (a decorator factory, never a class or an ambient library signature —
- * this bound is what keeps the scan cheap: a factory's body is always a few
- * statements, never an arbitrarily large subtree), scans it for
- * `SetMetadata(...)` calls, including through a wrapper like
- * `applyDecorators(SetMetadata(...), ...)`. A bare `@SetMetadata(KEY, ...)`
- * applied directly (no custom wrapper) is also recognized, since its own
- * call expression already matches `collectSetMetadataKeys` directly.
+ * Every metadata key identity a `SetMetadata(...)` call anywhere in `node`
+ * sets, following calls to OTHER locally-resolvable decorator factories too
+ * (module doc's `applyDecorators(Roles('admin'))` case) — bounded by
+ * `MAX_FACTORY_RESOLUTION_DEPTH` and `seen` (cycle guard for two factories
+ * that call each other, which shouldn't happen but costs nothing to guard).
+ * Scoped to genuine factory shapes only (`functionLikeBodyOf`'s check) —
+ * never recurses into a class, an ambient library signature, or anything
+ * else whose subtree could be arbitrarily large, which is what keeps this
+ * cheap regardless of what a decorator argument happens to resolve to.
  */
+function collectMetadataKeys(
+  node: ts.Node,
+  checker: ts.TypeChecker,
+  out: KeyIdentity[],
+  seen: Set<ts.Declaration>,
+  depth: number,
+): void {
+  if (depth > MAX_FACTORY_RESOLUTION_DEPTH) return;
+  if (ts.isCallExpression(node)) {
+    const callee = node.expression;
+    if (ts.isIdentifier(callee)) {
+      if (callee.text === 'SetMetadata') {
+        const keyArg = node.arguments[0];
+        const identity = keyArg && resolveKeyIdentity(keyArg, checker);
+        if (identity) out.push(identity);
+      } else {
+        const rawSym = safeSymbol(checker, callee);
+        const sym = rawSym ? resolveAliasedSymbol(rawSym, checker) : undefined;
+        for (const decl of sym?.getDeclarations() ?? []) {
+          if (seen.has(decl)) continue;
+          const body = functionLikeBodyOf(decl);
+          if (!body) continue;
+          seen.add(decl);
+          collectMetadataKeys(body, checker, out, seen, depth + 1);
+        }
+      }
+    }
+  }
+  ts.forEachChild(node, (child) => collectMetadataKeys(child, checker, out, seen, depth + 1));
+}
+
+/** Every metadata key identity set by a decorator actually applied to `methodNode` or `classNode`. */
 function collectAppliedMetadataKeys(
   methodNode: ts.MethodDeclaration,
   classNode: ts.ClassLikeDeclaration,
   checker: ts.TypeChecker,
-): Set<ts.Symbol> {
-  const out = new Set<ts.Symbol>();
+): KeyIdentity[] {
+  const out: KeyIdentity[] = [];
+  const seen = new Set<ts.Declaration>();
   for (const node of [classNode, methodNode]) {
     if (!ts.canHaveDecorators(node)) continue;
     const decorators = ts.getDecorators(node);
     if (!decorators) continue;
     for (const decorator of decorators) {
+      // A bare `@SetMetadata(KEY, ...)` applied directly (no custom wrapper).
       if (ts.isCallExpression(decorator.expression)) {
-        collectSetMetadataKeys(decorator.expression, checker, out);
+        collectMetadataKeys(decorator.expression, checker, out, seen, 0);
       }
       const nameNode = getDecoratorNameNode(decorator);
       const rawSym = safeSymbol(checker, nameNode);
       const sym = rawSym ? resolveAliasedSymbol(rawSym, checker) : undefined;
       for (const decl of sym?.getDeclarations() ?? []) {
-        let factoryBody: ts.Node | undefined;
-        if (
-          ts.isVariableDeclaration(decl) &&
-          decl.initializer &&
-          (ts.isArrowFunction(decl.initializer) || ts.isFunctionExpression(decl.initializer))
-        ) {
-          factoryBody = decl.initializer;
-        } else if (ts.isFunctionDeclaration(decl) && decl.body) {
-          factoryBody = decl;
-        }
-        if (factoryBody) collectSetMetadataKeys(factoryBody, checker, out);
+        if (seen.has(decl)) continue;
+        const body = functionLikeBodyOf(decl);
+        if (!body) continue;
+        seen.add(decl);
+        collectMetadataKeys(body, checker, out, seen, 0);
       }
     }
   }
   return out;
 }
 
-/** Recognizes `<reflector>.getAllAndOverride(KEY, ...)` / `.get(KEY, ...)`, directly or via a local variable. */
-function metadataKeySymbolForCondition(
+/** `true` when `expr`'s TYPE is named `Reflector` — see module doc's "requires the receiver's TYPE". */
+function isReflectorReceiver(expr: ts.Expression, checker: ts.TypeChecker): boolean {
+  try {
+    const type = checker.getTypeAtLocation(expr);
+    const symbol = type.getSymbol() ?? type.aliasSymbol;
+    return symbol?.getName() === 'Reflector';
+  } catch {
+    return false;
+  }
+}
+
+/** Recognizes `<Reflector instance>.getAllAndOverride(KEY, ...)` / `.get(KEY, ...)`, directly or via a local variable. */
+function metadataKeyIdentityForCondition(
   expr: ts.Expression,
   checker: ts.TypeChecker,
-): ts.Symbol | undefined {
+): KeyIdentity | undefined {
   let current = expr;
   while (ts.isParenthesizedExpression(current)) current = current.expression;
 
@@ -178,7 +265,7 @@ function metadataKeySymbolForCondition(
     const sym = safeSymbol(checker, current);
     const decl = sym?.valueDeclaration;
     if (decl && ts.isVariableDeclaration(decl) && decl.initializer) {
-      return metadataKeySymbolForCondition(decl.initializer, checker);
+      return metadataKeyIdentityForCondition(decl.initializer, checker);
     }
     return undefined;
   }
@@ -188,9 +275,10 @@ function metadataKeySymbolForCondition(
   }
   const methodName = current.expression.name.text;
   if (methodName !== 'getAllAndOverride' && methodName !== 'get') return undefined;
+  if (!isReflectorReceiver(current.expression.expression, checker)) return undefined;
   const keyArg = current.arguments[0];
-  if (!keyArg || !ts.isIdentifier(keyArg)) return undefined;
-  return resolveKeySymbol(keyArg, checker);
+  if (!keyArg) return undefined;
+  return resolveKeyIdentity(keyArg, checker);
 }
 
 // --- Pattern 2: HTTP-method gates -------------------------------------------
@@ -251,13 +339,21 @@ function resolveStringLiteralSet(expr: ts.Expression, checker: ts.TypeChecker): 
   return undefined;
 }
 
-/** `true` only when `expr` is a recognized HTTP-method gate that PROVABLY excludes `httpMethod`. */
+/**
+ * `true` only when `expr` is a recognized HTTP-method gate that PROVABLY
+ * excludes `httpMethod`. Always `false` for `httpMethod: 'ALL'` — module
+ * doc's "never narrows for `@All()`": its real semantics aren't knowable
+ * from the decorator alone, so treating it as excluded from every
+ * concrete-method set would be a guess.
+ */
 function isProvablyFalseHttpMethodCheck(
   expr: ts.Expression,
   requestSymbols: ReadonlySet<ts.Symbol>,
   httpMethod: HttpMethod,
   checker: ts.TypeChecker,
 ): boolean {
+  if (httpMethod === 'ALL') return false;
+
   if (ts.isCallExpression(expr) && ts.isPropertyAccessExpression(expr.expression)) {
     const memberName = expr.expression.name.text;
     if (memberName === 'has' || memberName === 'includes') {
@@ -299,7 +395,7 @@ function flattenAnd(expr: ts.Expression): ts.Expression[] {
 }
 
 interface NarrowingContext {
-  appliedKeys: ReadonlySet<ts.Symbol>;
+  appliedKeys: readonly KeyIdentity[];
   requestSymbols: ReadonlySet<ts.Symbol>;
   httpMethod: HttpMethod;
   checker: ts.TypeChecker;
@@ -308,8 +404,10 @@ interface NarrowingContext {
 /** `true` when ANY `&&`-operand of `expr` is provably false — sufficient to make the whole conjunction false. */
 function isConditionProvablyFalse(expr: ts.Expression, ctx: NarrowingContext): boolean {
   for (const operand of flattenAnd(expr)) {
-    const metadataKey = metadataKeySymbolForCondition(operand, ctx.checker);
-    if (metadataKey !== undefined && !ctx.appliedKeys.has(metadataKey)) return true;
+    const metadataKey = metadataKeyIdentityForCondition(operand, ctx.checker);
+    if (metadataKey !== undefined && !ctx.appliedKeys.some((k) => keyIdentitiesMatch(k, metadataKey))) {
+      return true;
+    }
     if (isProvablyFalseHttpMethodCheck(operand, ctx.requestSymbols, ctx.httpMethod, ctx.checker)) {
       return true;
     }
@@ -369,6 +467,7 @@ export function computeExcludedGuardBranches(
 
 /** Whether `node` (or any ancestor) is one of `excluded`'s roots — see `computeExcludedGuardBranches`. */
 export function isNodeInExcludedGuardBranch(node: ts.Node, excluded: ReadonlySet<ts.Node>): boolean {
+  if (excluded.size === 0) return false;
   let current: ts.Node | undefined = node;
   while (current) {
     if (excluded.has(current)) return true;

@@ -129,13 +129,19 @@ function resolveCanActivateMethod(
  * `@UseGuards(...)` — see module doc. `handlerHttpMethods` is every HTTP
  * method `methodNode` yields a `HandlerInfo` for (module doc's "handler-
  * specific narrowing" — usually one entry, more than one only for a method
- * carrying multiple HTTP decorators).
+ * carrying multiple HTTP decorators). Appended as a trailing OPTIONAL
+ * parameter (default `[]`, under which `computeExcludedGuardBranches`
+ * narrows nothing at all — its own early return), not inserted before `ctx`
+ * — this function is re-exported from `core/index.ts`'s public barrel, and
+ * a trailing optional parameter is the one insertion shape an existing
+ * 3-argument external caller keeps compiling against unchanged, rather than
+ * silently binding its `ctx` argument into the wrong parameter slot.
  */
 export function collectGuardStatuses(
   methodNode: ts.MethodDeclaration,
   classNode: ts.ClassLikeDeclaration,
-  handlerHttpMethods: readonly HttpMethod[],
   ctx: AnalysisContext,
+  handlerHttpMethods: readonly HttpMethod[] = [],
 ): GuardFinding[] {
   const guardArgs = [
     ...collectUseGuardsArguments(classNode, ctx.checker),
@@ -180,6 +186,7 @@ export function collectGuardStatuses(
       ctx,
       ctx.options.maxDepth,
     );
+    if (findings.length === 0) continue; // nothing to narrow — skip the decorator/metadata scan entirely
 
     const excludedBranches = computeExcludedGuardBranches(
       canActivate.body,

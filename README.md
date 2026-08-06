@@ -103,7 +103,8 @@ Options:
                                unless set via a config file.
       --routes                Print the discovered route table instead of findings.
       --reporter <mode>       "pretty" (default) or "json".
-      --max-depth <n>         Call-graph traversal depth (default: 2).
+      --max-depth <n>         Call-graph traversal depth, in cross-class hops — a method
+                               calling a private helper on its own class is free (default: 2).
       --fail-on <rules>       "all" (default), "none", or a comma-separated list of
                                rule names that should cause a nonzero exit.
       --ignore <glob>         Exclude matching source files (repeatable).

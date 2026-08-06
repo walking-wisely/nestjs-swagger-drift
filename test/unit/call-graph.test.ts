@@ -271,6 +271,55 @@ describe('collectCallGraphStatuses — same-class hops are free', () => {
 
     expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
   });
+
+  // Code-review finding, verified: with same-class hops free and NO separate
+  // bound, a class whose methods fan out into several same-class helpers
+  // each turns this traversal into enumerating every simple path through
+  // that fan-out — exponential in the fan-out width, unbounded by
+  // `maxDepth`. Confirmed empirically to crash a real process past ~28
+  // methods at fan-out 3. `SAME_CLASS_HOP_BUDGET` bounds it: a same-class
+  // chain longer than that budget starts costing depth again, exactly like
+  // a cross-class hop. This test's shape (30 methods, each calling the next
+  // 3) is the exact reported crash shape, at a size that used to be well
+  // past the crash point.
+  it('a wide same-class fan-out does not explode combinatorially (DoS regression)', () => {
+    const methodCount = 30;
+    let methods = '';
+    for (let i = 0; i < methodCount; i++) {
+      const calls = [i + 1, i + 2, i + 3]
+        .filter((j) => j < methodCount)
+        .map((j) => `this.m${j}()`)
+        .join('; ');
+      methods += `  private m${i}(): void { ${calls}; }\n`;
+    }
+    const program = programWithMain(`
+      import { NotFoundException } from '@nestjs/common';
+      export class FanOutService {
+${methods}
+        entry(): void {
+          this.m0();
+        }
+      }
+      export class FanOutController {
+        constructor(private readonly svc: FanOutService) {}
+        get(): void {
+          this.svc.entry();
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 2 }));
+    const handler = findMethod(program, 'main.ts', 'FanOutController', 'get');
+
+    const start = Date.now();
+    const { findings } = collectCallGraphStatuses(handler, ctx);
+    const elapsedMs = Date.now() - start;
+
+    // Nothing in the fan-out throws at all — the point is purely that
+    // walking it completes fast and doesn't enumerate an exponential number
+    // of duplicate (empty) paths.
+    expect(elapsedMs).toBeLessThan(5000);
+    expect(findings).toHaveLength(0);
+  });
 });
 
 describe('collectCallGraphStatuses — via path contents', () => {
