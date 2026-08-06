@@ -3,7 +3,7 @@
 // various fallback resolution paths (PLAN §4.3 review S2) must still pin
 // these down to a concrete status.
 import { Controller, Get, Post, Delete, Patch, NotFoundException } from '@nestjs/common';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 
 // A plain `const` primitive keeps its literal type at every read site (TS
 // never widens a `const` primitive the way it widens `let`), so
@@ -27,6 +27,7 @@ export class ConstStatusController {
   // `@ApiResponse({ status: SOME_CONST })` — a bare identifier reference to a
   // module-level `const` primitive.
   @Get('const-ref')
+  @ApiOkResponse({ description: 'widget' })
   @ApiResponse({ status: NOT_FOUND_STATUS, description: 'not found' })
   findByConstRef(): string {
     throw new NotFoundException('not found');
@@ -36,6 +37,7 @@ export class ConstStatusController {
   // directly-literal `status` override; the direct property wins regardless
   // of what `BASE` itself contains.
   @Post('spread-and-explicit')
+  @ApiCreatedResponse({ description: 'created' })
   @ApiResponse({ ...BASE_NOT_FOUND, status: 404, description: 'explicit override' })
   createWithSpreadAndExplicit(): string {
     throw new NotFoundException('not found');
@@ -44,6 +46,7 @@ export class ConstStatusController {
   // Spread-only: the status arrives purely through `...BASE_NOT_FOUND`, with
   // no direct `status` property at the use site at all.
   @Delete('spread-only')
+  @ApiOkResponse({ description: 'removed' })
   @ApiResponse({ ...BASE_NOT_FOUND })
   removeViaSpreadOnly(): void {
     throw new NotFoundException('not found');
@@ -55,6 +58,7 @@ export class ConstStatusController {
   // a method-local variable) referenced by name, doubling as both property
   // key and value.
   @Patch('shorthand-prop')
+  @ApiOkResponse({ description: 'updated' })
   @ApiResponse({ status, description })
   updateViaShorthand(): string {
     throw new NotFoundException('not found');

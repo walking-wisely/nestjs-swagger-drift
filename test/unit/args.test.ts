@@ -18,6 +18,9 @@ describe('parseArgs', () => {
         enableRules: [],
         disableRules: [],
         treatDefaultAsWildcard: undefined,
+        checkSuccessResponse: undefined,
+        checkValidationPipe: undefined,
+        checkGuards: undefined,
         baseDir: undefined,
         config: undefined,
         noConfig: false,
@@ -124,6 +127,27 @@ describe('parseArgs', () => {
     expect(on.ok && on.flags.treatDefaultAsWildcard).toBe(true);
     const off = parseArgs(['--no-treat-default-as-wildcard']);
     expect(off.ok && off.flags.treatDefaultAsWildcard).toBe(false);
+  });
+
+  it('parses --check-success-response and its negation', () => {
+    const on = parseArgs(['--check-success-response']);
+    expect(on.ok && on.flags.checkSuccessResponse).toBe(true);
+    const off = parseArgs(['--no-check-success-response']);
+    expect(off.ok && off.flags.checkSuccessResponse).toBe(false);
+  });
+
+  it('parses --check-validation-pipe and its negation', () => {
+    const on = parseArgs(['--check-validation-pipe']);
+    expect(on.ok && on.flags.checkValidationPipe).toBe(true);
+    const off = parseArgs(['--no-check-validation-pipe']);
+    expect(off.ok && off.flags.checkValidationPipe).toBe(false);
+  });
+
+  it('parses --check-guards and its negation', () => {
+    const on = parseArgs(['--check-guards']);
+    expect(on.ok && on.flags.checkGuards).toBe(true);
+    const off = parseArgs(['--no-check-guards']);
+    expect(off.ok && off.flags.checkGuards).toBe(false);
   });
 
   it('parses --base-dir and --config', () => {

@@ -21,6 +21,16 @@ function defaultOptions(): AnalysisOptions {
     rules: { 'documented-but-unreachable': false, 'unresolvable-status': false },
     treatDefaultAsWildcard: false,
     ignoreStatuses: [],
+    // Phase 5 review, finding #3: this used to hardcode `false` here so the
+    // `status-diff`/`no-false-positives` fixtures (written before
+    // `checkSuccessResponse` existed) wouldn't need updating — but that also
+    // meant NO test anywhere exercised the tool's actual shipped default
+    // (`true`, same as `AnalysisOptions.checkSuccessResponse`'s own
+    // point-of-use default in `analyze.ts`) against the "no false positives"
+    // corpus, which is exactly the regression net PLAN §7 says that corpus
+    // exists to provide. Both fixtures now document their handlers' real
+    // success responses, so this can — and must — match the real default.
+    checkSuccessResponse: true,
   };
 }
 
@@ -70,11 +80,28 @@ function analyzeFixture(
   return nodes.flatMap((n) => analyzeHandler(n, ctx));
 }
 
+/**
+ * `status-diff` (below) predates `checkSuccessResponse` (PLAN §4.1c) and is
+ * deliberately scoped to throw/call-graph/documented-decorator behavior —
+ * its controllers were written before success-response documentation
+ * existed and none of them document one, so every one of this describe
+ * block's specific-finding assertions would otherwise also need to account
+ * for an unrelated `200`/`201` "implicit success" finding on every single
+ * handler. `implicit-codes.test.ts` already covers `checkSuccessResponse`
+ * end to end. This is NOT the finding #3 workaround (that was disabling
+ * `checkSuccessResponse` specifically to dodge the `no-false-positives`
+ * corpus, which uses `defaultOptions()` — real defaults — unmodified below);
+ * `status-diff` was never a "reports nothing" corpus in the first place.
+ */
+function statusDiffOptions(overrides: Partial<AnalysisOptions> = {}): AnalysisOptions {
+  return { ...defaultOptions(), checkSuccessResponse: false, ...overrides };
+}
+
 describe('analyzeHandler over the status-diff fixture', () => {
   const FIXTURE_DIR = join(__dirname, '../fixtures/status-diff');
 
   it('produces exactly the expected undocumented-status findings', () => {
-    const findings = analyzeFixture(FIXTURE_DIR);
+    const findings = analyzeFixture(FIXTURE_DIR, statusDiffOptions());
     const actual = sortSerialized(findings.map(serialize));
     const expected: ExpectedFinding[] = JSON.parse(
       readFileSync(join(FIXTURE_DIR, 'expected.json'), 'utf8'),
@@ -83,7 +110,7 @@ describe('analyzeHandler over the status-diff fixture', () => {
   });
 
   it('finds the undocumented 404 (Phase 2 exit criterion)', () => {
-    const findings = analyzeFixture(FIXTURE_DIR);
+    const findings = analyzeFixture(FIXTURE_DIR, statusDiffOptions());
     const widget = findings.find(
       (f) => f.rule === 'undocumented-status' && f.handler.className === 'UndocumentedController',
     );
@@ -94,17 +121,17 @@ describe('analyzeHandler over the status-diff fixture', () => {
   });
 
   it('a throw inside a callback produces no finding', () => {
-    const findings = analyzeFixture(FIXTURE_DIR);
+    const findings = analyzeFixture(FIXTURE_DIR, statusDiffOptions());
     expect(findings.some((f) => f.handler.className === 'CallbackThrowController')).toBe(false);
   });
 
   it('a dynamic (non-literal) HttpException status resolves to unknown (no finding)', () => {
-    const findings = analyzeFixture(FIXTURE_DIR);
+    const findings = analyzeFixture(FIXTURE_DIR, statusDiffOptions());
     expect(findings.some((f) => f.handler.className === 'UnresolvableController')).toBe(false);
   });
 
   it('a custom exception class extending a built-in (extends chain) produces a finding (Phase 3)', () => {
-    const findings = analyzeFixture(FIXTURE_DIR);
+    const findings = analyzeFixture(FIXTURE_DIR, statusDiffOptions());
     const finding = findings.find(
       (f) =>
         f.rule === 'undocumented-status' &&
@@ -116,7 +143,7 @@ describe('analyzeHandler over the status-diff fixture', () => {
   });
 
   it('a custom exception class extending HttpException with super(msg, 409) produces a finding (Phase 3)', () => {
-    const findings = analyzeFixture(FIXTURE_DIR);
+    const findings = analyzeFixture(FIXTURE_DIR, statusDiffOptions());
     const finding = findings.find(
       (f) =>
         f.rule === 'undocumented-status' &&
@@ -128,13 +155,13 @@ describe('analyzeHandler over the status-diff fixture', () => {
   });
 
   it('@ApiDefaultResponse does not suppress findings by default (treatDefaultAsWildcard: false)', () => {
-    const findings = analyzeFixture(FIXTURE_DIR);
+    const findings = analyzeFixture(FIXTURE_DIR, statusDiffOptions());
     expect(findings.some((f) => f.handler.className === 'DefaultWildcardController')).toBe(true);
   });
 
   it('@ApiDefaultResponse suppresses findings when treatDefaultAsWildcard is enabled', () => {
     const findings = analyzeFixture(FIXTURE_DIR, {
-      ...defaultOptions(),
+      ...statusDiffOptions(),
       treatDefaultAsWildcard: true,
     });
     expect(findings.some((f) => f.handler.className === 'DefaultWildcardController')).toBe(false);
@@ -146,7 +173,7 @@ describe('analyzeHandler over the status-diff fixture', () => {
     // Non-vacuous per this repo's testing norm (PLAN §7): the 409 sibling in
     // the same handler, produced by the exact same mechanism with no
     // comment, proves this isn't "nothing was detected here at all."
-    const findings = analyzeFixture(FIXTURE_DIR);
+    const findings = analyzeFixture(FIXTURE_DIR, statusDiffOptions());
     const suppressed = findings.filter((f) => f.handler.className === 'SuppressedController');
     expect(suppressed).toHaveLength(1);
     expect(suppressed[0]).toMatchObject({ status: 409 });
@@ -159,7 +186,7 @@ describe('analyzeHandler over the status-diff fixture', () => {
     // Non-vacuous the same way as the single-file suppression test above:
     // the sibling 409 (undirected, no comment, reached through the exact
     // same call-graph mechanism) must still be reported.
-    const findings = analyzeFixture(FIXTURE_DIR);
+    const findings = analyzeFixture(FIXTURE_DIR, statusDiffOptions());
     const crossFile = findings.filter(
       (f) => f.handler.className === 'CrossFileSuppressedController',
     );
@@ -171,7 +198,7 @@ describe('analyzeHandler over the status-diff fixture', () => {
   });
 
   it('--audit ignores suppression directives, surfacing the finding they would otherwise hide', () => {
-    const findings = analyzeFixture(FIXTURE_DIR, { ...defaultOptions(), ignoreSuppressions: true });
+    const findings = analyzeFixture(FIXTURE_DIR, { ...statusDiffOptions(), ignoreSuppressions: true });
     const suppressedController = findings.filter((f) => f.handler.className === 'SuppressedController');
     expect(suppressedController.some((f) => f.rule === 'undocumented-status' && f.status === 404)).toBe(
       true,
@@ -183,7 +210,7 @@ describe('analyzeHandler over the status-diff fixture', () => {
   it('analyzeHandler reports suppressed findings via onSuppressed, including which file the directive lives in', () => {
     const outcome = createProgramFromTsConfig(join(FIXTURE_DIR, 'tsconfig.json'));
     if (!outcome.ok) throw new Error(`failed to build program for ${FIXTURE_DIR}`);
-    const ctx = createAnalysisContext(outcome.result.program, defaultOptions());
+    const ctx = createAnalysisContext(outcome.result.program, statusDiffOptions());
     const nodes = discoverHandlerMethodNodes(outcome.result.program);
     const suppressed: Array<{ handler: { className: string }; status: number; file: string; line: number }> = [];
     for (const node of nodes) {
@@ -206,7 +233,7 @@ describe('analyzeHandler over the status-diff fixture', () => {
     // flagged as unused, because this run never actually analyzed it.
     const outcome = createProgramFromTsConfig(join(FIXTURE_DIR, 'tsconfig.json'));
     if (!outcome.ok) throw new Error(`failed to build program for ${FIXTURE_DIR}`);
-    const ctx = createAnalysisContext(outcome.result.program, defaultOptions());
+    const ctx = createAnalysisContext(outcome.result.program, statusDiffOptions());
     const nodes = discoverHandlerMethodNodes(outcome.result.program);
     const analyzedFiles = new Set<string>();
     for (const node of nodes) {
@@ -223,7 +250,7 @@ describe('analyzeHandler over the status-diff fixture', () => {
   });
 
   it('ignoreStatuses suppresses a specific status code', () => {
-    const findings = analyzeFixture(FIXTURE_DIR, { ...defaultOptions(), ignoreStatuses: [404] });
+    const findings = analyzeFixture(FIXTURE_DIR, { ...statusDiffOptions(), ignoreStatuses: [404] });
     expect(findings.some((f) => f.rule === 'undocumented-status' && f.status === 404)).toBe(false);
   });
 
@@ -259,6 +286,12 @@ describe('analyzeHandler over the status-diff fixture', () => {
 describe('analyzeHandler over the no-false-positives corpus', () => {
   const FIXTURE_DIR = join(__dirname, '../fixtures/no-false-positives');
 
+  // Phase 5 review, finding #3: both tests below now run under
+  // `defaultOptions()`/real CLI defaults (`checkSuccessResponse: true`
+  // included, no `--no-check-success-response`) — this corpus's entire
+  // purpose (PLAN §7) is proving the tool is quiet on clean code under the
+  // config it actually ships with, so exercising it under anything less than
+  // real defaults would defeat the point.
   it('reports exactly nothing', () => {
     const findings = analyzeFixture(FIXTURE_DIR);
     expect(findings).toEqual([]);
@@ -283,7 +316,7 @@ describe('analyzeHandler is a no-op for non-handler methods', () => {
       join(__dirname, '../fixtures/status-diff/tsconfig.json'),
     );
     if (!outcome.ok) throw new Error('failed to build program');
-    const ctx = createAnalysisContext(outcome.result.program, defaultOptions());
+    const ctx = createAnalysisContext(outcome.result.program, statusDiffOptions());
 
     const sourceFile = outcome.result.program
       .getSourceFiles()
@@ -314,7 +347,7 @@ describe('analyzeHandler is a no-op for non-handler methods', () => {
       join(__dirname, '../fixtures/status-diff/tsconfig.json'),
     );
     if (!outcome.ok) throw new Error('failed to build program');
-    const ctx = createAnalysisContext(outcome.result.program, defaultOptions());
+    const ctx = createAnalysisContext(outcome.result.program, statusDiffOptions());
 
     const sourceFile = outcome.result.program
       .getSourceFiles()

@@ -25,16 +25,17 @@ function describeSourcePretty(source: StatusSource, baseDir: string): string {
       return `direct throw  ${formatLocation(locationOf(source.node, baseDir))}`;
     case 'service-throw':
       return `${source.via.map((hop) => hop.name).join(' → ')}  ${formatLocation(locationOf(source.node, baseDir))}`;
-    case 'implicit':
-      return `implicit (${source.reason})  ${formatLocation(locationOf(source.node, baseDir))}`;
+    case 'implicit': {
+      const label = source.detail ? `${source.reason}: ${source.detail}` : source.reason;
+      return `implicit (${label})  ${formatLocation(locationOf(source.node, baseDir))}`;
+    }
   }
 }
 
 /**
- * PLAN §4.4's report shape. `undocumented-status` is the only rule Phase 2–3
- * actually produce; `documented-but-unreachable`/`unresolvable-status` are
- * opt-in and unimplemented (Phase 5), but this switches on `rule` so a
- * future rule can't silently print nothing.
+ * PLAN §4.4's report shape, extended in Phase 5 for the two opt-in rules
+ * `undocumented-status` was previously the only one this function rendered
+ * meaningfully.
  */
 export function formatFindingPretty(finding: Finding, baseDir: string): string {
   if (finding.rule === 'undocumented-status') {
@@ -50,8 +51,20 @@ export function formatFindingPretty(finding: Finding, baseDir: string): string {
     ];
     return lines.join('\n');
   }
-  // `documented-but-unreachable` / `unresolvable-status`: opt-in, unimplemented before Phase 5.
-  return `${formatLocation(locationOf(finding.node, baseDir))}  error  ${finding.rule}`;
+
+  const { handler } = finding;
+  const handlerLabel = `${handler.httpMethod} ${handler.path} (${handler.className}.${handler.methodName})`;
+  if (finding.rule === 'documented-but-unreachable') {
+    return [
+      `${formatLocation(locationOf(finding.node, baseDir))}  error`,
+      `  ${handlerLabel} documents ${finding.status}, but nothing in this run produces it (documented-but-unreachable).`,
+    ].join('\n');
+  }
+  // 'unresolvable-status'
+  return [
+    `${formatLocation(locationOf(finding.node, baseDir))}  error`,
+    `  ${handlerLabel} has a throw whose status could not be resolved: ${finding.detail} (unresolvable-status).`,
+  ].join('\n');
 }
 
 export function reportRoutesPretty(handlers: readonly HandlerInfo[]): string {

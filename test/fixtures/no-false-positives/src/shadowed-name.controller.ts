@@ -7,6 +7,7 @@
 // undocumented — it must produce nothing precisely BECAUSE it isn't a real
 // Nest exception, not because it happens to be documented.
 import { Controller, Get } from '@nestjs/common';
+import { ApiOkResponse } from '@nestjs/swagger';
 
 // Not imported from `@nestjs/common` — an unrelated local class that merely
 // shares a name with a built-in exception (e.g. a copy-pasted DTO/error type
@@ -20,6 +21,7 @@ class NotFoundException extends Error {
 @Controller('shadowed-name')
 export class ShadowedNameController {
   @Get(':id')
+  @ApiOkResponse({ description: 'widget' })
   findOne(id: string): string {
     if (!id) throw new NotFoundException('this is not the real NotFoundException');
     return 'widget';

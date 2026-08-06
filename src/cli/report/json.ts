@@ -20,6 +20,7 @@ interface JsonSource {
   exception?: string;
   reason?: string;
   via?: string[];
+  detail?: string;
   location: Location;
 }
 
@@ -36,7 +37,9 @@ function sourceToJson(source: StatusSource, baseDir: string): JsonSource {
       location,
     };
   }
-  return { kind: source.kind, reason: source.reason, location };
+  return source.detail !== undefined
+    ? { kind: source.kind, reason: source.reason, detail: source.detail, location }
+    : { kind: source.kind, reason: source.reason, location };
 }
 
 interface JsonHandler {

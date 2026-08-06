@@ -4,7 +4,7 @@
 // the caller, so it must never be treated as producible — and therefore
 // never needs documenting.
 import { Controller, Get, Post, Put, NotFoundException, BadRequestException } from '@nestjs/common';
-import { ApiOkResponse, ApiBadRequestResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse } from '@nestjs/swagger';
 
 @Controller('try-catch')
 export class TryCatchController {
@@ -25,6 +25,7 @@ export class TryCatchController {
   // remapped 400 is producible (the original 404 is swallowed), and it IS
   // documented, so this must produce no finding.
   @Post()
+  @ApiCreatedResponse({ description: 'created' })
   @ApiBadRequestResponse({ description: 'invalid payload' })
   create(name: string) {
     try {
@@ -38,6 +39,7 @@ export class TryCatchController {
   // `try`/`catch`/`finally`: the `try` throw is swallowed by the `catch`,
   // but the `finally` block's own throw always runs and always propagates.
   @Put(':id')
+  @ApiOkResponse({ description: 'replaced' })
   @ApiBadRequestResponse({ description: 'id required' })
   replace(id: string): string {
     try {

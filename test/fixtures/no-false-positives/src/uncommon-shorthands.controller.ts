@@ -14,23 +14,27 @@ import {
   ApiPreconditionFailedResponse,
   ApiIAmATeapotResponse,
   ApiHttpVersionNotSupportedResponse,
+  ApiCreatedResponse,
 } from '@nestjs/swagger';
 
 @Controller('uncommon-shorthands')
 export class UncommonShorthandsController {
   @Post('precondition')
+  @ApiCreatedResponse({ description: 'created' })
   @ApiPreconditionFailedResponse({ description: 'precondition failed' })
   precondition(): string {
     throw new PreconditionFailedException('precondition failed');
   }
 
   @Post('teapot')
+  @ApiCreatedResponse({ description: 'created' })
   @ApiIAmATeapotResponse({ description: "I'm a teapot" })
   teapot(): string {
     throw new ImATeapotException("I'm a teapot");
   }
 
   @Post('http-version')
+  @ApiCreatedResponse({ description: 'created' })
   @ApiHttpVersionNotSupportedResponse({ description: 'http version not supported' })
   httpVersion(): string {
     throw new HttpVersionNotSupportedException('http version not supported');

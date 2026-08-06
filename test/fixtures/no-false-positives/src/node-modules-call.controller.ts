@@ -5,6 +5,7 @@
 // must produce no finding regardless of what the real library might do at
 // runtime.
 import { Controller, Get } from '@nestjs/common';
+import { ApiOkResponse } from '@nestjs/swagger';
 import { Repository } from 'third-party-orm';
 
 @Controller('third-party')
@@ -12,6 +13,7 @@ export class NodeModulesCallController {
   private readonly repo = new Repository();
 
   @Get(':id')
+  @ApiOkResponse({ description: 'widget' })
   findOne(id: string): string {
     return this.repo.findOne(id);
   }

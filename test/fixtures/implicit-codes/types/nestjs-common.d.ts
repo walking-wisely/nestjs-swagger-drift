@@ -1,0 +1,68 @@
+// Ambient stub for `@nestjs/common`, extended for Phase 5 (PLAN §4.1c)
+// beyond `status-diff`'s: `HttpCode`, `UseGuards`, `CanActivate`/
+// `ExecutionContext`, and the `@Body`/`@Param`/`@Query` parameter decorators
+// the `ValidationPipe` check looks for. See `nest-exceptions.ts`'s module
+// doc for why this table is hand-maintained rather than a real install.
+declare module '@nestjs/common' {
+  export type PathType = string | string[];
+
+  export function Controller(prefix?: PathType): ClassDecorator;
+  export function Get(path?: PathType): MethodDecorator;
+  export function Post(path?: PathType): MethodDecorator;
+  export function Put(path?: PathType): MethodDecorator;
+  export function Delete(path?: PathType): MethodDecorator;
+  export function Patch(path?: PathType): MethodDecorator;
+  export function All(path?: PathType): MethodDecorator;
+
+  export function Injectable(): ClassDecorator;
+
+  export function HttpCode(statusCode: number): MethodDecorator;
+  export function UseGuards(...guards: unknown[]): MethodDecorator & ClassDecorator;
+  export function Redirect(url?: string, statusCode?: number): MethodDecorator;
+
+  export function Body(): ParameterDecorator;
+  export function Param(name?: string): ParameterDecorator;
+  export function Query(name?: string): ParameterDecorator;
+  export function Res(): ParameterDecorator;
+  export function Response(): ParameterDecorator;
+
+  export interface ExecutionContext {
+    switchToHttp(): unknown;
+  }
+  export interface CanActivate {
+    canActivate(context: ExecutionContext): boolean | Promise<boolean>;
+  }
+
+  export enum HttpStatus {
+    OK = 200,
+    CREATED = 201,
+    NO_CONTENT = 204,
+    BAD_REQUEST = 400,
+    UNAUTHORIZED = 401,
+    FORBIDDEN = 403,
+    NOT_FOUND = 404,
+    CONFLICT = 409,
+    INTERNAL_SERVER_ERROR = 500,
+  }
+
+  export class HttpException extends Error {
+    constructor(response: string | Record<string, unknown>, status: number);
+    getStatus(): number;
+  }
+
+  export class BadRequestException extends HttpException {
+    constructor(message?: string);
+  }
+  export class UnauthorizedException extends HttpException {
+    constructor(message?: string);
+  }
+  export class ForbiddenException extends HttpException {
+    constructor(message?: string);
+  }
+  export class NotFoundException extends HttpException {
+    constructor(message?: string);
+  }
+  export class ConflictException extends HttpException {
+    constructor(message?: string);
+  }
+}

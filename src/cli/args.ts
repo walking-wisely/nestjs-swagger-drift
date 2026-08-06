@@ -48,6 +48,12 @@ export interface CliFlags {
   enableRules: OptionalRuleName[];
   disableRules: OptionalRuleName[];
   treatDefaultAsWildcard: boolean | undefined;
+  /** PLAN §4.1c / §5: on-by-default 2xx success-response check. `--no-check-success-response` opts out. */
+  checkSuccessResponse: boolean | undefined;
+  /** PLAN §4.1c / §5: opt-in `ValidationPipe` implicit `400`. `--check-validation-pipe` opts in. */
+  checkValidationPipe: boolean | undefined;
+  /** PLAN §4.1c / §5: opt-in `@UseGuards(...)` implicit `401`/`403`. `--check-guards` opts in. */
+  checkGuards: boolean | undefined;
   baseDir: string | undefined;
   config: string | undefined;
   noConfig: boolean;
@@ -69,6 +75,9 @@ function emptyFlags(): CliFlags {
     enableRules: [],
     disableRules: [],
     treatDefaultAsWildcard: undefined,
+    checkSuccessResponse: undefined,
+    checkValidationPipe: undefined,
+    checkGuards: undefined,
     baseDir: undefined,
     config: undefined,
     noConfig: false,
@@ -213,6 +222,30 @@ export function parseArgs(argv: string[]): ParseArgsResult {
 
       case '--no-treat-default-as-wildcard':
         flags.treatDefaultAsWildcard = false;
+        break;
+
+      case '--check-success-response':
+        flags.checkSuccessResponse = true;
+        break;
+
+      case '--no-check-success-response':
+        flags.checkSuccessResponse = false;
+        break;
+
+      case '--check-validation-pipe':
+        flags.checkValidationPipe = true;
+        break;
+
+      case '--no-check-validation-pipe':
+        flags.checkValidationPipe = false;
+        break;
+
+      case '--check-guards':
+        flags.checkGuards = true;
+        break;
+
+      case '--no-check-guards':
+        flags.checkGuards = false;
         break;
 
       case '--base-dir': {

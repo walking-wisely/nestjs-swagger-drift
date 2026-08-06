@@ -115,7 +115,7 @@ describe('collectCallGraphStatuses — depth bounding', () => {
     const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 1 }));
     const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
 
-    const findings = collectCallGraphStatuses(handler, ctx);
+    const { findings } = collectCallGraphStatuses(handler, ctx);
     expect(findings).toHaveLength(0); // OrgService.create itself throws nothing directly
   });
 
@@ -124,7 +124,7 @@ describe('collectCallGraphStatuses — depth bounding', () => {
     const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 2 }));
     const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
 
-    const findings = collectCallGraphStatuses(handler, ctx);
+    const { findings } = collectCallGraphStatuses(handler, ctx);
     expect(findings).toHaveLength(1);
     expect(findings[0]?.resolved.status).toBe(409);
   });
@@ -134,7 +134,7 @@ describe('collectCallGraphStatuses — depth bounding', () => {
     const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 0 }));
     const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
 
-    expect(collectCallGraphStatuses(handler, ctx)).toHaveLength(0);
+    expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
   });
 });
 
@@ -144,7 +144,7 @@ describe('collectCallGraphStatuses — via path contents', () => {
     const ctx = createAnalysisContext(program, defaultOptions());
     const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
 
-    const findings = collectCallGraphStatuses(handler, ctx);
+    const { findings } = collectCallGraphStatuses(handler, ctx);
     expect(findings).toHaveLength(1);
     const source = findings[0]?.source;
     expect(source?.kind).toBe('service-throw');
@@ -184,7 +184,7 @@ describe('collectCallGraphStatuses — cycle guard', () => {
 
     // Must return (not hang/overflow) even with a generous maxDepth, and
     // must still find the real, reachable 404 exactly once.
-    const findings = collectCallGraphStatuses(handler, ctx);
+    const { findings } = collectCallGraphStatuses(handler, ctx);
     expect(findings).toHaveLength(1);
     expect(findings[0]?.resolved.status).toBe(404);
   });
@@ -207,11 +207,11 @@ describe('collectCallGraphStatuses — memoization', () => {
     const handlerB = findMethod(program, 'main.ts', 'SecondController', 'create');
 
     __resetCallGraphMemoStatsForTesting();
-    const first = collectCallGraphStatuses(handlerA, ctx);
+    const first = collectCallGraphStatuses(handlerA, ctx).findings;
     const afterFirst = __getCallGraphMemoStatsForTesting().computed;
     expect(afterFirst).toBeGreaterThan(0); // OrgService.create + OrgRepository.save were computed
 
-    const second = collectCallGraphStatuses(handlerB, ctx);
+    const second = collectCallGraphStatuses(handlerB, ctx).findings;
     const afterSecond = __getCallGraphMemoStatsForTesting().computed;
 
     // Same underlying OrgService/OrgRepository symbols reached via a
@@ -267,7 +267,7 @@ describe('collectCallGraphStatuses — ambiguity guards', () => {
     const ctx = createAnalysisContext(program, defaultOptions());
     const handler = findMethod(program, 'main.ts', 'UnionController', 'get');
 
-    expect(collectCallGraphStatuses(handler, ctx)).toHaveLength(0);
+    expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
   });
 
   it('an interface-typed dependency (no body to walk) contributes nothing', () => {
@@ -292,7 +292,7 @@ describe('collectCallGraphStatuses — ambiguity guards', () => {
     const ctx = createAnalysisContext(program, defaultOptions());
     const handler = findMethod(program, 'main.ts', 'InterfaceController', 'get');
 
-    expect(collectCallGraphStatuses(handler, ctx)).toHaveLength(0);
+    expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
   });
 });
 
@@ -320,7 +320,7 @@ describe('collectCallGraphStatuses — try/catch suppression at the call site', 
     const ctx = createAnalysisContext(program, defaultOptions());
     const handler = findMethod(program, 'main.ts', 'SwallowedController', 'get');
 
-    expect(collectCallGraphStatuses(handler, ctx)).toHaveLength(0);
+    expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
   });
 
   it('the same call OUTSIDE a try/catch does contribute a finding (sanity control)', () => {
@@ -342,9 +342,49 @@ describe('collectCallGraphStatuses — try/catch suppression at the call site', 
     const ctx = createAnalysisContext(program, defaultOptions());
     const handler = findMethod(program, 'main.ts', 'PlainController', 'get');
 
-    const findings = collectCallGraphStatuses(handler, ctx);
+    const { findings } = collectCallGraphStatuses(handler, ctx);
     expect(findings).toHaveLength(1);
     expect(findings[0]?.resolved.status).toBe(404);
+  });
+});
+
+describe('collectCallGraphStatuses — unresolved throws (Phase 5 review, finding #6)', () => {
+  it('surfaces an unresolvable throw reached through the call graph, with its via path', () => {
+    const program = programWithMain(`
+      import { HttpException } from '@nestjs/common';
+
+      export class FlakyService {
+        check(id: string): string {
+          const dynamicStatus = id.length; // not a literal
+          if (!id) throw new HttpException('bad id', dynamicStatus);
+          return 'ok';
+        }
+      }
+      export class FlakyController {
+        constructor(private readonly svc: FlakyService) {}
+        get(id: string): string {
+          return this.svc.check(id);
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions());
+    const handler = findMethod(program, 'main.ts', 'FlakyController', 'get');
+
+    const { findings, unresolvedThrows } = collectCallGraphStatuses(handler, ctx);
+    expect(findings).toHaveLength(0); // nothing RESOLVED here
+    expect(unresolvedThrows).toHaveLength(1);
+    expect(unresolvedThrows[0]?.via.map((hop) => hop.name)).toEqual(['FlakyService.check']);
+    expect(unresolvedThrows[0]?.reason.length).toBeGreaterThan(0);
+  });
+
+  it('a resolvable direct throw in the same body is unaffected (sanity control)', () => {
+    const program = programWithMain(TWO_HOP_SOURCE);
+    const ctx = createAnalysisContext(program, defaultOptions());
+    const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
+
+    const { findings, unresolvedThrows } = collectCallGraphStatuses(handler, ctx);
+    expect(findings).toHaveLength(1);
+    expect(unresolvedThrows).toHaveLength(0);
   });
 });
 
@@ -376,6 +416,6 @@ describe('collectCallGraphStatuses — node_modules exclusion', () => {
     const ctx = createAnalysisContext(program, defaultOptions());
     const handler = findMethod(program, 'main.ts', 'ThirdPartyController', 'get');
 
-    expect(collectCallGraphStatuses(handler, ctx)).toHaveLength(0);
+    expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
   });
 });
