@@ -82,7 +82,9 @@ Exits `0` if nothing was found, `3` if it found drift `--fail-on` cares
 about, `1` on a usage error (bad flag, missing/unparsable tsconfig or config
 file), `2` if it couldn't determine anything at all (zero handlers found
 *and* `@nestjs/common` itself couldn't be resolved — "I don't know," not
-"there's nothing here").
+"there's nothing here"), `4` if the tool itself crashed (a bug in
+`nestjs-swagger-drift`, not a bad invocation or real drift — treat this one
+as "file an issue," not "fix my code or my flags").
 
 ```text
 Usage: nestjs-swagger-drift --project <path-to-tsconfig-or-dir> [options]
@@ -117,8 +119,93 @@ Options:
   -h, --help                  Print this message.
 ```
 
-Rule names for `--fail-on`/`--enable-rule`/`--disable-rule`:
-`undocumented-status`, `documented-but-unreachable`, `unresolvable-status`.
+Rule names for `--fail-on`: `undocumented-status`, `documented-but-unreachable`,
+`unresolvable-status`. `--enable-rule`/`--disable-rule` only take the two
+opt-in rules — `documented-but-unreachable` and `unresolvable-status`
+(`undocumented-status` is always on and isn't toggleable, so it isn't a valid
+value there; passing it is a usage error).
+
+### `--reporter json`
+
+A single JSON document to stdout, meant for CI tooling that post-processes
+results instead of parsing the pretty text output. A zero-finding run still
+prints a well-formed document (`{ "findings": [], ... }`), never the pretty
+reporter's "No undocumented status codes found." sentence — a JSON consumer
+never has to special-case "sometimes this is prose."
+
+For `--project` (findings mode):
+
+```json
+{
+  "findings": [
+    {
+      "rule": "undocumented-status",
+      "status": 404,
+      "handler": {
+        "httpMethod": "GET",
+        "path": "/users/:id",
+        "unresolvedPath": false,
+        "className": "UsersController",
+        "methodName": "findOne",
+        "location": { "file": "src/users.controller.ts", "line": 8, "column": 3 }
+      },
+      "location": { "file": "src/users.controller.ts", "line": 8, "column": 3 },
+      "sources": [
+        {
+          "kind": "throw",
+          "exception": "NotFoundException",
+          "location": { "file": "src/users.service.ts", "line": 6, "column": 14 }
+        }
+      ]
+    }
+  ],
+  "summary": { "total": 1, "failing": 1, "suppressed": 0 }
+}
+```
+
+- `rule` — `"undocumented-status"`, `"documented-but-unreachable"`, or
+  `"unresolvable-status"`.
+- `status` — the HTTP status code, omitted entirely for an
+  `unresolvable-status` finding (there's no status to report — that's the
+  point of the rule).
+- `sources[].kind` — `"throw"` (direct), `"service-throw"` (via a called
+  service; carries `via: string[]`, the call chain by method name), or
+  `"implicit"` (one of the checks in
+  ["What's on by default vs. opt-in"](#whats-on-by-default-vs-opt-in) below;
+  carries `reason: "success" | "validation-pipe" | "guard"` and optionally
+  `detail`) — only populated for `undocumented-status` findings; empty for
+  the other two rules.
+- `detail` — only present for `unresolvable-status` findings; omitted
+  otherwise.
+
+For `--routes` (route-table mode): `{ "handlers": [{ httpMethod, path, unresolvedPath, className, methodName, location }] }`, no `findings`/`summary`.
+
+Diagnostics, warnings, and usage errors always go to stderr as plain text
+regardless of `--reporter` — only the result (routes or findings) is
+reporter-controlled. Field set isn't currently pinned to a stability
+guarantee (pre-1.0) — expect additive changes, not renames, going into
+`v0.1.0`.
+
+### `--ignore` glob syntax
+
+`--ignore` is backed by [`picomatch`](https://github.com/micromatch/picomatch)
+(the same matcher underlying `fast-glob`/`micromatch`/Vite), matched against
+each source file's path **relative to the base directory** (the tsconfig's
+own directory by default, or `--base-dir`), never an absolute path and never
+relative to your shell's `cwd`. The standard `*`/`**`/`?` dialect applies, plus
+one `.gitignore`-flavored addition layered on top: a pattern with no `/` in
+it also matches that path segment at any depth, not just the full relative
+path (see `src/cli/ignore.ts`).
+
+| Pattern | Matches |
+|---|---|
+| `*` | any run of characters within one path segment (never crosses `/`) |
+| `**` | zero or more whole path segments, only when it stands alone as a full segment (e.g. `src/**/*.spec.ts`, or `test/**` matching everything under `test/`) |
+| `?` | exactly one character, not `/` |
+| `node_modules` (no `/` in the pattern) | that path segment anywhere in the path, `.gitignore`-style — equivalent to `**/node_modules/**` |
+| `src/**.ts` | **not** the same as `src/**/*.ts` — a `**` that isn't segment-standalone degrades to a plain `*`, so this only matches one extra path segment past `src/`, e.g. `src/foo.ts`, not `src/a/b.ts` |
+
+Repeatable: `--ignore '**/*.spec.ts' --ignore dist`.
 
 ### Config file
 
@@ -148,6 +235,47 @@ matching `./core`; PLAN §1/§9), so there's nothing extra to install. One rule,
 same `core/analyzeHandler()` the CLI uses (PLAN §2.1) — same detection logic,
 same findings, different delivery: inline in your editor and on every PR
 instead of (or alongside) a CI-only CLI run. Flat config only.
+
+This is a **type-aware** rule (PLAN §2.1) — it needs a real `ts.Program` to
+resolve service calls across files, exactly like any other type-aware
+typescript-eslint rule, so it must be scoped to type-checked `.ts` files and
+paired with `projectService: true`. If your project doesn't already have
+type-aware `typescript-eslint` linting set up, here's a complete, working
+`eslint.config.js` from zero (needs `eslint`, `typescript-eslint`, and
+`typescript` installed):
+
+```js
+// eslint.config.js
+import tseslint from 'typescript-eslint';
+import nestjsSwaggerDrift from 'nestjs-swagger-drift/eslint';
+
+export default tseslint.config(
+  {
+    files: ['**/*.ts'],
+    extends: [...tseslint.configs.recommendedTypeChecked],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    plugins: { 'nestjs-swagger-drift': nestjsSwaggerDrift },
+    rules: {
+      'nestjs-swagger-drift/documented-status-codes': 'error',
+    },
+  },
+);
+```
+
+(`tseslint.configs.recommendedTypeChecked` is what actually wires up the
+type-aware parser — that's the part a bare "type-aware rule" comment doesn't
+give you on its own. See
+[typescript-eslint's own getting-started guide](https://typescript-eslint.io/getting-started)
+if you're setting up type-aware linting for the first time and want more
+than this.)
+
+Already have type-aware `typescript-eslint` configured? Add the plugin to
+your existing config instead:
 
 ```js
 // eslint.config.js
@@ -275,6 +403,9 @@ export class UsersController {
 }
 ```
 
+Findings go to stdout, the one-line summary to stderr (so piping stdout
+alone gives you just the findings):
+
 ```sh
 $ npx nestjs-swagger-drift --project ./tsconfig.json
 src/users.controller.ts:8:3  error
@@ -286,7 +417,6 @@ src/users.controller.ts:8:3  error
   GET /users/:id (UsersController.findOne) is missing @ApiResponse for:
     404 NotFoundException
        └ UsersService.findOne  src/users.service.ts:6:14
-
 nestjs-swagger-drift: found 2 finding(s), 2 matched by --fail-on, 0 suppressed.
 ```
 
