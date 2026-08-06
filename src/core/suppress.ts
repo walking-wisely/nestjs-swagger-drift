@@ -257,7 +257,21 @@ export function checkSourceSuppression(node: ts.Node, status: number): Suppressi
 // `suppressed.controller.ts`'s header comment describes the feature by name
 // several lines above the real directive, and a bare substring scan flagged
 // it as an unused directive on every CLI run over that fixture.
-const DIRECTIVE_LINE_PATTERN = /^\s*(?:\/\/|\/\*|\*)?\s*swagger-drift-disable-next-line\b/;
+//
+// The trailing `\s*` is nested *inside* the optional comment-opener group
+// rather than sitting as a separate top-level `\s*` after it (i.e. NOT
+// `^\s*(?:\/\/|\/\*|\*)?\s*keyword`). Two adjacent unbounded `\s*`
+// quantifiers with only an optional, easily-skipped group between them let
+// the engine re-partition the same run of whitespace across both
+// quantifiers in exponentially/polynomially many ways before it can report
+// "no match" (classic ReDoS shape — CodeQL js/polynomial-redos). Since this
+// runs once per source line of every analyzed file, an attacker-controlled
+// or merely very-long non-matching line (e.g. a long blank/whitespace line)
+// could take quadratic time. Folding the second `\s*` into the group
+// removes the ambiguity: whitespace after a comment opener is only ever
+// consumed once, by the group's own `\s*`, and is never reachable from the
+// leading `^\s*` too.
+const DIRECTIVE_LINE_PATTERN = /^\s*(?:(?:\/\/|\/\*|\*)\s*)?swagger-drift-disable-next-line\b/;
 
 /**
  * Every line in `sourceFile` that looks like it carries a
