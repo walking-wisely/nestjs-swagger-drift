@@ -214,7 +214,12 @@ export type Finding =
  * rule's `options` schema maps onto directly.
  */
 export interface AnalysisOptions {
-  /** Bounded traversal depth into called methods (PLAN §4.1b). */
+  /**
+   * Bounded traversal depth into called methods (PLAN §4.1b), counted in
+   * CROSS-CLASS hops — a method calling a private helper on its OWN class
+   * doesn't consume this budget (`call-graph.ts`'s "same-class hops are
+   * free"), only a call that crosses into a different class does.
+   */
   maxDepth: number;
   rules: {
     'documented-but-unreachable': boolean;

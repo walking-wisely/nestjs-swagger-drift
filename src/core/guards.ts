@@ -27,10 +27,27 @@
  * inline, whose class is still statically known) is followed. A factory call
  * (`@UseGuards(AuthGuardFactory())`), a variable holding an unresolved
  * value, or a spread contributes nothing.
+ *
+ * ## Handler-specific narrowing (adversarial-testing finding, post-Phase-6)
+ *
+ * `canActivate` is walked with the exact same "assume every reachable throw
+ * applies" posture the call graph uses for services — appropriate there
+ * (a service has no notion of "which handler called me"), but a guard's
+ * `canActivate` runs once per request and very often branches on facts THIS
+ * handler's own decorators/HTTP method make statically knowable
+ * (`guard-narrowing.ts`'s two recognized shapes: a `Reflector` metadata read
+ * gated by a custom decorator, or a `request.method` comparison). Before
+ * repackaging a `collectThrowsFromDeclaration` finding into a `GuardFinding`
+ * below, its originating branch inside `canActivate`'s own body is checked
+ * against `computeExcludedGuardBranches` and dropped if that branch is
+ * provably dead for every handler this method yields — see that module's
+ * doc comment for the full reasoning and its deliberately narrow scope
+ * (`canActivate`'s own top-level body only, nothing threaded into whatever
+ * it calls).
  */
 
 import * as ts from 'typescript';
-import type { AnalysisContext, ResolvedStatus } from './types.js';
+import type { AnalysisContext, HttpMethod, ResolvedStatus } from './types.js';
 import { getDecoratorInfos } from './decorators.js';
 import { getBaseClassDeclaration, resolveClassDeclaration } from './heritage.js';
 import {
@@ -38,6 +55,7 @@ import {
   isFunctionLikeWithBody,
   type FunctionDeclWithBody,
 } from './call-graph.js';
+import { computeExcludedGuardBranches, isNodeInExcludedGuardBranch } from './guard-narrowing.js';
 
 const NEST_COMMON_MODULE = '@nestjs/common';
 const MAX_GUARD_HERITAGE_DEPTH = 5;
@@ -108,12 +126,22 @@ function resolveCanActivateMethod(
 /**
  * Collects every `401`/`403`-shaped (or whatever a guard actually throws)
  * status reachable from `methodNode`'s and `classNode`'s combined
- * `@UseGuards(...)` — see module doc.
+ * `@UseGuards(...)` — see module doc. `handlerHttpMethods` is every HTTP
+ * method `methodNode` yields a `HandlerInfo` for (module doc's "handler-
+ * specific narrowing" — usually one entry, more than one only for a method
+ * carrying multiple HTTP decorators). Appended as a trailing OPTIONAL
+ * parameter (default `[]`, under which `computeExcludedGuardBranches`
+ * narrows nothing at all — its own early return), not inserted before `ctx`
+ * — this function is re-exported from `core/index.ts`'s public barrel, and
+ * a trailing optional parameter is the one insertion shape an existing
+ * 3-argument external caller keeps compiling against unchanged, rather than
+ * silently binding its `ctx` argument into the wrong parameter slot.
  */
 export function collectGuardStatuses(
   methodNode: ts.MethodDeclaration,
   classNode: ts.ClassLikeDeclaration,
   ctx: AnalysisContext,
+  handlerHttpMethods: readonly HttpMethod[] = [],
 ): GuardFinding[] {
   const guardArgs = [
     ...collectUseGuardsArguments(classNode, ctx.checker),
@@ -158,7 +186,29 @@ export function collectGuardStatuses(
       ctx,
       ctx.options.maxDepth,
     );
+    if (findings.length === 0) continue; // nothing to narrow — skip the decorator/metadata scan entirely
+
+    const excludedBranches = computeExcludedGuardBranches(
+      canActivate.body,
+      methodNode,
+      classNode,
+      handlerHttpMethods,
+      ctx.checker,
+    );
+
     for (const finding of findings) {
+      // The node inside `canActivate`'s OWN body that started this finding's
+      // chain: the throw itself when it's directly in `canActivate`
+      // (`via.length === 1` — index 0 is just the `@UseGuards(...)`
+      // argument, never inside the body), otherwise the first call site one
+      // hop in (`via[1]`, always inside `canActivate`'s body regardless of
+      // how many further hops the chain has) — see `guard-narrowing.ts`'s
+      // module doc for why only `canActivate`'s own top-level body is
+      // checked at all.
+      const nodeInCanActivate =
+        finding.source.via.length >= 2 ? finding.source.via[1]!.node : finding.source.node;
+      if (isNodeInExcludedGuardBranch(nodeInCanActivate, excludedBranches)) continue;
+
       results.push({
         resolved: finding.resolved,
         source: {

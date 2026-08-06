@@ -63,6 +63,36 @@
  * recursive methods, while still allowing a genuine diamond (`A` and `B` both
  * calling `D`) to be traversed from both paths.
  *
+ * ## Same-class hops are free (adversarial-testing finding, post-Phase-6)
+ *
+ * A hop only consumes depth budget when it crosses into a DIFFERENT class
+ * than the one being expanded. A service method that calls a private helper
+ * on `this`, which in turn calls a repository, is two hops by call-site
+ * count but only ONE genuine dependency crossing (service → repository) —
+ * extracting a private helper for readability is exactly the kind of
+ * refactor that must not change what this tool can see. Verified against a
+ * real false positive: a throw reached only through such a private
+ * same-class helper was reported as `documented-but-unreachable` at the
+ * default `maxDepth: 2` purely because the helper hop ate the budget the
+ * repository call needed — not because the throw was actually unreachable.
+ * `getOwnerClass` below identifies "same class" structurally (the declaring
+ * class node, not name-based, so two different classes that happen to share
+ * a method name are never conflated); a declaration with no owning class (a
+ * free function) never counts as "same class" as anything, so it always
+ * costs a hop, matching prior behavior exactly. This is a strict widening —
+ * free-function and cross-class chains still cost one hop per hop,
+ * unchanged — so it cannot make anything LESS reachable than before, only
+ * more.
+ *
+ * "Free" is capped, not unconditional: `SAME_CLASS_HOP_BUDGET` (below
+ * `expand`) bounds how many consecutive same-class hops stay free before
+ * they start costing depth again — see `expand`'s own comment for why
+ * (code-review round: without a separate cap, a class whose methods fan out
+ * into several same-class helpers each turns this into enumerating every
+ * simple path through that fan-out, exponential in the fan-out width and
+ * unbounded by `maxDepth`). The budget is generous enough that realistic
+ * same-class chains (2-4 deep) are unaffected.
+ *
  * ## Memoization
  *
  * The expensive part of visiting a declaration — walking its body for
@@ -168,6 +198,28 @@ function labelForDeclaration(decl: FunctionDeclWithBody): string {
 }
 
 /**
+ * The class that lexically declares `decl`, or `undefined` for a free
+ * function/exported const helper — see module doc's "same-class hops are
+ * free". Mirrors `labelForDeclaration`'s own owner-finding logic (a method's
+ * parent, or an arrow/function-expression class property's parent) so the
+ * two never disagree about what "belongs to this class" means; kept as a
+ * separate function rather than folded into `labelForDeclaration` because
+ * callers need the class NODE (for identity comparison), not its name.
+ */
+function getOwnerClass(decl: FunctionDeclWithBody): ts.ClassLikeDeclaration | undefined {
+  if (ts.isMethodDeclaration(decl)) {
+    const owner = decl.parent;
+    return ts.isClassLike(owner) ? owner : undefined;
+  }
+  const parent = decl.parent;
+  if (ts.isPropertyDeclaration(parent)) {
+    const owner = parent.parent;
+    return ts.isClassLike(owner) ? owner : undefined;
+  }
+  return undefined;
+}
+
+/**
  * Every `CallExpression` in `fn`'s body reachable under the identical
  * try/catch-suppression and trivial-unreachability rules `collectDirectThrows`
  * applies to `throw`s (see module doc's "reuse, not duplication").
@@ -269,6 +321,7 @@ function expand(
   callNode: ts.Node,
   ctx: AnalysisContext,
   remainingDepth: number,
+  remainingSameClassHops: number,
   pathSoFar: ReadonlyArray<{ name: string; node: ts.Node }>,
   visited: Set<ts.Symbol>,
   cacheMap: Map<ts.Symbol, CacheEntry>,
@@ -299,12 +352,36 @@ function expand(
   }
 
   visited.add(target.symbol);
+  const callerOwnerClass = getOwnerClass(target.decl);
   for (const nextCall of entry.calls) {
+    // Same-class hop: doesn't consume DEPTH budget — see module doc's
+    // "same-class hops are free". `callerOwnerClass` is `undefined` for a
+    // free function, which never equals `getOwnerClass(nextCall.decl)`
+    // (also possibly `undefined`) by this check, so a free-function hop
+    // always costs depth exactly like before this change.
+    //
+    // It DOES still cost from `remainingSameClassHops` — a separate,
+    // deliberately more generous budget (`SAME_CLASS_HOP_BUDGET`) that
+    // exists purely as a circuit breaker: with same-class hops truly free,
+    // a class whose methods fan out into several same-class helpers each
+    // (a realistic shape, not a contrived one) turns this traversal into
+    // enumerating every simple path through that fan-out — exponential in
+    // the fan-out width, not bounded by `maxDepth` at all once budget
+    // review flagged it as a real crash on a large enough class. Once THIS
+    // budget also hits zero, a same-class hop starts costing depth exactly
+    // like a cross-class one (falls back to pre-this-PR-widening behavior),
+    // which bounds total path count to (fan-out)^(SAME_CLASS_HOP_BUDGET +
+    // maxDepth) — large classes with real private-helper chains (typically
+    // 2-4 deep) are unaffected; a pathological fan-out is not.
+    const sameClass =
+      callerOwnerClass !== undefined && getOwnerClass(nextCall.decl) === callerOwnerClass;
+    const free = sameClass && remainingSameClassHops > 0;
     expand(
       { decl: nextCall.decl, symbol: nextCall.symbol },
       nextCall.callNode,
       ctx,
-      remainingDepth - 1,
+      free ? remainingDepth : remainingDepth - 1,
+      free ? remainingSameClassHops - 1 : remainingSameClassHops,
       hopPath,
       visited,
       cacheMap,
@@ -314,6 +391,15 @@ function expand(
   }
   visited.delete(target.symbol);
 }
+
+/**
+ * Circuit breaker for the "same-class hops are free" widening above — see
+ * `expand`'s in-line comment for the full reasoning. Deliberately generous
+ * (real same-class helper chains are rarely more than 2-4 deep) so it never
+ * bites realistic code, while still turning an exponential blowup into a
+ * bounded, fast one.
+ */
+const SAME_CLASS_HOP_BUDGET = 6;
 
 /** The combined result of a call-graph traversal: resolved statuses, plus (Phase 5 review) unresolved ones. */
 export interface CallGraphResult {
@@ -351,6 +437,7 @@ export function collectCallGraphStatuses(
       callNode,
       ctx,
       ctx.options.maxDepth,
+      SAME_CLASS_HOP_BUDGET,
       [],
       visited,
       cacheMap,
@@ -390,7 +477,18 @@ export function collectThrowsFromDeclaration(
 
   const cacheMap = getCallGraphCache(ctx.cache);
   const visited = new Set<ts.Symbol>();
-  expand(target, entryNode, ctx, maxDepth, [], visited, cacheMap, results, unresolvedResults);
+  expand(
+    target,
+    entryNode,
+    ctx,
+    maxDepth,
+    SAME_CLASS_HOP_BUDGET,
+    [],
+    visited,
+    cacheMap,
+    results,
+    unresolvedResults,
+  );
   return { findings: results, unresolvedThrows: unresolvedResults };
 }
 

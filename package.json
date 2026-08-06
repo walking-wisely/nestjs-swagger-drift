@@ -1,6 +1,6 @@
 {
   "name": "nestjs-swagger-drift",
-  "version": "0.0.0",
+  "version": "0.1.1",
   "description": "Static analysis for NestJS controllers: fails CI when a handler can produce an HTTP status code that isn't documented with an @ApiResponse-family decorator.",
   "keywords": [
     "nestjs",
@@ -13,7 +13,14 @@
   "license": "MIT",
   "author": "Ivan Dutov",
   "type": "module",
-  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/walking-wisely/nestjs-swagger-drift.git"
+  },
+  "bugs": {
+    "url": "https://github.com/walking-wisely/nestjs-swagger-drift/issues"
+  },
+  "homepage": "https://github.com/walking-wisely/nestjs-swagger-drift#readme",
   "engines": {
     "node": ">=20.19.0"
   },
@@ -40,6 +47,7 @@
     "dist"
   ],
   "scripts": {
+    "prepublishOnly": "npm run build",
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",

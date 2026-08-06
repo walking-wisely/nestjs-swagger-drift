@@ -17,6 +17,26 @@
 import * as ts from 'typescript';
 
 /**
+ * Follows an alias symbol (an imported binding) through to the symbol it
+ * actually refers to. Exported (`guard-narrowing.ts` needs the identical
+ * step for a decorator factory's imported binding, not just a class
+ * reference — extracted rather than duplicated, same reasoning as
+ * `resolveClassDeclaration` below) — returns `symbol` unchanged if it isn't
+ * an alias, or if the checker can't advance past it (an unresolved import,
+ * same "can't fully pin down" case `decorators.ts`'s module doc discusses).
+ */
+export function resolveAliasedSymbol(symbol: ts.Symbol, checker: ts.TypeChecker): ts.Symbol {
+  if ((symbol.flags & ts.SymbolFlags.Alias) === 0) return symbol;
+  try {
+    const aliased = checker.getAliasedSymbol(symbol);
+    if (aliased !== symbol && (aliased.getDeclarations()?.length ?? 0) > 0) return aliased;
+  } catch {
+    // falls through: stays `symbol`
+  }
+  return symbol;
+}
+
+/**
  * Resolves an arbitrary expression (an `extends` clause's expression, or a
  * `new X(...)` callee) to the class declaration it statically refers to,
  * following import aliases the same way `provenance.ts`'s `checkProvenance`
@@ -37,18 +57,7 @@ export function resolveClassDeclaration(
   }
   if (!symbol) return undefined;
 
-  let resolved = symbol;
-  if ((symbol.flags & ts.SymbolFlags.Alias) !== 0) {
-    try {
-      const aliased = checker.getAliasedSymbol(symbol);
-      if (aliased !== symbol && (aliased.getDeclarations()?.length ?? 0) > 0) {
-        resolved = aliased;
-      }
-    } catch {
-      // `resolved` stays `symbol`.
-    }
-  }
-
+  const resolved = resolveAliasedSymbol(symbol, checker);
   return resolved.getDeclarations()?.find(ts.isClassLike);
 }
 

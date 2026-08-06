@@ -19,6 +19,10 @@ declare module '@nestjs/common' {
   export function HttpCode(statusCode: number): MethodDecorator;
   export function UseGuards(...guards: unknown[]): MethodDecorator & ClassDecorator;
   export function Redirect(url?: string, statusCode?: number): MethodDecorator;
+  export function SetMetadata(key: string, value: unknown): MethodDecorator & ClassDecorator;
+  export function applyDecorators(
+    ...decorators: Array<MethodDecorator | ClassDecorator>
+  ): MethodDecorator & ClassDecorator;
 
   export function Body(): ParameterDecorator;
   export function Param(name?: string): ParameterDecorator;
@@ -26,8 +30,16 @@ declare module '@nestjs/common' {
   export function Res(): ParameterDecorator;
   export function Response(): ParameterDecorator;
 
+  export interface MinimalRequest {
+    method: string;
+  }
+  export interface HttpArgumentsHost {
+    getRequest<T = MinimalRequest>(): T;
+  }
   export interface ExecutionContext {
-    switchToHttp(): unknown;
+    switchToHttp(): HttpArgumentsHost;
+    getHandler(): unknown;
+    getClass(): unknown;
   }
   export interface CanActivate {
     canActivate(context: ExecutionContext): boolean | Promise<boolean>;

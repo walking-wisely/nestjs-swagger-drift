@@ -218,6 +218,99 @@ describe('checkGuards (opt-in)', () => {
       });
     }
   });
+
+  // Handler-specific narrowing (adversarial-testing finding, post-Phase-6):
+  // `guard-narrowing.guard.ts`'s `ConditionalThrottleGuard` gates one branch
+  // behind a `@OptIn(...)` decorator read via `Reflector`, and another
+  // behind an HTTP-method membership check — see `guard-narrowing.controller.ts`
+  // for the four handlers, one per combination.
+  describe('handler-specific narrowing', () => {
+    function statusesFor(findings: Finding[], methodName: string): number[] {
+      return findingsFor(findings, 'GuardNarrowingController', methodName)
+        .filter((f) => f.rule === 'undocumented-status')
+        .map((f) => f.status)
+        .sort((a, b) => a - b);
+    }
+
+    it('excludes BOTH branches for a handler with neither the decorator nor a write method', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor(findings, 'noOptInRead')).toEqual([]);
+    });
+
+    it('includes BOTH branches for a handler with the decorator AND a write method', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor(findings, 'optInWrite')).toEqual([403, 409]);
+    });
+
+    it('includes only the HTTP-method branch for a write method without the decorator', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor(findings, 'noOptInWrite')).toEqual([409]);
+    });
+
+    it('includes only the metadata branch for a decorated handler that is not a write method', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor(findings, 'optInRead')).toEqual([403]);
+    });
+
+    it('produces no guard findings at all when checkGuards is disabled (sanity control)', () => {
+      const findings = analyze(baseOptions({ checkGuards: false }));
+      expect(findings.some((f) => f.handler.className === 'GuardNarrowingController')).toBe(false);
+    });
+  });
+
+  // Code-review round: every recognizer in `guard-narrowing.ts` must only
+  // ever narrow on a HIGH-CONFIDENCE match — each case here is a shape that
+  // looks superficially like a narrowable gate but must NOT be narrowed
+  // (edge-cases-guard.ts), plus the literal-key/nested-factory resolution
+  // paths that must correctly narrow when the gate genuinely is absent.
+  describe('handler-specific narrowing — edge cases', () => {
+    function statusesFor(methodName: string, findings: Finding[]): number[] {
+      return findingsFor(findings, 'GuardNarrowingEdgeCasesController', methodName)
+        .filter((f) => f.rule === 'undocumented-status')
+        .map((f) => f.status)
+        .sort((a, b) => a - b);
+    }
+
+    it('never narrows a `.get(...)` call on something that is not a Reflector', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('mapLookup', findings)).toContain(403);
+    });
+
+    it('never narrows an HTTP-method gate for an @All() handler', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('allMethod', findings)).toContain(409);
+    });
+
+    it('matches a metadata key by resolved literal value, not only by symbol identity', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('literalKeyPresent', findings)).toContain(403);
+      expect(statusesFor('literalKeyAbsent', findings)).not.toContain(403);
+    });
+
+    it('traces a decorator composed via applyDecorators(otherFactory(...))', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('nestedFactoryPresent', findings)).toContain(403);
+      expect(statusesFor('nestedFactoryAbsent', findings)).not.toContain(403);
+    });
+
+    // Verification round, real bug: a depth counter that advanced on every
+    // AST step (not just factory-resolution hops) exhausted its budget on
+    // ordinary syntax nesting for a FUNCTION-DECLARATION factory with an
+    // internal branch, before actually following as many factory hops as
+    // intended — silently missing the key. The arrow-function fixture above
+    // happened to land inside the (buggy) budget either way, so it alone
+    // didn't catch this; this shape does.
+    it('traces a nested factory built from branching function-declaration factories', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('nestedFactoryFnPresent', findings)).toContain(403);
+      expect(statusesFor('nestedFactoryFnAbsent', findings)).not.toContain(403);
+    });
+
+    it('never narrows an || condition, even when one operand alone would be provably false', () => {
+      const findings = analyze(baseOptions({ checkGuards: true }));
+      expect(statusesFor('orCondition', findings)).toContain(403);
+    });
+  });
 });
 
 describe('documented-but-unreachable rule (opt-in)', () => {

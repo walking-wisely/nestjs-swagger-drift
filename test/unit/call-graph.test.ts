@@ -138,6 +138,190 @@ describe('collectCallGraphStatuses — depth bounding', () => {
   });
 });
 
+describe('collectCallGraphStatuses — same-class hops are free', () => {
+  // Adversarial-testing finding: a private same-class helper sits BETWEEN
+  // the handler's own service call and the repository throw
+  // (`OrgController.create` → `OrgService.create` → `OrgService#ensureReady`
+  // (private) → `OrgRepository.save`) — three call sites, but only one
+  // genuine class-to-class crossing beyond the handler's own call
+  // (`OrgService` → `OrgRepository`). At the default `maxDepth: 2` this must
+  // resolve exactly like `TWO_HOP_SOURCE` (no private helper in the middle)
+  // does — the private hop must not eat depth budget the repository call
+  // needs.
+  const SAME_CLASS_HELPER_SOURCE = `
+    import { ConflictException } from '@nestjs/common';
+
+    export class OrgRepository {
+      save(name: string): string {
+        if (!name) throw new ConflictException('org exists');
+        return 'saved';
+      }
+    }
+
+    export class OrgService {
+      constructor(private readonly repo: OrgRepository) {}
+      private ensureReady(name: string): void {
+        if (!name) throw new Error('unreachable in this test');
+      }
+      create(name: string): string {
+        this.ensureReady(name);
+        return this.repo.save(name);
+      }
+    }
+
+    export class OrgController {
+      constructor(private readonly orgs: OrgService) {}
+      create(name: string): string {
+        return this.orgs.create(name);
+      }
+    }
+  `;
+
+  it('reaches the repository throw through a private same-class helper at maxDepth: 2', () => {
+    const program = programWithMain(SAME_CLASS_HELPER_SOURCE);
+    const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 2 }));
+    const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
+
+    const { findings } = collectCallGraphStatuses(handler, ctx);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.resolved.status).toBe(409);
+  });
+
+  it('still requires the one genuine cross-class hop (maxDepth: 1 does not reach it)', () => {
+    const program = programWithMain(SAME_CLASS_HELPER_SOURCE);
+    const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 1 }));
+    const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
+
+    // maxDepth: 1 reaches OrgService.create (hop 1) and, for free, its own
+    // private helper — but the repository is still a second, genuine
+    // cross-class hop this budget can't afford.
+    expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
+  });
+
+  it('a same-class chain of THREE private helpers before the repository still resolves at maxDepth: 2', () => {
+    const program = programWithMain(`
+      import { NotFoundException } from '@nestjs/common';
+
+      export class WidgetsRepository {
+        find(id: string): string {
+          if (!id) throw new NotFoundException('widget');
+          return 'widget';
+        }
+      }
+
+      export class WidgetsService {
+        constructor(private readonly repo: WidgetsRepository) {}
+        private stepA(id: string): string { return this.stepB(id); }
+        private stepB(id: string): string { return this.stepC(id); }
+        private stepC(id: string): string { return this.repo.find(id); }
+        get(id: string): string {
+          return this.stepA(id);
+        }
+      }
+
+      export class WidgetsController {
+        constructor(private readonly svc: WidgetsService) {}
+        get(id: string): string {
+          return this.svc.get(id);
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 2 }));
+    const handler = findMethod(program, 'main.ts', 'WidgetsController', 'get');
+
+    const { findings } = collectCallGraphStatuses(handler, ctx);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.resolved.status).toBe(404);
+  });
+
+  it('a cross-class chain of the same length is NOT free (sanity control)', () => {
+    // Same shape as the three-private-helpers test, but each "helper" is on
+    // its own class — every hop is a genuine crossing, so maxDepth: 2 must
+    // NOT reach the repository throw (unlike the private-helper version above).
+    const program = programWithMain(`
+      import { NotFoundException } from '@nestjs/common';
+
+      export class WidgetsRepository {
+        find(id: string): string {
+          if (!id) throw new NotFoundException('widget');
+          return 'widget';
+        }
+      }
+      export class StepC {
+        constructor(private readonly repo: WidgetsRepository) {}
+        run(id: string): string { return this.repo.find(id); }
+      }
+      export class StepB {
+        constructor(private readonly c: StepC) {}
+        run(id: string): string { return this.c.run(id); }
+      }
+      export class StepA {
+        constructor(private readonly b: StepB) {}
+        run(id: string): string { return this.b.run(id); }
+      }
+      export class WidgetsController {
+        constructor(private readonly a: StepA) {}
+        get(id: string): string {
+          return this.a.run(id);
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 2 }));
+    const handler = findMethod(program, 'main.ts', 'WidgetsController', 'get');
+
+    expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
+  });
+
+  // Code-review finding, verified: with same-class hops free and NO separate
+  // bound, a class whose methods fan out into several same-class helpers
+  // each turns this traversal into enumerating every simple path through
+  // that fan-out — exponential in the fan-out width, unbounded by
+  // `maxDepth`. Confirmed empirically to crash a real process past ~28
+  // methods at fan-out 3. `SAME_CLASS_HOP_BUDGET` bounds it: a same-class
+  // chain longer than that budget starts costing depth again, exactly like
+  // a cross-class hop. This test's shape (30 methods, each calling the next
+  // 3) is the exact reported crash shape, at a size that used to be well
+  // past the crash point.
+  it('a wide same-class fan-out does not explode combinatorially (DoS regression)', () => {
+    const methodCount = 30;
+    let methods = '';
+    for (let i = 0; i < methodCount; i++) {
+      const calls = [i + 1, i + 2, i + 3]
+        .filter((j) => j < methodCount)
+        .map((j) => `this.m${j}()`)
+        .join('; ');
+      methods += `  private m${i}(): void { ${calls}; }\n`;
+    }
+    const program = programWithMain(`
+      import { NotFoundException } from '@nestjs/common';
+      export class FanOutService {
+${methods}
+        entry(): void {
+          this.m0();
+        }
+      }
+      export class FanOutController {
+        constructor(private readonly svc: FanOutService) {}
+        get(): void {
+          this.svc.entry();
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 2 }));
+    const handler = findMethod(program, 'main.ts', 'FanOutController', 'get');
+
+    const start = Date.now();
+    const { findings } = collectCallGraphStatuses(handler, ctx);
+    const elapsedMs = Date.now() - start;
+
+    // Nothing in the fan-out throws at all — the point is purely that
+    // walking it completes fast and doesn't enumerate an exponential number
+    // of duplicate (empty) paths.
+    expect(elapsedMs).toBeLessThan(5000);
+    expect(findings).toHaveLength(0);
+  });
+});
+
 describe('collectCallGraphStatuses — via path contents', () => {
   it('carries a two-hop via path with the right names, in order', () => {
     const program = programWithMain(TWO_HOP_SOURCE);

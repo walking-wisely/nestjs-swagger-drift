@@ -222,6 +222,7 @@ interface CollectedStatuses {
 function collectProducibleStatuses(
   methodNode: ts.MethodDeclaration,
   classNode: ts.ClassLikeDeclaration,
+  handlerHttpMethods: readonly HandlerInfo['httpMethod'][],
   ctx: AnalysisContext,
 ): CollectedStatuses {
   const byStatus = new Map<number, StatusSource[]>();
@@ -251,7 +252,12 @@ function collectProducibleStatuses(
   }
 
   if (ctx.options.checkGuards ?? false) {
-    for (const { resolved, source } of collectGuardStatuses(methodNode, classNode, ctx)) {
+    for (const { resolved, source } of collectGuardStatuses(
+      methodNode,
+      classNode,
+      ctx,
+      handlerHttpMethods,
+    )) {
       addSource(byStatus, resolved.status, source);
     }
   }
@@ -341,6 +347,7 @@ export function analyzeHandler(
   const { statuses: producible, unresolvedThrows } = collectProducibleStatuses(
     methodNode,
     classNode,
+    handlers.map((h) => h.httpMethod),
     ctx,
   );
 
