@@ -1,5 +1,5 @@
 // PLAN §4.1c / `success.ts`: the implicit 2xx success status, on by default.
-import { Controller, Get, HttpCode, Post, All, Redirect, Res } from '@nestjs/common';
+import { Controller, Get, HttpCode, Post, All, Redirect, Res, Sse } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
 
 @Controller('success')
@@ -62,5 +62,14 @@ export class SuccessController {
   @All('anything-with-http-code')
   anythingWithHttpCode(): string {
     return 'ok';
+  }
+
+  // Issue #8: `@Sse()` is discovered as a GET route (`decorators.ts` maps it
+  // to `HttpMethod: 'GET'`) — but must produce NO implicit-success finding,
+  // same carve-out as `@Redirect()`/`@Res()` above (a streaming handler has
+  // no single response to status-code).
+  @Sse('events')
+  events(): unknown {
+    return undefined;
   }
 }

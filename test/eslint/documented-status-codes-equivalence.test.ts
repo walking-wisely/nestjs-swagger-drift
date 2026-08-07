@@ -227,6 +227,7 @@ const DEFAULT_OPTIONS: AnalysisOptions = {
   checkSuccessResponse: true,
   checkValidationPipe: false,
   checkGuards: false,
+  checkParsePipes: false,
 };
 
 const ALL_RULES_OPTIONS: AnalysisOptions = {
@@ -237,6 +238,7 @@ const ALL_RULES_OPTIONS: AnalysisOptions = {
   checkSuccessResponse: true,
   checkValidationPipe: true,
   checkGuards: true,
+  checkParsePipes: true,
 };
 
 describe.each([

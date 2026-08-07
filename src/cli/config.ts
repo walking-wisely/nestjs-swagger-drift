@@ -37,6 +37,8 @@ export interface CliConfigFile {
   checkValidationPipe?: boolean;
   /** PLAN §4.1c / §5. Mirrors `--check-guards`. */
   checkGuards?: boolean;
+  /** Issue #17. Mirrors `--check-parse-pipes`. */
+  checkParsePipes?: boolean;
   baseDir?: string;
 }
 
@@ -75,6 +77,7 @@ const CONFIG_KEYS = new Set<string>([
   'checkSuccessResponse',
   'checkValidationPipe',
   'checkGuards',
+  'checkParsePipes',
   'baseDir',
 ]);
 
@@ -197,6 +200,12 @@ function validateConfig(
     const value = raw['checkGuards'];
     if (typeof value !== 'boolean') return fail('checkGuards', 'a boolean', value);
     config.checkGuards = value;
+  }
+
+  if ('checkParsePipes' in raw) {
+    const value = raw['checkParsePipes'];
+    if (typeof value !== 'boolean') return fail('checkParsePipes', 'a boolean', value);
+    config.checkParsePipes = value;
   }
 
   if ('baseDir' in raw) {

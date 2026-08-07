@@ -91,6 +91,15 @@
  * `CacheEntry.ownUnresolvedThrows` doc comment). Findings from this source are
  * emitted once per unresolved throw per METHOD, not per `HandlerInfo` — see
  * the per-handler loop below for why.
+ *
+ * As of issue #15, this rule also surfaces a handler whose `@HttpCode(...)`
+ * argument couldn't be statically resolved to a literal (`success.ts`'s
+ * `findUnresolvableHttpCode`) — previously a dynamic `@HttpCode` argument
+ * produced zero findings under any flag, since `resolveSuccessStatus`
+ * correctly refuses to guess which status it resolves to at runtime but had
+ * nowhere to report that refusal. Not a guessed status, just the same
+ * "couldn't resolve, but say so" note this rule already gives an unresolvable
+ * thrown status.
  */
 
 import * as ts from 'typescript';
@@ -109,9 +118,10 @@ import { resolveThrownStatus } from './resolve-status.js';
 import { getDocumentedStatuses } from './documented.js';
 import { collectCallGraphStatuses } from './call-graph.js';
 import { checkHandlerSuppression, checkSourceSuppression } from './suppress.js';
-import { resolveSuccessStatus } from './success.js';
+import { findUnresolvableHttpCode, resolveSuccessStatus } from './success.js';
 import { collectValidationPipeSource } from './validation-pipe.js';
 import { collectGuardStatuses } from './guards.js';
+import { collectParsePipesSource } from './parse-pipes.js';
 
 /**
  * Constructs the opaque `AnalysisCache` (see `types.ts`'s doc comment on
@@ -267,6 +277,11 @@ function collectProducibleStatuses(
     if (source) addSource(byStatus, 400, source);
   }
 
+  if (ctx.options.checkParsePipes ?? false) {
+    const source = collectParsePipesSource(methodNode, ctx.checker);
+    if (source) addSource(byStatus, 400, source);
+  }
+
   const statuses = [...byStatus.entries()].map(([status, sources]) => ({
     resolved: { kind: 'resolved' as const, status, confidence: 'high' as const },
     sources,
@@ -357,11 +372,20 @@ export function analyzeHandler(
   // `checkSuccessResponse` defaults to `true`, so in the default
   // configuration this fast path is essentially never taken, which is
   // intentional (PLAN §4.1c: success-checking should run everywhere).
+  //
+  // Also requires `!unresolvableRuleEnabled` (issue #15): when that rule is
+  // on, a method can still produce a finding purely from
+  // `findUnresolvableHttpCode` below even with `producible`/`unresolvedThrows`
+  // both empty (an unresolvable `@HttpCode(...)` argument is neither a
+  // "producible status" nor an "unresolved throw" — it's discovered later,
+  // in the per-`unresolvableRuleEnabled` block) — bailing out here before
+  // that block runs silently dropped the whole finding.
   if (
     producible.length === 0 &&
     unresolvedThrows.length === 0 &&
     !checkSuccessResponse &&
-    !unreachableRuleEnabled
+    !unreachableRuleEnabled &&
+    !unresolvableRuleEnabled
   ) {
     return [];
   }
@@ -545,6 +569,25 @@ export function analyzeHandler(
       for (const { node, reason, via } of unresolvedThrows) {
         const detail = via.length > 0 ? `${via.map((hop) => hop.name).join(' → ')}: ${reason}` : reason;
         findings.push({ rule: 'unresolvable-status', handler: primaryHandler, node, detail });
+      }
+
+      // Issue #15: a dynamically-valued `@HttpCode(...)` argument (an
+      // imported `const` widened to `number`, a computed expression, ...)
+      // previously produced zero findings under ANY flag — `success.ts`
+      // correctly refuses to guess a status, but with `unresolvable-status`
+      // this is exactly the "couldn't resolve, but say so" case the rule
+      // exists for, same as an unresolvable thrown status above. One check
+      // per method (not per throw — there's at most one `@HttpCode` per
+      // method), attributed to `primaryHandler` for the same reason as the
+      // throws above.
+      const unresolvableHttpCode = findUnresolvableHttpCode(methodNode, ctx.checker);
+      if (unresolvableHttpCode) {
+        findings.push({
+          rule: 'unresolvable-status',
+          handler: primaryHandler,
+          node: unresolvableHttpCode,
+          detail: '@HttpCode argument is not a statically resolvable literal',
+        });
       }
     }
   }

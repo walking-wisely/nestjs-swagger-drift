@@ -49,7 +49,7 @@ export type StatusSource =
       /** A status code NestJS produces without an explicit throw. */
       kind: 'implicit';
       node: ts.Node;
-      reason: 'validation-pipe' | 'guard' | 'success';
+      reason: 'validation-pipe' | 'guard' | 'success' | 'parse-pipe';
       /**
        * Optional extra context a report can show alongside `reason` (Phase 5,
        * PLAN §4.1c). Added as an optional field rather than widening
@@ -69,6 +69,9 @@ export type StatusSource =
        * - `'guard'`: the guard class name, plus (when the throw was found
        *   more than one call hop into the guard) the hop chain, e.g.
        *   `'AuthGuard.canActivate'` or `'AuthGuard.canActivate → TokenService.verify'`.
+       * - `'parse-pipe'` (issue #17): the built-in `Parse*Pipe` class name(s)
+       *   found (e.g. `'ParseIntPipe'`, or a comma-joined list when more than
+       *   one parameter qualifies), mirroring `'validation-pipe'`'s shape.
        */
       detail?: string;
     };
@@ -283,6 +286,18 @@ export interface AnalysisOptions {
    * versus the unconditional `checkSuccessResponse` case above.
    */
   checkGuards?: boolean;
+
+  /**
+   * PLAN §4.1c-adjacent (issue #17): treat `400` as producible when a
+   * handler parameter decorated with `@Body()`/`@Param()`/`@Query()` also
+   * carries one of NestJS's built-in transformation pipes (`ParseIntPipe`,
+   * `ParseUUIDPipe`, `ParseBoolPipe`, `ParseEnumPipe`, `ParseFloatPipe`,
+   * `ParseArrayPipe`, `ParseFilePipe` — `parse-pipes.ts`). Opt-in, defaulting
+   * to `false` at the point of use, for the same reason as
+   * `checkValidationPipe`: this tool cannot see whether the pipe genuinely
+   * runs at request time, only that the decorator call names one.
+   */
+  checkParsePipes?: boolean;
 }
 
 declare const analysisCacheBrand: unique symbol;

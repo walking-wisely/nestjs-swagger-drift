@@ -34,8 +34,8 @@ problem, not a static one.
 
 ## Features
 
-- **Route discovery** — `@Controller`/`@Get`/`@Post`/... including class-level
-  path prefixes, array-form paths, and aliased imports.
+- **Route discovery** — `@Controller`/`@Get`/`@Post`/`@Sse`/... including
+  class-level path prefixes, array-form paths, and aliased imports.
 - **Direct throws** (`throw new NotFoundException(...)`) resolved against the
   full `@nestjs/common` exception table.
 - **Call-graph traversal** — a handler that calls into a service (and that
@@ -51,8 +51,9 @@ super(msg, 409) } }` resolves the literal (or `HttpStatus.CONFLICT`) it
   `@ApiConflictResponse`, ...), `@ApiDefaultResponse` (optionally a
   wildcard), and `'1XX'`–`'5XX'` status ranges. Class-level decorators (and a
   base class's, up the `extends` chain) apply to every handler.
-- **Implicit codes** (below) — a handler's own success status, and two opt-in
-  checks for `ValidationPipe` and `@UseGuards(...)`.
+- **Implicit codes** (below) — a handler's own success status, and three
+  opt-in checks for `ValidationPipe`, `@UseGuards(...)`, and built-in
+  `Parse*Pipe`s (`ParseIntPipe`, `ParseUUIDPipe`, ...).
 - **Two opt-in extra rules**: `documented-but-unreachable` (a documented
   status nothing in the code can produce — usually a copy-pasted decorator
   block) and `unresolvable-status` (a throw whose status couldn't be
@@ -120,6 +121,9 @@ Options:
       --check-guards / --no-check-guards
                                Check @UseGuards(...) classes for implicit 401/403
                                (default: off).
+      --check-parse-pipes / --no-check-parse-pipes
+                               Check @Param()/@Query()/@Body() for a built-in
+                               Parse*Pipe implicit 400 (default: off).
       --base-dir <path>       Base directory for reported file paths
                                (default: the tsconfig's own directory).
       --config <path>         Explicit swagger-drift.config.{json,js,mjs,ts} path.
@@ -338,7 +342,7 @@ Or configure the rule manually instead of using `configs.recommended`:
 
 The rule's options mirror the CLI's flag surface field-for-field (`maxDepth`,
 `rules`, `treatDefaultAsWildcard`, `ignoreStatuses`, `checkSuccessResponse`,
-`checkValidationPipe`, `checkGuards`), with one deliberate exception
+`checkValidationPipe`, `checkGuards`, `checkParsePipes`), with one deliberate exception
 (`ignoreSuppressions`/`--audit`, see below), and with the same defaults
 described in ["What's on by default vs. opt-in"](#whats-on-by-default-vs-opt-in)
 below. `// swagger-drift-disable-next-line` inline suppression comments
@@ -357,12 +361,13 @@ non-goal of this rule for now — see PLAN §5 Phase 7.
 
 ## What's on by default vs. opt-in
 
-| Check                                                      | Default | Why                                                                                                                                                                                                                                  |
-| ---------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Check                                                       | Default | Why                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Direct throws, call-graph throws, custom exception classes | **on**  | Deterministic — a resolved status is never a guess.                                                                                                                                                                                  |
 | 2xx success response (`checkSuccessResponse`)              | **on**  | Every handler that returns normally produces _some_ status; documenting none at all is the single most common miss. `@Redirect()` and `@Res()`/`@Response()` handlers are excluded (see below) rather than asserted a wrong default. |
 | `ValidationPipe` implicit 400 (`checkValidationPipe`)      | off     | A `class-validator`-decorated DTO parameter doesn't prove `ValidationPipe` is actually registered anywhere in the app — this tool can't see that.                                                                                    |
 | `@UseGuards(...)` implicit 401/403 (`checkGuards`)         | off     | A guard is provably _attached_, not provably _throwing_ the way this analysis assumes (it could reject without throwing).                                                                                                            |
+| Built-in `Parse*Pipe` implicit 400 (`checkParsePipes`)     | off     | A `@Param()`/`@Query()`/`@Body()` argument naming `ParseIntPipe`/`ParseUUIDPipe`/... doesn't prove the pipe genuinely runs at request time, same caveat as `checkValidationPipe`.                                                    |
 | `documented-but-unreachable`                               | off     | Catches copy-pasted decorator blocks, but needs the full producible set (including the two checks above) to avoid flagging things this run simply didn't verify.                                                                     |
 | `unresolvable-status`                                      | off     | Surfaces a throw this tool couldn't pin to a status, instead of silently dropping it — useful for auditing coverage, noisy as a default gate.                                                                                        |
 
@@ -385,19 +390,22 @@ status for:
   more common of the two in idiomatic NestJS DI, since constructor injection
   by interface/abstract type is a standard pattern. Same result: no finding,
   no `unresolvedThrows` entry, nothing to audit against.
-
 The unifying rule (PLAN's "silence over noise"): nothing that can produce a
 false positive under default settings is on by default. `checkSuccessResponse`
 is the closest thing to an exception — NestJS always returns _some_ status on
 a normal return, so a plain handler's implicit success code is never a guess.
 It isn't a blanket "no false-positive risk" claim, though: `@Redirect()`
-(NestJS defaults a redirect to `302`, not `200`/`201`) and `@Res()`/
+(NestJS defaults a redirect to `302`, not `200`/`201`), `@Res()`/
 `@Response()` (the handler takes over the response object; NestJS's automatic
-status-setting doesn't apply) are real shapes where the plain default would be
-wrong — `success.ts` detects both and skips emitting an implicit-success
+status-setting doesn't apply), and `@Sse()` (a streaming handler has no single
+response to status-code) are real shapes where the plain default would be
+wrong — `success.ts` detects all three and skips emitting an implicit-success
 source for them entirely rather than asserting a status it can't back. `@All()`
 routes, whose real semantics aren't knowable from the decorator alone, are
-skipped the same way unless an explicit `@HttpCode(...)` says otherwise.
+skipped the same way unless an explicit `@HttpCode(...)` says otherwise. Note
+that `@Sse()` handlers are still *discovered* as GET routes (NestJS itself
+routes them that way) — every other check still runs on them, only the
+implicit-success emission is skipped.
 
 ## Before / after
 
@@ -475,16 +483,29 @@ No undocumented status codes found.
   for `@Post()`, or whatever `@HttpCode(n)` overrides it to. An unresolvable
   `@HttpCode` argument (a variable, a computed expression) is silently
   skipped rather than guessed, and so are `@Redirect()`, `@Res()`/
-  `@Response()` handlers, and a bare `@All()` (see above).
+  `@Response()` handlers, `@Sse()` handlers (still discovered as GET routes —
+  only the implicit-success emission is skipped), and a bare `@All()` (see
+  above).
 - **`checkValidationPipe`** (`validation-pipe.ts`) — treats `400` as
   producible when a handler parameter is decorated with `@Body()`/`@Param()`/
-  `@Query()` AND its type is a class carrying at least one `class-validator`
-  decorator (`@IsString()`, `@IsNotEmpty()`, ...). Inherited DTO base-class
-  decorators are not walked — deliberately narrow.
+  `@Query()` AND its type — or, for an array-typed parameter
+  (`items: CreateItemDto[]`), its element type — is a class carrying at least
+  one `class-validator` decorator (`@IsString()`, `@IsNotEmpty()`, ...),
+  applied directly OR via a locally-composed decorator
+  (`applyDecorators(IsString(), MinLength(8))`) whose own body calls one.
+  Inherited DTO base-class decorators are not walked — deliberately narrow.
 - **`checkGuards`** (`guards.ts`) — resolves each `@UseGuards(SomeGuard)`
   class (method- and class-level), finds its `canActivate`, and recurses into
   it with the same bounded call-graph traversal used for services, collecting
   whatever it throws (typically `UnauthorizedException`/`ForbiddenException`).
+- **`checkParsePipes`** (`parse-pipes.ts`) — treats `400` as producible when a
+  handler parameter decorated with `@Body()`/`@Param()`/`@Query()` also names
+  one of NestJS's built-in transformation pipes (`ParseIntPipe`,
+  `ParseUUIDPipe`, `ParseBoolPipe`, `ParseEnumPipe`, `ParseFloatPipe`,
+  `ParseArrayPipe`, `ParseFilePipe`) among the decorator's call arguments —
+  as a bare class reference, a `new X()` instantiation, or inside a pipe
+  array. Same "can't prove it's actually wired up" caveat as
+  `checkValidationPipe`.
 - **`documented-but-unreachable`** — scoped to a handler's own METHOD-level
   documented statuses only (a class-level `@ApiResponse` is usually a blanket
   "this whole controller might produce this" statement, not a per-handler
@@ -498,9 +519,11 @@ No undocumented status codes found.
   regardless of whether the corresponding check happens to be enabled).
 - **`unresolvable-status`** — reports a handler's own direct throw AND any
   unresolvable throw reached through the call graph whose status
-  `resolve-status.ts` couldn't statically pin down. Not suppressed by an
-  `@ApiDefaultResponse` wildcard (unlike the two rules above, an
-  unresolvable throw has nothing to do with what's documented).
+  `resolve-status.ts` couldn't statically pin down, PLUS a handler whose own
+  `@HttpCode(...)` argument couldn't be statically resolved to a literal (not
+  a guessed status, just the same "couldn't resolve, but say so" note). Not
+  suppressed by an `@ApiDefaultResponse` wildcard (unlike the two rules
+  above, an unresolvable status has nothing to do with what's documented).
 
 ## Performance
 

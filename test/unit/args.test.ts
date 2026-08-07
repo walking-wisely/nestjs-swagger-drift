@@ -21,6 +21,7 @@ describe('parseArgs', () => {
         checkSuccessResponse: undefined,
         checkValidationPipe: undefined,
         checkGuards: undefined,
+        checkParsePipes: undefined,
         baseDir: undefined,
         config: undefined,
         noConfig: false,
@@ -148,6 +149,13 @@ describe('parseArgs', () => {
     expect(on.ok && on.flags.checkGuards).toBe(true);
     const off = parseArgs(['--no-check-guards']);
     expect(off.ok && off.flags.checkGuards).toBe(false);
+  });
+
+  it('parses --check-parse-pipes and its negation', () => {
+    const on = parseArgs(['--check-parse-pipes']);
+    expect(on.ok && on.flags.checkParsePipes).toBe(true);
+    const off = parseArgs(['--no-check-parse-pipes']);
+    expect(off.ok && off.flags.checkParsePipes).toBe(false);
   });
 
   it('parses --base-dir and --config', () => {

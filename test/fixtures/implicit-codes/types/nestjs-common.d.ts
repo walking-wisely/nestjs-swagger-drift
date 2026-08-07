@@ -13,6 +13,7 @@ declare module '@nestjs/common' {
   export function Delete(path?: PathType): MethodDecorator;
   export function Patch(path?: PathType): MethodDecorator;
   export function All(path?: PathType): MethodDecorator;
+  export function Sse(path?: PathType): MethodDecorator;
 
   export function Injectable(): ClassDecorator;
 
@@ -24,11 +25,20 @@ declare module '@nestjs/common' {
     ...decorators: Array<MethodDecorator | ClassDecorator>
   ): MethodDecorator & ClassDecorator;
 
-  export function Body(): ParameterDecorator;
-  export function Param(name?: string): ParameterDecorator;
-  export function Query(name?: string): ParameterDecorator;
+  export function Body(...args: unknown[]): ParameterDecorator;
+  export function Param(...args: unknown[]): ParameterDecorator;
+  export function Query(...args: unknown[]): ParameterDecorator;
   export function Res(): ParameterDecorator;
   export function Response(): ParameterDecorator;
+
+  // Issue #17: NestJS's built-in transformation pipes.
+  export class ParseIntPipe {}
+  export class ParseUUIDPipe {}
+  export class ParseBoolPipe {}
+  export class ParseEnumPipe {}
+  export class ParseFloatPipe {}
+  export class ParseArrayPipe {}
+  export class ParseFilePipe {}
 
   export interface MinimalRequest {
     method: string;

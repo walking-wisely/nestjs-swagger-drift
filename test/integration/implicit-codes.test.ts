@@ -33,6 +33,7 @@ function baseOptions(overrides: Partial<AnalysisOptions> = {}): AnalysisOptions 
     checkSuccessResponse: false,
     checkValidationPipe: false,
     checkGuards: false,
+    checkParsePipes: false,
     ...overrides,
   };
 }
@@ -139,6 +140,16 @@ describe('checkSuccessResponse (on by default)', () => {
     expect(found).toHaveLength(1);
     expect(found[0]).toMatchObject({ status: 200 });
   });
+
+  // Issue #8: `@Sse()` is discovered as a GET route at all (previously
+  // invisible to route discovery entirely — see `decorators.test.ts` and
+  // `handlers.test.ts` for unit coverage of the discovery half), but a
+  // streaming handler has no single implicit success status to assert, same
+  // carve-out as `@Redirect()`/`@Res()`.
+  it('produces no implicit-success finding for an @Sse() handler', () => {
+    const findings = analyze(baseOptions({ checkSuccessResponse: true }));
+    expect(findingsFor(findings, 'SuccessController', 'events')).toEqual([]);
+  });
 });
 
 describe('checkValidationPipe (opt-in)', () => {
@@ -166,6 +177,44 @@ describe('checkValidationPipe (opt-in)', () => {
   it('produces no 400 finding at all when disabled (the default)', () => {
     const findings = analyze(baseOptions({ checkValidationPipe: false }));
     expect(findings.some((f) => f.handler.className === 'ValidationPipeController')).toBe(false);
+  });
+
+  // Issue #13a: an array-typed `@Body() items: CreateItemDto[]` must resolve
+  // to `CreateItemDto`'s class declaration, not `Array`'s own symbol.
+  it('flags an implicit 400 for an ARRAY-typed @Body() class-validator DTO parameter', () => {
+    const findings = analyze(baseOptions({ checkValidationPipe: true }));
+    const createMany = findingsFor(findings, 'ValidationPipeController', 'createMany');
+    expect(createMany).toHaveLength(1);
+    expect(createMany[0]).toMatchObject({ rule: 'undocumented-status', status: 400 });
+    if (createMany[0]?.rule === 'undocumented-status') {
+      expect(createMany[0].sources).toEqual([
+        expect.objectContaining({
+          kind: 'implicit',
+          reason: 'validation-pipe',
+          detail: 'CreateItemDto',
+        }),
+      ]);
+    }
+  });
+
+  // Issue #13b: a DTO property decorated with a LOCALLY-COMPOSED decorator
+  // (`applyDecorators(IsString(), MinLength(8))`) must still count — its own
+  // provenance is a confirmed `class-validator` mismatch (it's declared
+  // in-app), but its body calls real `class-validator` decorators.
+  it('flags an implicit 400 for a DTO validated via a locally-composed decorator', () => {
+    const findings = analyze(baseOptions({ checkValidationPipe: true }));
+    const createAccount = findingsFor(findings, 'ValidationPipeController', 'createAccount');
+    expect(createAccount).toHaveLength(1);
+    expect(createAccount[0]).toMatchObject({ rule: 'undocumented-status', status: 400 });
+    if (createAccount[0]?.rule === 'undocumented-status') {
+      expect(createAccount[0].sources).toEqual([
+        expect.objectContaining({
+          kind: 'implicit',
+          reason: 'validation-pipe',
+          detail: 'CreateAccountDto',
+        }),
+      ]);
+    }
   });
 });
 
@@ -478,5 +527,62 @@ describe('unresolvable-status rule (opt-in)', () => {
     const wildcard = findingsFor(findings, 'UnresolvableController', 'wildcard');
     expect(wildcard).toHaveLength(1);
     expect(wildcard[0]?.rule).toBe('unresolvable-status');
+  });
+
+  // Issue #15: a dynamically-valued `@HttpCode(...)` argument previously
+  // produced zero findings under any flag — `resolveSuccessStatus` correctly
+  // declines to guess, but nothing surfaced that refusal. This asserts the
+  // opt-in rule now does, and stays silent when disabled (same "silence over
+  // noise" default as everywhere else).
+  it('surfaces a handler whose @HttpCode argument could not be statically resolved', () => {
+    const findings = analyze(
+      baseOptions({ rules: { 'documented-but-unreachable': false, 'unresolvable-status': true } }),
+    );
+    const dynamicHttpCode = findingsFor(findings, 'UnresolvableController', 'dynamicHttpCode');
+    expect(dynamicHttpCode).toHaveLength(1);
+    expect(dynamicHttpCode[0]?.rule).toBe('unresolvable-status');
+    if (dynamicHttpCode[0]?.rule === 'unresolvable-status') {
+      expect(dynamicHttpCode[0].detail).toContain('@HttpCode');
+    }
+  });
+
+  it('is silent about the dynamic @HttpCode when the rule is disabled (the default)', () => {
+    const findings = analyze(baseOptions());
+    expect(findingsFor(findings, 'UnresolvableController', 'dynamicHttpCode')).toEqual([]);
+  });
+});
+
+describe('checkParsePipes (opt-in, issue #17)', () => {
+  it('flags an implicit 400 for a @Param() argument carrying a built-in Parse*Pipe when enabled', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const findOne = findingsFor(findings, 'ParsePipesController', 'findOne');
+    expect(findOne).toHaveLength(1);
+    expect(findOne[0]).toMatchObject({ rule: 'undocumented-status', status: 400 });
+    if (findOne[0]?.rule === 'undocumented-status') {
+      expect(findOne[0].sources).toEqual([
+        expect.objectContaining({
+          kind: 'implicit',
+          reason: 'parse-pipe',
+          detail: 'ParseUUIDPipe',
+        }),
+      ]);
+    }
+  });
+
+  it('recognizes a pipe instantiated with new(...), not just a bare class reference', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const page = findingsFor(findings, 'ParsePipesController', 'list');
+    expect(page).toHaveLength(1);
+    expect(page[0]).toMatchObject({ status: 400 });
+  });
+
+  it('does not flag a @Param() with no pipe argument', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    expect(findingsFor(findings, 'ParsePipesController', 'plain')).toEqual([]);
+  });
+
+  it('produces no 400 finding at all when disabled (the default)', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: false }));
+    expect(findings.some((f) => f.handler.className === 'ParsePipesController')).toBe(false);
   });
 });

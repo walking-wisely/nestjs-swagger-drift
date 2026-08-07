@@ -187,13 +187,15 @@ ruleTester.run('documented-status-codes', documentedStatusCodesRule, {
       // `unresolvable-status`, enabled: `throw new HttpException(msg, dynamicStatus)`
       // whose status is a runtime value, not a literal — resolvable to
       // nothing, surfaced instead of silently dropped. This fixture's
-      // `UnresolvableController` has four such handlers (a direct throw, one
+      // `UnresolvableController` has five such handlers (a direct throw, one
       // reached one call-graph hop away, one shared by two HTTP decorators
-      // on the same method — reported once, not twice — and one behind an
+      // on the same method — reported once, not twice — one behind an
       // `@ApiDefaultResponse` wildcard, which does NOT suppress this rule —
-      // see `analyze.ts`'s module doc), so all four are asserted here rather
-      // than narrowing the fixture: this rule's "surface every unresolvable
-      // throw" contract is exactly what having all four catches.
+      // see `analyze.ts`'s module doc — and, issue #15, one whose
+      // `@HttpCode(...)` argument is itself dynamically valued), so all five
+      // are asserted here rather than narrowing the fixture: this rule's
+      // "surface every unresolvable status" contract is exactly what having
+      // all five catches.
       name: 'unresolvable-status flags every throw whose status could not be resolved, when enabled',
       code: readFixture(IMPLICIT_CODES_DIR, 'src/unresolvable.controller.ts'),
       filename: 'src/unresolvable.controller.ts',
@@ -231,6 +233,13 @@ ruleTester.run('documented-status-codes', documentedStatusCodesRule, {
           data: {
             handlerLabel: 'GET /unresolvable/wildcard/:id (UnresolvableController.wildcard)',
             detail: 'HttpException status argument is not a resolvable numeric literal or HttpStatus member',
+          },
+        },
+        {
+          messageId: 'unresolvableStatus',
+          data: {
+            handlerLabel: 'POST /unresolvable/dynamic-http-code (UnresolvableController.dynamicHttpCode)',
+            detail: '@HttpCode argument is not a statically resolvable literal',
           },
         },
       ],

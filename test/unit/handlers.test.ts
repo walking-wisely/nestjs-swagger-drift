@@ -68,3 +68,56 @@ describe('getHandlersForClass over a decorated class expression (S6)', () => {
     expect(viaMethod).toEqual(viaClass);
   });
 });
+
+// Issue #8: a handler carrying only `@Sse()` (no `@Get()`) must still be
+// discovered as a GET route by `getHandlersForClass` — before this was
+// wired into `HTTP_METHOD_DECORATOR_NAMES`, it produced zero `HandlerInfo`s
+// at all, i.e. the route was entirely invisible.
+describe('getHandlersForClass discovers @Sse() as a GET route (issue #8)', () => {
+  const STUB = `
+    declare module '@nestjs/common' {
+      export function Controller(prefix?: string): ClassDecorator;
+      export function Get(path?: string): MethodDecorator;
+      export function Sse(path?: string): MethodDecorator;
+    }
+  `;
+  const MAIN = `
+    import { Controller, Get, Sse } from '@nestjs/common';
+
+    @Controller('events')
+    export class EventsController {
+      @Sse('stream')
+      stream(): unknown { return undefined; }
+
+      @Get('list')
+      list(): unknown[] { return []; }
+    }
+  `;
+
+  const program = createInMemoryProgram(
+    { 'stub.d.ts': STUB, 'main.ts': MAIN },
+    ['stub.d.ts', 'main.ts'],
+    {
+      target: ts.ScriptTarget.ES2022,
+      module: ts.ModuleKind.NodeNext,
+      moduleResolution: ts.ModuleResolutionKind.NodeNext,
+      experimentalDecorators: true,
+    },
+  );
+  const checker = program.getTypeChecker();
+
+  it('includes the @Sse() handler, mapped to GET, alongside the @Get() one', () => {
+    const sourceFile = program.getSourceFile('main.ts');
+    if (!sourceFile) throw new Error('missing main.ts');
+    let classDecl: ts.ClassDeclaration | undefined;
+    ts.forEachChild(sourceFile, (node) => {
+      if (ts.isClassDeclaration(node)) classDecl = node;
+    });
+    if (!classDecl) throw new Error('no class found');
+
+    const handlers = getHandlersForClass(classDecl, { checker });
+    const byMethod = new Map(handlers.map((h) => [h.methodName, h]));
+    expect(byMethod.get('stream')).toMatchObject({ httpMethod: 'GET', path: '/events/stream' });
+    expect(byMethod.get('list')).toMatchObject({ httpMethod: 'GET', path: '/events/list' });
+  });
+});

@@ -117,6 +117,8 @@ interface Options {
   checkValidationPipe?: boolean;
   /** See `AnalysisOptions.checkGuards`. Default: `false`, matching the CLI. */
   checkGuards?: boolean;
+  /** See `AnalysisOptions.checkParsePipes`. Default: `false`, matching the CLI. */
+  checkParsePipes?: boolean;
 }
 
 type RuleOptionsTuple = [Options];
@@ -134,6 +136,7 @@ const DEFAULT_OPTIONS = {
   checkSuccessResponse: true,
   checkValidationPipe: false,
   checkGuards: false,
+  checkParsePipes: false,
 } satisfies Options;
 
 /** Handler label shared by all three message templates, e.g. `POST /users (UsersController.create)` — matches `cli/report/pretty.ts`'s wording so the two surfaces read consistently. */
@@ -185,6 +188,7 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
           checkSuccessResponse: { type: 'boolean' },
           checkValidationPipe: { type: 'boolean' },
           checkGuards: { type: 'boolean' },
+          checkParsePipes: { type: 'boolean' },
         },
       },
     ],
@@ -215,6 +219,7 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
       checkSuccessResponse: options.checkSuccessResponse ?? DEFAULT_OPTIONS.checkSuccessResponse,
       checkValidationPipe: options.checkValidationPipe ?? DEFAULT_OPTIONS.checkValidationPipe,
       checkGuards: options.checkGuards ?? DEFAULT_OPTIONS.checkGuards,
+      checkParsePipes: options.checkParsePipes ?? DEFAULT_OPTIONS.checkParsePipes,
     };
     // `createAnalysisContext` resolves (or creates) the program-keyed shared
     // cache — see module doc's "no second cache" note. Cheap to call once
