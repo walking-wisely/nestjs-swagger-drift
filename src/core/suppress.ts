@@ -221,12 +221,38 @@ function isStatementListParent(node: ts.Node): boolean {
  * `IfStatement` (not a statement-list container), so this keeps walking up
  * and returns the `IfStatement` — the node a directive placed above the
  * whole `if` actually attaches to.
+ *
+ * An unbraced `if`/`else if` chain (`if (a) throw X(); else if (b) throw
+ * Y(); else throw Z();`) is parsed as nested `IfStatement`s — each `else
+ * if` lives in the outer `IfStatement`'s `elseStatement` slot, not in any
+ * `Block`'s statement array — so climbing only stops at
+ * `isStatementListParent` would walk straight past every inner `if` up to
+ * the OUTERMOST one, which sits in a real statement list. Left unguarded,
+ * that means a suppression comment above the chain's first branch silently
+ * suppresses every status thrown anywhere else in the chain too (#16). Fix:
+ * an `IfStatement` sitting directly in another `IfStatement`'s
+ * `thenStatement`/`elseStatement` slot is ITSELF a valid boundary — the
+ * climb stops there rather than continuing into the outer branch. A plain
+ * statement (the `throw` itself) sitting in a `thenStatement`/`elseStatement`
+ * slot is not a boundary by itself — the walk still climbs up to that
+ * enclosing `IfStatement` first (case above), and only then checks whether
+ * that `IfStatement` is itself nested inside another one.
  */
 function findEnclosingStatement(node: ts.Node): ts.Node | undefined {
   let current: ts.Node = node;
   while (current.parent !== undefined) {
-    if (ts.isStatement(current) && isStatementListParent(current.parent)) return current;
-    current = current.parent;
+    const parent = current.parent;
+    if (ts.isStatement(current)) {
+      if (isStatementListParent(parent)) return current;
+      if (
+        ts.isIfStatement(current) &&
+        ts.isIfStatement(parent) &&
+        (current === parent.thenStatement || current === parent.elseStatement)
+      ) {
+        return current;
+      }
+    }
+    current = parent;
   }
   return undefined;
 }

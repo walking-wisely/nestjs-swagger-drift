@@ -416,4 +416,52 @@ describe('checkSourceSuppression (Phase 4 review, finding S5)', () => {
     expect(checkSourceSuppression(suppressed, 404).suppressed).toBe(true);
     expect(checkSourceSuppression(unrelated, 404).suppressed).toBe(false);
   });
+
+  it('#16: a directive above the first branch of an unbraced if/else-if chain does not suppress a later branch', () => {
+    const program = createInMemoryProgram(
+      {
+        'main.ts': `
+          function f(x: unknown, y: unknown) {
+            // swagger-drift-disable-next-line 404
+            if (!x) throw new Error('not found');
+            else if (!y) throw new Error('conflict');
+          }
+        `,
+      },
+      ['main.ts'],
+      COMPILER_OPTIONS,
+    );
+    const sourceFile = program.getSourceFile('main.ts');
+    if (!sourceFile) throw new Error('missing main.ts');
+    const suppressed = nthThrow(sourceFile, 0);
+    const unrelated = nthThrow(sourceFile, 1);
+    expect(checkSourceSuppression(suppressed, 404).suppressed).toBe(true);
+    // Pre-fix, this was `true` too: the walk climbed straight past the
+    // `else if`'s own `IfStatement` up to the outermost one, which is where
+    // the directive's leading trivia actually lives.
+    expect(checkSourceSuppression(unrelated, 404).suppressed).toBe(false);
+  });
+
+  it('#16: a directive above a later `else`/`if` branch suppresses only that branch', () => {
+    const program = createInMemoryProgram(
+      {
+        'main.ts': `
+          function f(x: unknown, y: unknown) {
+            if (!x) throw new Error('not found');
+            else
+            // swagger-drift-disable-next-line 409
+            if (!y) throw new Error('conflict');
+          }
+        `,
+      },
+      ['main.ts'],
+      COMPILER_OPTIONS,
+    );
+    const sourceFile = program.getSourceFile('main.ts');
+    if (!sourceFile) throw new Error('missing main.ts');
+    const firstBranch = nthThrow(sourceFile, 0);
+    const secondBranch = nthThrow(sourceFile, 1);
+    expect(checkSourceSuppression(firstBranch, 409).suppressed).toBe(false);
+    expect(checkSourceSuppression(secondBranch, 409).suppressed).toBe(true);
+  });
 });
