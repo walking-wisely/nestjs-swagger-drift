@@ -77,6 +77,16 @@ interface JsonFinding {
   location: Location;
   sources: JsonSource[];
   detail: string | undefined;
+  /**
+   * Only set for `rule: 'unresolvable-status'` — a thrown status vs. issue
+   * #15's unresolvable `@HttpCode` success argument. Named `unresolvableKind`,
+   * not `kind` (adversarial review): `sources[]` entries ALSO carry a `kind`
+   * field with a completely different value set
+   * (`"throw" | "service-throw" | "implicit"`) — reusing the same JSON key at
+   * two nesting levels for two different things is exactly the kind of
+   * surprise a machine-readable format shouldn't spring on a consumer.
+   */
+  unresolvableKind: 'throw' | 'success' | undefined;
 }
 
 function findingToJson(finding: Finding, baseDir: string): JsonFinding {
@@ -87,6 +97,7 @@ function findingToJson(finding: Finding, baseDir: string): JsonFinding {
     location: locationOf(finding.node, baseDir),
     sources: finding.rule === 'undocumented-status' ? finding.sources.map((s) => sourceToJson(s, baseDir)) : [],
     detail: finding.rule === 'unresolvable-status' ? finding.detail : undefined,
+    unresolvableKind: finding.rule === 'unresolvable-status' ? finding.unresolvableKind : undefined,
   };
 }
 

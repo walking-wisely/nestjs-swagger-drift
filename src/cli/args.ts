@@ -54,6 +54,8 @@ export interface CliFlags {
   checkValidationPipe: boolean | undefined;
   /** PLAN §4.1c / §5: opt-in `@UseGuards(...)` implicit `401`/`403`. `--check-guards` opts in. */
   checkGuards: boolean | undefined;
+  /** Issue #17: opt-in built-in `Parse*Pipe` implicit `400`. `--check-parse-pipes` opts in. */
+  checkParsePipes: boolean | undefined;
   baseDir: string | undefined;
   config: string | undefined;
   noConfig: boolean;
@@ -78,6 +80,7 @@ function emptyFlags(): CliFlags {
     checkSuccessResponse: undefined,
     checkValidationPipe: undefined,
     checkGuards: undefined,
+    checkParsePipes: undefined,
     baseDir: undefined,
     config: undefined,
     noConfig: false,
@@ -246,6 +249,14 @@ export function parseArgs(argv: string[]): ParseArgsResult {
 
       case '--no-check-guards':
         flags.checkGuards = false;
+        break;
+
+      case '--check-parse-pipes':
+        flags.checkParsePipes = true;
+        break;
+
+      case '--no-check-parse-pipes':
+        flags.checkParsePipes = false;
         break;
 
       case '--base-dir': {

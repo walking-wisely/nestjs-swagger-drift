@@ -13,6 +13,7 @@ declare module '@nestjs/common' {
   export function Delete(path?: PathType): MethodDecorator;
   export function Patch(path?: PathType): MethodDecorator;
   export function All(path?: PathType): MethodDecorator;
+  export function Sse(path?: PathType): MethodDecorator;
 
   export function Injectable(): ClassDecorator;
 
@@ -24,11 +25,53 @@ declare module '@nestjs/common' {
     ...decorators: Array<MethodDecorator | ClassDecorator>
   ): MethodDecorator & ClassDecorator;
 
-  export function Body(): ParameterDecorator;
-  export function Param(name?: string): ParameterDecorator;
-  export function Query(name?: string): ParameterDecorator;
+  export function Body(...args: unknown[]): ParameterDecorator;
+  export function Param(...args: unknown[]): ParameterDecorator;
+  export function Query(...args: unknown[]): ParameterDecorator;
   export function Res(): ParameterDecorator;
   export function Response(): ParameterDecorator;
+  // Issue #17 (adversarial review): the parse-pipe host set widened beyond
+  // Body/Param/Query — see `parse-pipes.ts`'s module doc.
+  export function Headers(...args: unknown[]): ParameterDecorator;
+  export function UploadedFile(...args: unknown[]): ParameterDecorator;
+  export function UploadedFiles(...args: unknown[]): ParameterDecorator;
+
+  // Issue #17: NestJS's built-in transformation pipes. Each accepts an
+  // options object whose `errorHttpStatusCode` overrides the status thrown
+  // on a coercion failure (adversarial review — `parse-pipes.ts` resolves it).
+  // `exceptionFactory` added for the adversarial-review regression test: a
+  // pipe options object naming a factory must NOT be read for
+  // `errorHttpStatusCode` (real NestJS precedence is `exceptionFactory ??
+  // HttpErrorByCode[errorHttpStatusCode]` — the factory always wins).
+  export interface ParsePipeOptions {
+    errorHttpStatusCode?: number;
+    exceptionFactory?: (error: string) => unknown;
+  }
+  export class ParseIntPipe {
+    constructor(options?: ParsePipeOptions);
+  }
+  export class ParseUUIDPipe {
+    constructor(options?: ParsePipeOptions);
+  }
+  export class ParseBoolPipe {
+    constructor(options?: ParsePipeOptions);
+  }
+  export class ParseEnumPipe {
+    constructor(theEnum: unknown, options?: ParsePipeOptions);
+  }
+  export class ParseFloatPipe {
+    constructor(options?: ParsePipeOptions);
+  }
+  export class ParseArrayPipe {
+    constructor(options?: ParsePipeOptions);
+  }
+  export class ParseFilePipe {
+    constructor(options?: ParsePipeOptions);
+  }
+  // Issue #17 (adversarial review): was missing from `BUILTIN_PARSE_PIPE_NAMES`.
+  export class ParseDatePipe {
+    constructor(options?: ParsePipeOptions);
+  }
 
   export interface MinimalRequest {
     method: string;
@@ -53,7 +96,9 @@ declare module '@nestjs/common' {
     UNAUTHORIZED = 401,
     FORBIDDEN = 403,
     NOT_FOUND = 404,
+    NOT_ACCEPTABLE = 406,
     CONFLICT = 409,
+    UNPROCESSABLE_ENTITY = 422,
     INTERNAL_SERVER_ERROR = 500,
   }
 

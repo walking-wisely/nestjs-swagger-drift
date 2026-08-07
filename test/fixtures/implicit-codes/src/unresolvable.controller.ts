@@ -1,7 +1,11 @@
 // PLAN §5's `unresolvable-status` rule (opt-in): a direct throw whose status
 // can't be statically resolved, surfaced instead of silently dropped.
-import { Controller, Get, Post, HttpException, Injectable } from '@nestjs/common';
+import { Controller, Get, HttpCode, Post, HttpException, Injectable, Res } from '@nestjs/common';
 import { ApiDefaultResponse } from '@nestjs/swagger';
+
+// Issue #15: an imported `const` whose type widens to plain `number` — not a
+// literal the checker can resolve `@HttpCode(...)`'s argument to.
+export const DYNAMIC_STATUS: number = 250;
 
 @Injectable()
 export class FlakyService {
@@ -53,6 +57,28 @@ export class UnresolvableController {
   wildcard(id: string): string {
     const dynamicStatus = id.length; // deliberately not a literal
     if (!id) throw new HttpException('bad id', dynamicStatus);
+    return 'ok';
+  }
+
+  // Issue #15: a dynamically-valued `@HttpCode(...)` argument — previously
+  // produced ZERO findings under any flag (`resolveSuccessStatus` correctly
+  // declines to guess, but nothing surfaced that refusal). With
+  // `unresolvable-status` enabled, this must now report an "unresolvable
+  // success status" finding.
+  @HttpCode(DYNAMIC_STATUS)
+  @Post('dynamic-http-code')
+  dynamicHttpCode(): string {
+    return 'ok';
+  }
+
+  // Adversarial review: `@HttpCode` on a handler that takes the raw response
+  // object (`@Res()`) is already a known carve-out — NestJS's automatic
+  // status-setting (which `@HttpCode` configures) doesn't apply at all once
+  // the handler owns the response directly, so this `@HttpCode`'s dynamic
+  // argument is inert, not "unresolvable."
+  @HttpCode(DYNAMIC_STATUS)
+  @Post('dynamic-http-code-res')
+  dynamicHttpCodeWithRes(@Res() res: unknown): string {
     return 'ok';
   }
 }

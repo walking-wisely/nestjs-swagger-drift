@@ -689,27 +689,34 @@ describe('--enable-rule / --disable-rule', () => {
   });
 });
 
-describe('--check-success-response / --check-validation-pipe / --check-guards', () => {
-  it('default to on/off/off per PLAN §4.1c, §9', () => {
+describe('--check-success-response / --check-validation-pipe / --check-guards / --check-parse-pipes', () => {
+  it('default to on/off/off/off per PLAN §4.1c, §9 (checkParsePipes: issue #17)', () => {
     const base = parseArgs([]);
     if (!base.ok) throw new Error('parseArgs([]) unexpectedly failed');
     const merged = mergeOptions(base.flags, {}, undefined);
     expect(merged.ok && merged.options.checkSuccessResponse).toBe(true);
     expect(merged.ok && merged.options.checkValidationPipe).toBe(false);
     expect(merged.ok && merged.options.checkGuards).toBe(false);
+    expect(merged.ok && merged.options.checkParsePipes).toBe(false);
   });
 
   it('flags reach AnalysisOptions, flag beating config file', () => {
-    const flags = parseArgs(['--no-check-success-response', '--check-validation-pipe', '--check-guards']);
+    const flags = parseArgs([
+      '--no-check-success-response',
+      '--check-validation-pipe',
+      '--check-guards',
+      '--check-parse-pipes',
+    ]);
     if (!flags.ok) throw new Error('unexpected parse failure');
     const merged = mergeOptions(
       flags.flags,
-      { checkSuccessResponse: true, checkValidationPipe: false, checkGuards: false },
+      { checkSuccessResponse: true, checkValidationPipe: false, checkGuards: false, checkParsePipes: false },
       undefined,
     );
     expect(merged.ok && merged.options.checkSuccessResponse).toBe(false);
     expect(merged.ok && merged.options.checkValidationPipe).toBe(true);
     expect(merged.ok && merged.options.checkGuards).toBe(true);
+    expect(merged.ok && merged.options.checkParsePipes).toBe(true);
   });
 
   it('a config file alone (no flag) can also set these', () => {
@@ -717,12 +724,13 @@ describe('--check-success-response / --check-validation-pipe / --check-guards', 
     if (!base.ok) throw new Error('parseArgs([]) unexpectedly failed');
     const merged = mergeOptions(
       base.flags,
-      { checkSuccessResponse: false, checkValidationPipe: true, checkGuards: true },
+      { checkSuccessResponse: false, checkValidationPipe: true, checkGuards: true, checkParsePipes: true },
       undefined,
     );
     expect(merged.ok && merged.options.checkSuccessResponse).toBe(false);
     expect(merged.ok && merged.options.checkValidationPipe).toBe(true);
     expect(merged.ok && merged.options.checkGuards).toBe(true);
+    expect(merged.ok && merged.options.checkParsePipes).toBe(true);
   });
 });
 

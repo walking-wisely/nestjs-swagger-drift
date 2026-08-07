@@ -3,6 +3,7 @@ import * as ts from 'typescript';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { createProgramFromTsConfig } from '../../src/cli/program.js';
+import { createInMemoryProgram } from '../helpers/in-memory-program.js';
 import { getControllerInfo, getHttpHandlerDecorators } from '../../src/core/decorators.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -90,5 +91,62 @@ describe('decorators', () => {
   it('rejects a locally-declared decorator that only shares the name Controller', () => {
     const fakeController = findClass(program, 'fake-controller.ts', 'FakeController');
     expect(getControllerInfo(fakeController, checker)).toBeUndefined();
+  });
+});
+
+// Issue #8: `@Sse()` was entirely invisible to route discovery —
+// `HTTP_METHOD_DECORATOR_NAMES` didn't recognize it at all, so
+// `getHttpHandlerDecorators` returned an empty array for a method carrying
+// only `@Sse()`, no `@Get()`. NestJS's own routing maps `@Sse` to a GET
+// route (`RequestMethod.GET`), so this asserts the same mapping here.
+describe('@Sse() route discovery (issue #8)', () => {
+  const STUB = `
+    declare module '@nestjs/common' {
+      export function Controller(prefix?: string): ClassDecorator;
+      export function Get(path?: string): MethodDecorator;
+      export function Sse(path?: string): MethodDecorator;
+    }
+  `;
+  const MAIN = `
+    import { Controller, Sse } from '@nestjs/common';
+
+    @Controller('events')
+    export class EventsController {
+      @Sse('stream')
+      stream(): unknown {
+        return undefined;
+      }
+    }
+  `;
+
+  const program = createInMemoryProgram(
+    { 'stub.d.ts': STUB, 'main.ts': MAIN },
+    ['stub.d.ts', 'main.ts'],
+    {
+      target: ts.ScriptTarget.ES2022,
+      module: ts.ModuleKind.NodeNext,
+      moduleResolution: ts.ModuleResolutionKind.NodeNext,
+      experimentalDecorators: true,
+    },
+  );
+  const checker = program.getTypeChecker();
+
+  it('maps a bare @Sse() handler to HttpMethod GET', () => {
+    const sourceFile = program.getSourceFile('main.ts');
+    if (!sourceFile) throw new Error('missing main.ts');
+    let classNode: ts.ClassDeclaration | undefined;
+    ts.forEachChild(sourceFile, (node) => {
+      if (ts.isClassDeclaration(node)) classNode = node;
+    });
+    if (!classNode) throw new Error('no class found');
+    const method = classNode.members.find(
+      (m): m is ts.MethodDeclaration => ts.isMethodDeclaration(m),
+    );
+    if (!method) throw new Error('no method found');
+
+    const decorators = getHttpHandlerDecorators(method, checker);
+    expect(decorators).toHaveLength(1);
+    expect(decorators[0]?.httpMethod).toBe('GET');
+    expect(decorators[0]?.decoratorName).toBe('Sse');
   });
 });

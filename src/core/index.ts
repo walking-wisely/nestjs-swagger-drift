@@ -49,10 +49,12 @@ export {
   isFunctionLikeWithBody,
 } from './call-graph.js';
 
-export { resolveSuccessStatus } from './success.js';
+export { findUnresolvableHttpCode, resolveSuccessStatus } from './success.js';
 export { collectValidationPipeSource } from './validation-pipe.js';
 export type { GuardFinding } from './guards.js';
 export { collectGuardStatuses } from './guards.js';
+export type { ParsePipeStatusSource } from './parse-pipes.js';
+export { collectParsePipesSources } from './parse-pipes.js';
 
 export { resolveStatusExpression } from './status-value.js';
 

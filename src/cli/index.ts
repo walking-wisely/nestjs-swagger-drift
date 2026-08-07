@@ -97,6 +97,9 @@ function printUsage(): void {
       '      --check-guards / --no-check-guards',
       '                               Check @UseGuards(...) classes for implicit 401/403',
       '                               (default: off).',
+      '      --check-parse-pipes / --no-check-parse-pipes',
+      '                               Check @Param()/@Query()/@Body() for a built-in',
+      '                               Parse*Pipe implicit 400 (default: off).',
       '      --base-dir <path>       Base directory for reported file paths',
       '                               (default: the tsconfig\'s own directory).',
       '      --config <path>         Explicit swagger-drift.config.{json,js,mjs,ts} path.',
@@ -227,6 +230,7 @@ interface ResolvedOptions {
   checkSuccessResponse: boolean;
   checkValidationPipe: boolean;
   checkGuards: boolean;
+  checkParsePipes: boolean;
   baseDir: string | undefined;
   audit: boolean;
 }
@@ -303,6 +307,7 @@ export function mergeOptions(flags: CliFlags, config: CliConfigFile, configPath:
       checkSuccessResponse: flags.checkSuccessResponse ?? config.checkSuccessResponse ?? true,
       checkValidationPipe: flags.checkValidationPipe ?? config.checkValidationPipe ?? false,
       checkGuards: flags.checkGuards ?? config.checkGuards ?? false,
+      checkParsePipes: flags.checkParsePipes ?? config.checkParsePipes ?? false,
       baseDir: flags.baseDir ?? resolveFromConfig(config.baseDir),
       audit: flags.audit,
     },
@@ -481,6 +486,7 @@ export async function main(argv: string[]): Promise<number> {
     checkSuccessResponse: options.checkSuccessResponse,
     checkValidationPipe: options.checkValidationPipe,
     checkGuards: options.checkGuards,
+    checkParsePipes: options.checkParsePipes,
     // `--audit` (post-Phase-4-review fix, finding S6): ignore inline
     // suppression directives entirely, so every finding they'd otherwise
     // hide — including a directive in a shared service silently affecting

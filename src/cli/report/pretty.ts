@@ -60,10 +60,20 @@ export function formatFindingPretty(finding: Finding, baseDir: string): string {
       `  ${handlerLabel} documents ${finding.status}, but nothing in this run produces it (documented-but-unreachable).`,
     ].join('\n');
   }
-  // 'unresolvable-status'
+  // 'unresolvable-status' — `kind` distinguishes an unresolvable THROWN
+  // status (the original shape) from issue #15's unresolvable `@HttpCode`
+  // SUCCESS-status argument. Earlier wording said "has a throw that could not
+  // be resolved" for both — wrong for the throw case (the throw resolved
+  // fine; its STATUS didn't) and redundant for the success case ("has a
+  // success status that could not be resolved: @HttpCode argument is not a
+  // statically resolvable literal"). `{{what}}` now names the SOURCE
+  // ("a throw" / "an @HttpCode(...)"), and the sentence itself says what
+  // failed to resolve ("whose status could not be resolved"), so `detail`
+  // only needs to add the specific reason (adversarial review).
+  const what = finding.unresolvableKind === 'success' ? 'an @HttpCode(...)' : 'a throw';
   return [
     `${formatLocation(locationOf(finding.node, baseDir))}  error`,
-    `  ${handlerLabel} has a throw whose status could not be resolved: ${finding.detail} (unresolvable-status).`,
+    `  ${handlerLabel} has ${what} whose status could not be resolved: ${finding.detail} (unresolvable-status).`,
   ].join('\n');
 }
 

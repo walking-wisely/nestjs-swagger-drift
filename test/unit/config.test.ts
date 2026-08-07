@@ -195,6 +195,7 @@ describe('loadConfigFile', () => {
         checkSuccessResponse: false,
         checkValidationPipe: true,
         checkGuards: true,
+        checkParsePipes: true,
         baseDir: '.',
       };
       fs.writeFileSync(path.join(dir, 'swagger-drift.config.json'), JSON.stringify(config));
@@ -234,6 +235,17 @@ describe('loadConfigFile', () => {
       const result = await loadConfigFile(undefined, dir);
       expect(result.ok).toBe(false);
       if (!result.ok) expect(result.error).toContain('checkGuards');
+    });
+
+    it('rejects a non-boolean "checkParsePipes"', async () => {
+      const dir = makeTempDir();
+      fs.writeFileSync(
+        path.join(dir, 'swagger-drift.config.json'),
+        JSON.stringify({ checkParsePipes: 'on' }),
+      );
+      const result = await loadConfigFile(undefined, dir);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error).toContain('checkParsePipes');
     });
   });
 });

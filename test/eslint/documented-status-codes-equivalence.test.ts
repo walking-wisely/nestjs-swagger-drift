@@ -195,7 +195,7 @@ function analyzeViaEslint(fixtureDir: string, options: Partial<AnalysisOptions>)
         const [, handler, status] = match;
         keys.add(keyFor('documented-but-unreachable', handler ?? '', status ?? ''));
       } else if (message.messageId === 'unresolvableStatus') {
-        match = /^(.*) has a throw whose status could not be resolved: (.*) \(unresolvable-status\)\.$/.exec(
+        match = /^(.*) has (?:a throw|an @HttpCode\(\.\.\.\)) whose status could not be resolved: (.*) \(unresolvable-status\)\.$/.exec(
           message.message,
         );
         if (!match) throw new Error(`unparsable unresolvableStatus message: ${message.message}`);
@@ -227,6 +227,7 @@ const DEFAULT_OPTIONS: AnalysisOptions = {
   checkSuccessResponse: true,
   checkValidationPipe: false,
   checkGuards: false,
+  checkParsePipes: false,
 };
 
 const ALL_RULES_OPTIONS: AnalysisOptions = {
@@ -237,6 +238,7 @@ const ALL_RULES_OPTIONS: AnalysisOptions = {
   checkSuccessResponse: true,
   checkValidationPipe: true,
   checkGuards: true,
+  checkParsePipes: true,
 };
 
 describe.each([

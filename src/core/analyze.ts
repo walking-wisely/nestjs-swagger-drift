@@ -91,6 +91,15 @@
  * `CacheEntry.ownUnresolvedThrows` doc comment). Findings from this source are
  * emitted once per unresolved throw per METHOD, not per `HandlerInfo` — see
  * the per-handler loop below for why.
+ *
+ * As of issue #15, this rule also surfaces a handler whose `@HttpCode(...)`
+ * argument couldn't be statically resolved to a literal (`success.ts`'s
+ * `findUnresolvableHttpCode`) — previously a dynamic `@HttpCode` argument
+ * produced zero findings under any flag, since `resolveSuccessStatus`
+ * correctly refuses to guess which status it resolves to at runtime but had
+ * nowhere to report that refusal. Not a guessed status, just the same
+ * "couldn't resolve, but say so" note this rule already gives an unresolvable
+ * thrown status.
  */
 
 import * as ts from 'typescript';
@@ -109,9 +118,10 @@ import { resolveThrownStatus } from './resolve-status.js';
 import { getDocumentedStatuses } from './documented.js';
 import { collectCallGraphStatuses } from './call-graph.js';
 import { checkHandlerSuppression, checkSourceSuppression } from './suppress.js';
-import { resolveSuccessStatus } from './success.js';
+import { findUnresolvableHttpCode, resolveSuccessStatus } from './success.js';
 import { collectValidationPipeSource } from './validation-pipe.js';
 import { collectGuardStatuses } from './guards.js';
+import { collectParsePipesSources } from './parse-pipes.js';
 
 /**
  * Constructs the opaque `AnalysisCache` (see `types.ts`'s doc comment on
@@ -267,6 +277,16 @@ function collectProducibleStatuses(
     if (source) addSource(byStatus, 400, source);
   }
 
+  if (ctx.options.checkParsePipes ?? false) {
+    // Issue #17, adversarial review: no longer a flat `400` — an
+    // `errorHttpStatusCode` override on a built-in `Parse*Pipe` can make this
+    // method report a different (or an additional) status; `parse-pipes.ts`
+    // groups its own sources by the status each pipe usage actually throws.
+    for (const { status, source } of collectParsePipesSources(methodNode, ctx.checker)) {
+      addSource(byStatus, status, source);
+    }
+  }
+
   const statuses = [...byStatus.entries()].map(([status, sources]) => ({
     resolved: { kind: 'resolved' as const, status, confidence: 'high' as const },
     sources,
@@ -357,6 +377,17 @@ export function analyzeHandler(
   // `checkSuccessResponse` defaults to `true`, so in the default
   // configuration this fast path is essentially never taken, which is
   // intentional (PLAN §4.1c: success-checking should run everywhere).
+  //
+  // Does NOT also need `!unresolvableRuleEnabled`: `findUnresolvableHttpCode`
+  // below (issue #15) is now gated on `checkSuccessResponse` itself (adversarial
+  // review: it's success-status analysis, so `--no-check-success-response`
+  // must suppress it too, same as every other success-status source) — with
+  // `checkSuccessResponse` already required `false` to reach this bail, that
+  // gate alone proves `findUnresolvableHttpCode` cannot fire here, so
+  // `unresolvedThrows.length === 0` alone (unaffected by which rules are
+  // enabled — a rule flag only gates whether a finding is PUSHED, not
+  // whether `unresolvedThrows` is populated) is enough to prove the
+  // `unresolvable-status` rule has nothing left to find either.
   if (
     producible.length === 0 &&
     unresolvedThrows.length === 0 &&
@@ -544,7 +575,38 @@ export function analyzeHandler(
     if (primaryHandler !== undefined) {
       for (const { node, reason, via } of unresolvedThrows) {
         const detail = via.length > 0 ? `${via.map((hop) => hop.name).join(' → ')}: ${reason}` : reason;
-        findings.push({ rule: 'unresolvable-status', handler: primaryHandler, node, detail });
+        findings.push({ rule: 'unresolvable-status', unresolvableKind: 'throw', handler: primaryHandler, node, detail });
+      }
+
+      // Issue #15: a dynamically-valued `@HttpCode(...)` argument (an
+      // imported `const` widened to `number`, a computed expression, ...)
+      // previously produced zero findings under ANY flag — `success.ts`
+      // correctly refuses to guess a status, but with `unresolvable-status`
+      // this is exactly the "couldn't resolve, but say so" case the rule
+      // exists for, same as an unresolvable thrown status above. One check
+      // per method (not per throw — there's at most one `@HttpCode` per
+      // method), attributed to `primaryHandler` for the same reason as the
+      // throws above.
+      //
+      // Gated on `checkSuccessResponse`: this is success-status analysis
+      // (the whole point is "this handler's success status is unknowable"),
+      // and a user who explicitly turned success-response analysis off
+      // (`--no-check-success-response`) has said they don't want THIS
+      // handler's success status examined at all — surfacing it anyway under
+      // `unresolvable-status` would contradict that choice. Also skips
+      // `findUnresolvableHttpCode` entirely in that combination, so it
+      // doesn't do the extra checker work for nothing.
+      if (checkSuccessResponse) {
+        const unresolvableHttpCode = findUnresolvableHttpCode(methodNode, ctx.checker);
+        if (unresolvableHttpCode) {
+          findings.push({
+            rule: 'unresolvable-status',
+            unresolvableKind: 'success',
+            handler: primaryHandler,
+            node: unresolvableHttpCode,
+            detail: 'argument is not a statically resolvable literal',
+          });
+        }
       }
     }
   }

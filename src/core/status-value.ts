@@ -54,7 +54,11 @@ export function resolveStatusExpression(
 
   if (ts.isPropertyAccessExpression(expr) && ts.isIdentifier(expr.name)) {
     const { provenance } = checkProvenance(expr.expression, checker, NEST_COMMON_MODULE);
-    if (provenance !== 'mismatch') {
+    // `Object.hasOwn` guard (adversarial review, #8 nit — same class of bug):
+    // a bare `[...]` lookup on a plain object literal would resolve
+    // `HttpStatus.toString`/`.valueOf`/... to an inherited `Object.prototype`
+    // member instead of `undefined`.
+    if (provenance !== 'mismatch' && Object.hasOwn(HTTP_STATUS_ENUM_VALUES, expr.name.text)) {
       const known = HTTP_STATUS_ENUM_VALUES[expr.name.text];
       if (known !== undefined) return known;
     }

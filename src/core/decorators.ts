@@ -62,7 +62,21 @@ import * as ts from 'typescript';
 import type { HttpMethod } from './types.js';
 import { checkProvenance, type Provenance } from './provenance.js';
 
-/** Decorator names @nestjs/common exports for HTTP route handlers, mapped to `HttpMethod`. */
+/**
+ * Decorator names @nestjs/common exports for HTTP route handlers, mapped to
+ * `HttpMethod`.
+ *
+ * `Sse` (issue #8) registers a GET route exactly like `@Get()` — NestJS's own
+ * `RouterExplorer` maps it to `RequestMethod.GET` — so a handler carrying
+ * only `@Sse()` and no `@Get()` was, before this entry existed, entirely
+ * invisible to route discovery (not a route-table gap alone: every
+ * downstream check keyed off a discovered handler, like `documented-status-codes`
+ * or the implicit-codes checks, silently never ran on it either). See
+ * `success.ts`'s module doc for why the route is discovered but its implicit
+ * success status is deliberately NOT asserted, mirroring the existing
+ * `@Redirect()`/`@Res()` carve-outs — an SSE handler doesn't return a single
+ * response the way a normal GET does.
+ */
 export const HTTP_METHOD_DECORATOR_NAMES: Record<string, HttpMethod> = {
   Get: 'GET',
   Post: 'POST',
@@ -73,6 +87,7 @@ export const HTTP_METHOD_DECORATOR_NAMES: Record<string, HttpMethod> = {
   Head: 'HEAD',
   All: 'ALL',
   Search: 'SEARCH',
+  Sse: 'GET',
 };
 
 const DEFAULT_MODULE = '@nestjs/common';
@@ -292,7 +307,14 @@ export function getHttpHandlerDecorators(
   const decorators = getDecoratorInfos(methodNode, checker);
   const results: HttpHandlerDecoratorInfo[] = [];
   for (const d of decorators) {
-    const httpMethod = HTTP_METHOD_DECORATOR_NAMES[effectiveName(d)];
+    const name = effectiveName(d);
+    // `Object.hasOwn` guard (adversarial review, #8 nit): `HTTP_METHOD_DECORATOR_NAMES`
+    // is a plain object literal, so a decorator literally named `toString`/
+    // `valueOf`/`constructor`/... would otherwise resolve to an inherited
+    // `Object.prototype` member via bracket access, not `undefined` — pushing
+    // a garbage `httpMethod` instead of correctly skipping it.
+    if (!Object.hasOwn(HTTP_METHOD_DECORATOR_NAMES, name)) continue;
+    const httpMethod = HTTP_METHOD_DECORATOR_NAMES[name];
     if (httpMethod === undefined) continue;
     if (!isAccepted(d.provenance, strict)) continue;
     const { paths, unresolvedPath } = extractPaths(getDecoratorCallArgument(d.node), checker);

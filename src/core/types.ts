@@ -49,7 +49,7 @@ export type StatusSource =
       /** A status code NestJS produces without an explicit throw. */
       kind: 'implicit';
       node: ts.Node;
-      reason: 'validation-pipe' | 'guard' | 'success';
+      reason: 'validation-pipe' | 'guard' | 'success' | 'parse-pipe';
       /**
        * Optional extra context a report can show alongside `reason` (Phase 5,
        * PLAN §4.1c). Added as an optional field rather than widening
@@ -69,6 +69,9 @@ export type StatusSource =
        * - `'guard'`: the guard class name, plus (when the throw was found
        *   more than one call hop into the guard) the hop chain, e.g.
        *   `'AuthGuard.canActivate'` or `'AuthGuard.canActivate → TokenService.verify'`.
+       * - `'parse-pipe'` (issue #17): the built-in `Parse*Pipe` class name(s)
+       *   found (e.g. `'ParseIntPipe'`, or a comma-joined list when more than
+       *   one parameter qualifies), mirroring `'validation-pipe'`'s shape.
        */
       detail?: string;
     };
@@ -203,6 +206,24 @@ export type Finding =
   | {
       /** Opt-in, off by default. */
       rule: 'unresolvable-status';
+      /**
+       * What couldn't be resolved: an unresolvable THROWN status (the
+       * original shape) or — issue #15 — an unresolvable `@HttpCode(...)`
+       * SUCCESS-status argument. Both share the `unresolvable-status` rule
+       * (same "couldn't tell, but say so" purpose), but they are not the
+       * same kind of finding — a reporter that always says "has a throw" is
+       * simply wrong for the latter. Required (not optional) so every
+       * reporter is forced to handle both rather than silently defaulting to
+       * one. Named `unresolvableKind`, not `kind` (adversarial review): a
+       * `StatusSource` ALSO has its own `kind` field
+       * (`"throw" | "service-throw" | "implicit"`) with a different value
+       * set and a different meaning, and `--reporter json` surfaces both on
+       * the same `unresolvable-status` finding (this field at the top level,
+       * `sources[].kind` — always empty for this rule, but still part of the
+       * shared `Finding` shape) — reusing the same key name at two nesting
+       * levels with different meanings was confusing enough to call out.
+       */
+      unresolvableKind: 'throw' | 'success';
       handler: HandlerInfo;
       node: ts.Node;
       detail: string;
@@ -283,6 +304,24 @@ export interface AnalysisOptions {
    * versus the unconditional `checkSuccessResponse` case above.
    */
   checkGuards?: boolean;
+
+  /**
+   * PLAN §4.1c-adjacent (issue #17): treat `400` (or, when a pipe's
+   * `errorHttpStatusCode` option is statically resolvable, that overridden
+   * status instead) as producible when a handler parameter decorated with
+   * `@Body()`/`@Param()`/`@Query()`/`@Headers()`/`@UploadedFile()`/
+   * `@UploadedFiles()` also carries one of NestJS's built-in transformation
+   * pipes (`ParseIntPipe`, `ParseUUIDPipe`, `ParseBoolPipe`, `ParseEnumPipe`,
+   * `ParseFloatPipe`, `ParseArrayPipe`, `ParseFilePipe`, `ParseDatePipe` —
+   * `parse-pipes.ts`). The decorator set is wider than
+   * `checkValidationPipe`'s Body/Param/Query-only scope — see
+   * `parse-pipes.ts`'s module doc for why — and every distinct pipe named on
+   * a single decorator call is collected, not just the first one found.
+   * Opt-in, defaulting to `false` at the point of use, for the same reason as
+   * `checkValidationPipe`: this tool cannot see whether the pipe genuinely
+   * runs at request time, only that the decorator call names one.
+   */
+  checkParsePipes?: boolean;
 }
 
 declare const analysisCacheBrand: unique symbol;

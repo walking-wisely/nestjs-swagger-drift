@@ -32,6 +32,14 @@
  *   module doesn't attempt to distinguish — see below); the handler sets
  *   its own status via the injected object, invisible to static analysis.
  *   Detected and skipped below.
+ * - `@Sse(...)` (issue #8) — a server-sent-events handler streams a sequence
+ *   of events over one long-lived response rather than returning a single
+ *   value NestJS status-codes the normal way; there is no one "implicit
+ *   success status" to assert. `decorators.ts` deliberately still maps
+ *   `@Sse` to `HttpMethod: 'GET'` so the route itself is discovered (and
+ *   every OTHER check — `undocumented-status` from throws, `checkGuards`,
+ *   ...) still runs on it; only this module's implicit-success emission is
+ *   skipped, exactly like the `@Redirect()`/`@Res()` carve-outs above.
  * - `@All()` — the one HTTP-method shape whose real semantics (and
  *   therefore its real default status) are genuinely unknowable from the
  *   decorator alone: an `@All()` handler could behave like a `GET` or like a
@@ -98,9 +106,9 @@ function hasResponseObjectParameter(methodNode: ts.MethodDeclaration, checker: t
  * Returns `undefined` — silently, per PLAN §4.2's "silence over noise" —
  * when:
  *
- * - `methodNode` carries `@Redirect(...)` or a `@Res()`/`@Response()`
- *   parameter (module doc: NestJS's automatic status-setting doesn't apply
- *   the plain default here at all).
+ * - `methodNode` carries `@Redirect(...)`, `@Sse(...)`, or a `@Res()`/
+ *   `@Response()` parameter (module doc: NestJS's automatic status-setting
+ *   doesn't apply the plain default here at all).
  * - `httpMethod` is `'ALL'` and there is no explicit `@HttpCode` (module doc:
  *   genuinely unknowable which default semantics apply).
  * - An `@HttpCode(...)` decorator IS present but its argument isn't a
@@ -121,6 +129,14 @@ export function resolveSuccessStatus(
     (d) => d.provenance !== 'mismatch' && (d.resolvedName ?? d.name) === 'Redirect',
   );
   if (redirect) return undefined;
+
+  // Issue #8 / module doc's `@Sse(...)` carve-out: the route is still
+  // discovered (`decorators.ts` maps `@Sse` to `HttpMethod: 'GET'`), but a
+  // streaming handler has no single implicit success status to assert.
+  const sse = decorators.find(
+    (d) => d.provenance !== 'mismatch' && (d.resolvedName ?? d.name) === 'Sse',
+  );
+  if (sse) return undefined;
 
   if (hasResponseObjectParameter(methodNode, checker)) return undefined;
 
@@ -144,4 +160,78 @@ export function resolveSuccessStatus(
   if (httpMethod === 'ALL') return undefined;
 
   return { status: defaultSuccessStatus(httpMethod), node: methodNode };
+}
+
+/**
+ * Issue #15: when `@HttpCode(...)`'s argument couldn't be statically
+ * resolved to a literal (a variable, an imported `const` widened to
+ * `number`, a computed expression, ...), `resolveSuccessStatus` above
+ * correctly returns `undefined` rather than guessing — but that made the
+ * handler's success status vanish from every check entirely, not merely
+ * from the DEFAULT ones: with `checkSuccessResponse` AND the opt-in
+ * `unresolvable-status` rule (`analyze.ts`) both enabled, the whole point of
+ * that rule is to surface exactly this shape — "a status exists here and
+ * this tool cannot tell what it is," matching what it already does for an
+ * unresolvable *thrown* status — so a dynamic `@HttpCode` argument should not
+ * stay silent. Callers must gate this on `checkSuccessResponse` themselves
+ * (adversarial review: this IS success-status analysis, so a user who
+ * explicitly disabled success-response analysis should not see it resurface
+ * here under a different rule name) — this function does not check that flag
+ * itself, since it has no access to `AnalysisOptions`.
+ *
+ * Deliberately its own function rather than reusing `resolveSuccessStatus`'s
+ * `undefined` return: that return also covers `@Redirect()`/`@Sse()`/
+ * `@Res()`/a bare `@All()`, none of which are "unresolvable" — they're
+ * deliberate carve-outs with a KNOWN reason NestJS's own default doesn't
+ * apply — so folding this in there would conflate "no defensible guess" with
+ * "genuinely couldn't resolve." This function re-applies the `@Redirect()`/
+ * `@Sse()`/`@Res()` carve-outs itself (adversarial review: an `@HttpCode` on
+ * any of those is already known to be inert or superseded, not
+ * "unresolvable" — omitting the carve-outs here previously flagged an
+ * `@HttpCode(DYNAMIC)` on an `@Res()` handler as unresolvable even though
+ * this tool has already decided that handler's status isn't its business).
+ * `@All()` is deliberately NOT carved out here: unlike the other three, an
+ * `@All()` handler's `@HttpCode` is a real, applicable status when present —
+ * `resolveSuccessStatus`'s `@All()` gap is about the DEFAULT being
+ * unknowable, not about `@HttpCode` being inert. Returns the
+ * `@HttpCode(...)` decorator node (for the finding to anchor on) only when
+ * an accepted `@HttpCode` is present, none of the three carve-outs apply,
+ * AND its argument isn't statically resolvable; `undefined` otherwise.
+ */
+export function findUnresolvableHttpCode(
+  methodNode: ts.MethodDeclaration,
+  checker: ts.TypeChecker,
+): ts.Node | undefined {
+  const decorators = getDecoratorInfos(methodNode, checker, NEST_COMMON_MODULE);
+
+  // Same three carve-outs `resolveSuccessStatus` above applies, and for the
+  // identical reason (adversarial review): this module's own doc comment
+  // argues at length that `@Redirect()`/`@Res()`/`@Sse()` are DELIBERATE
+  // "NestJS's automatic status-setting doesn't apply here" carve-outs, not
+  // "couldn't resolve" ones — an `@HttpCode(...)` on any of these three is
+  // already known to be inert or superseded (a redirect's real status can be
+  // overridden by the handler's own return value; `@Res()` bypasses
+  // automatic status-setting entirely; `@Sse()` has no single response to
+  // status-code), so surfacing "unresolvable status" here would conflate a
+  // known-inert decorator with a genuinely unknowable one.
+  const redirect = decorators.find(
+    (d) => d.provenance !== 'mismatch' && (d.resolvedName ?? d.name) === 'Redirect',
+  );
+  if (redirect) return undefined;
+
+  const sse = decorators.find(
+    (d) => d.provenance !== 'mismatch' && (d.resolvedName ?? d.name) === 'Sse',
+  );
+  if (sse) return undefined;
+
+  if (hasResponseObjectParameter(methodNode, checker)) return undefined;
+
+  const httpCode = decorators.find(
+    (d) => d.provenance !== 'mismatch' && (d.resolvedName ?? d.name) === 'HttpCode',
+  );
+  if (!httpCode) return undefined;
+  const arg = getDecoratorCallArgument(httpCode.node);
+  if (!arg) return undefined;
+  const status = resolveStatusExpression(arg, checker);
+  return status === undefined ? httpCode.node : undefined;
 }
