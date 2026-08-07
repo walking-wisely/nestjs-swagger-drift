@@ -152,6 +152,65 @@ describe('collectDirectThrows', () => {
     expect(collectDirectThrows(method)).toHaveLength(1);
   });
 
+  it('collects a `return Promise.reject(...)`', () => {
+    const method = findMethod(`class C { m() { return Promise.reject(new Error('x')); } }`, 'm');
+    const throws = collectDirectThrows(method);
+    expect(throws).toHaveLength(1);
+    expect(throws[0]?.expression.getText()).toContain("new Error('x')");
+  });
+
+  it('collects a `return await Promise.reject(...)`', () => {
+    const method = findMethod(
+      `class C { async m() { return await Promise.reject(new Error('x')); } }`,
+      'm',
+    );
+    const throws = collectDirectThrows(method);
+    expect(throws).toHaveLength(1);
+    expect(throws[0]?.expression.getText()).toContain("new Error('x')");
+  });
+
+  it('collects a conditional `return Promise.reject(...)`', () => {
+    const method = findMethod(
+      `class C { m(x: boolean) { if (x) { return Promise.reject(new Error('x')); } return Promise.resolve(1); } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(1);
+  });
+
+  it('does NOT collect `return Promise.reject(...)` inside a try block with a catch (swallowed)', () => {
+    const method = findMethod(
+      `class C { async m() { try { return Promise.reject(new Error('x')); } catch { return null; } } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
+  it('does NOT collect a plain `return Promise.resolve(...)`', () => {
+    const method = findMethod(`class C { m() { return Promise.resolve(1); } }`, 'm');
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
+  it('does NOT collect `Promise.reject(...)` called with the wrong arity', () => {
+    const method = findMethod(
+      `class C { m() { return Promise.reject(new Error('x'), 'extra'); } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
+  it('does NOT collect a bare `return;` with no expression', () => {
+    const method = findMethod(`class C { m() { return; } }`, 'm');
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
+  it('does NOT collect `return Promise.reject(...)` inside a nested callback', () => {
+    const method = findMethod(
+      `class C { m() { [1,2].forEach(() => { return Promise.reject(new Error('x')); }); } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
   it('returns [] for a bodyless method (overload signature)', () => {
     const program = createInMemoryProgram(
       { 'main.ts': `class C { m(): void; m(x?: number): void {} }` },

@@ -74,15 +74,56 @@
  * direction (a missed *unreachability* only ever adds a spurious finding
  * for an exception that in fact never fires, never removes a real one), but
  * it is a documented, deliberate stopping point, not an oversight.
+ *
+ * ## `return Promise.reject(...)`: treated as a throw
+ *
+ * `return Promise.reject(new NotFoundException())` (and its `return await
+ * Promise.reject(...)` spelling) rejects the method's returned promise
+ * exactly the way a `throw` inside an `async` method does — from the
+ * caller's perspective the two are indistinguishable. `collectDirectThrows`
+ * therefore also collects a `ReturnStatement` whose expression (optionally
+ * unwrapped through a single `await`) is a call to `Promise.reject(...)`
+ * with exactly one argument, feeding that argument through the identical
+ * `resolveThrownStatus` ladder callers already apply to a `throw`'s
+ * expression. Same reachability rules apply (try/catch suppression,
+ * trivial-unreachability, own-control-flow-only) since it's collected by
+ * the same `walkProducibleNodes` walk. `Promise.reject(a, b)` (wrong arity),
+ * a rejection value built up in a variable first (`const e = ...; return
+ * Promise.reject(e)` — still just an `Identifier` argument, which
+ * `resolveThrownStatus` itself may or may not resolve), and `.then(() =>
+ * Promise.reject(...))` (inside a nested callback, never walked at all — see
+ * above) are not specially handled beyond that.
  */
 
 import * as ts from 'typescript';
 
 export interface ThrownExpression {
-  /** The `throw` statement itself, for source-location reporting. */
-  node: ts.ThrowStatement;
-  /** The thrown expression, e.g. the `new NotFoundException(...)` call or a bare identifier. */
+  /** The `throw` (or `return Promise.reject(...)`) statement itself, for source-location reporting. */
+  node: ts.ThrowStatement | ts.ReturnStatement;
+  /** The thrown expression, e.g. the `new NotFoundException(...)` call, a bare identifier, or a `Promise.reject(...)` argument. */
   expression: ts.Expression;
+}
+
+/**
+ * `expr` (optionally unwrapped through one `await`) is a call to
+ * `Promise.reject(<single argument>)` — returns that argument, or
+ * `undefined` if the shape doesn't match. Purely syntactic (matches on the
+ * literal identifiers `Promise`/`reject`, the same way `resolve-status.ts`'s
+ * strategies match built-in exception names before checker-verifying them)
+ * rather than checker-verifying `Promise` resolves to the global lib: a
+ * shadowing local named `Promise` is exotic enough that the false-positive
+ * risk is negligible next to the complexity of threading a `TypeChecker`
+ * into this module, which otherwise stays checker-free.
+ */
+function getPromiseRejectArgument(expr: ts.Expression): ts.Expression | undefined {
+  const call = ts.isAwaitExpression(expr) ? expr.expression : expr;
+  if (!ts.isCallExpression(call)) return undefined;
+  const callee = call.expression;
+  if (!ts.isPropertyAccessExpression(callee)) return undefined;
+  if (!ts.isIdentifier(callee.expression) || callee.expression.text !== 'Promise') return undefined;
+  if (!ts.isIdentifier(callee.name) || callee.name.text !== 'reject') return undefined;
+  if (call.arguments.length !== 1) return undefined;
+  return call.arguments[0];
 }
 
 function isNestedFunctionLike(node: ts.Node): boolean {
@@ -177,18 +218,25 @@ export function walkProducibleNodes(
 }
 
 /**
- * Collects every `throw` statement that is part of `fn`'s own control flow —
- * i.e. reachable without crossing into a nested function body, not swallowed
- * by an enclosing `try`/`catch`, and not trivially unreachable (see module
- * doc). Returns `[]` if `fn` has no body, or its body isn't a `Block` (an
- * arrow function's concise `() => expr` body can't syntactically contain a
+ * Collects every `throw` statement (and `return Promise.reject(...)`, see
+ * module doc) that is part of `fn`'s own control flow — i.e. reachable
+ * without crossing into a nested function body, not swallowed by an
+ * enclosing `try`/`catch`, and not trivially unreachable (see module doc).
+ * Returns `[]` if `fn` has no body, or its body isn't a `Block` (an arrow
+ * function's concise `() => expr` body can't syntactically contain a
  * `throw` statement).
  */
 export function collectDirectThrows(fn: ts.FunctionLikeDeclarationBase): ThrownExpression[] {
   const results: ThrownExpression[] = [];
   walkProducibleNodes(fn, (node, producible) => {
-    if (ts.isThrowStatement(node) && node.expression && producible) {
+    if (!producible) return;
+    if (ts.isThrowStatement(node) && node.expression) {
       results.push({ node, expression: node.expression });
+      return;
+    }
+    if (ts.isReturnStatement(node) && node.expression) {
+      const rejectArgument = getPromiseRejectArgument(node.expression);
+      if (rejectArgument) results.push({ node, expression: rejectArgument });
     }
   });
   return results;
