@@ -396,5 +396,84 @@ describe('resolveThrownStatus', () => {
         expect(result.reason).toContain('not statically typed as a specific exception class');
       }
     });
+
+    it('(adversarial P6) resolves `throw err!` when the `!` is NOT redundant — the declared type includes `undefined`', () => {
+      const result = resolveFirstThrow(
+        `import { NotFoundException } from '@nestjs/common';
+         function f(err?: NotFoundException) {
+           throw err!;
+         }`,
+      );
+      expect(result).toEqual({
+        kind: 'resolved',
+        status: 404,
+        confidence: 'high',
+        exception: 'NotFoundException',
+      });
+    });
+
+    it('(adversarial P7) resolves `throw (new X(...))` — a parenthesized `new` expression, not just an identifier', () => {
+      const result = resolveFirstThrow(
+        `import { NotFoundException } from '@nestjs/common';
+         function f() {
+           throw (new NotFoundException('x'));
+         }`,
+      );
+      expect(result).toEqual({
+        kind: 'resolved',
+        status: 404,
+        confidence: 'high',
+        exception: 'NotFoundException',
+      });
+    });
+
+    it('(adversarial P7) resolves `throw new X(...) as Error` — a cast over a `new` expression', () => {
+      const result = resolveFirstThrow(
+        `import { NotFoundException } from '@nestjs/common';
+         function f() {
+           throw new NotFoundException('x') as Error;
+         }`,
+      );
+      expect(result).toEqual({
+        kind: 'resolved',
+        status: 404,
+        confidence: 'high',
+        exception: 'NotFoundException',
+      });
+    });
+
+    it('(adversarial P7) resolves `throw <X>err` — the angle-bracket cast form', () => {
+      const result = resolveFirstThrow(
+        `import { NotFoundException } from '@nestjs/common';
+         function f() {
+           let err: NotFoundException | undefined;
+           err = new NotFoundException('x');
+           throw <NotFoundException>err;
+         }`,
+      );
+      expect(result).toEqual({
+        kind: 'resolved',
+        status: 404,
+        confidence: 'high',
+        exception: 'NotFoundException',
+      });
+    });
+
+    it('(adversarial P7) resolves `throw e satisfies X`', () => {
+      const result = resolveFirstThrow(
+        `import { NotFoundException } from '@nestjs/common';
+         function f() {
+           let e: NotFoundException | undefined;
+           e = new NotFoundException('x');
+           throw e satisfies NotFoundException;
+         }`,
+      );
+      expect(result).toEqual({
+        kind: 'resolved',
+        status: 404,
+        confidence: 'high',
+        exception: 'NotFoundException',
+      });
+    });
   });
 });
