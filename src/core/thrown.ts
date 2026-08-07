@@ -78,45 +78,99 @@
  * ## `return Promise.reject(...)`: treated as a throw
  *
  * `return Promise.reject(new NotFoundException())` (and its `return await
- * Promise.reject(...)` spelling) rejects the method's returned promise
- * exactly the way a `throw` inside an `async` method does — from the
- * caller's perspective the two are indistinguishable. `collectDirectThrows`
- * therefore also collects a `ReturnStatement` whose expression (optionally
- * unwrapped through a single `await`) is a call to `Promise.reject(...)`
- * with exactly one argument, feeding that argument through the identical
- * `resolveThrownStatus` ladder callers already apply to a `throw`'s
- * expression. Same reachability rules apply (try/catch suppression,
- * trivial-unreachability, own-control-flow-only) since it's collected by
- * the same `walkProducibleNodes` walk. `Promise.reject(a, b)` (wrong arity),
- * a rejection value built up in a variable first (`const e = ...; return
+ * Promise.reject(...)` spelling, and either spelling wrapped in
+ * parens/`as .../!`, e.g. `return Promise.reject(x) as never` or `return
+ * (await Promise.reject(x))`) rejects the method's returned promise exactly
+ * the way a `throw` inside an `async` method does — from the caller's
+ * perspective the two are indistinguishable. A bare, statement-level
+ * `await Promise.reject(x);` (no `return`) also genuinely propagates the
+ * rejection out of the enclosing `async` function and is collected the same
+ * way; an *unawaited* `Promise.reject(x);` statement is a floating,
+ * unobserved rejection (it does not stop control flow, does not propagate
+ * synchronously, and Node will report it as an unhandled rejection rather
+ * than route it to this handler's response) and is deliberately NOT
+ * collected. `collectDirectThrows` therefore collects:
+ *
+ * - a `ReturnStatement` whose expression (after unwrapping any
+ *   `await`/parens/`as`/`!` wrappers, in any order) is a call to
+ *   `Promise.reject(...)` with exactly one argument, and
+ * - an `ExpressionStatement` whose expression (after unwrapping
+ *   parens/`as`/`!`) is an `await`ed call to `Promise.reject(...)` with
+ *   exactly one argument (the `await` is required here — see above),
+ *
+ * feeding that argument through the identical `resolveThrownStatus` ladder
+ * callers already apply to a `throw`'s expression. Same reachability rules
+ * apply (try/catch suppression, trivial-unreachability,
+ * own-control-flow-only) since both are collected by the same
+ * `walkProducibleNodes` walk. `Promise.reject(a, b)` (wrong arity), a
+ * rejection value built up in a variable first (`const e = ...; return
  * Promise.reject(e)` — still just an `Identifier` argument, which
- * `resolveThrownStatus` itself may or may not resolve), and `.then(() =>
- * Promise.reject(...))` (inside a nested callback, never walked at all — see
- * above) are not specially handled beyond that.
+ * `resolveThrownStatus` itself may or may not resolve), and
+ * `.then(() => Promise.reject(...))` (inside a nested callback, never
+ * walked at all — see above) are not specially handled beyond that.
+ *
+ * The match is purely syntactic — on the literal identifiers
+ * `Promise`/`reject`, the same way `resolve-status.ts`'s strategies match
+ * built-in exception names before checker-verifying them — rather than
+ * checker-verifying `Promise` resolves to the global lib. A local binding
+ * that shadows the global `Promise` (`const Promise = { reject: (x) => x
+ * }; return Promise.reject(new Error('x'))`) is therefore a real, reachable
+ * false positive, not merely a hypothetical one — confirmed empirically.
+ * It's accepted rather than guarded against: threading a `TypeChecker` into
+ * this otherwise checker-free module to rule out an intentionally-named
+ * shadow of a global built-in is judged not worth the complexity, and the
+ * realistic version of "shadowing" real code actually does (`import
+ * Promise from 'bluebird'`, a spec-compliant `Promise.reject`) behaves
+ * identically anyway, so it produces no *wrong* answer even though it isn't
+ * literally the global.
  */
 
 import * as ts from 'typescript';
 
 export interface ThrownExpression {
-  /** The `throw` (or `return Promise.reject(...)`) statement itself, for source-location reporting. */
-  node: ts.ThrowStatement | ts.ReturnStatement;
+  /**
+   * The `throw` statement, `return Promise.reject(...)` statement, or bare
+   * `await Promise.reject(...);` expression statement itself, for
+   * source-location reporting. NOTE: widened from `ts.ThrowStatement` alone
+   * to also include `ts.ReturnStatement` and `ts.ExpressionStatement` — a
+   * downstream consumer narrowing this to `ts.ThrowStatement` will now fail
+   * to compile.
+   */
+  node: ts.ThrowStatement | ts.ReturnStatement | ts.ExpressionStatement;
   /** The thrown expression, e.g. the `new NotFoundException(...)` call, a bare identifier, or a `Promise.reject(...)` argument. */
   expression: ts.Expression;
 }
 
 /**
- * `expr` (optionally unwrapped through one `await`) is a call to
- * `Promise.reject(<single argument>)` — returns that argument, or
- * `undefined` if the shape doesn't match. Purely syntactic (matches on the
- * literal identifiers `Promise`/`reject`, the same way `resolve-status.ts`'s
- * strategies match built-in exception names before checker-verifying them)
- * rather than checker-verifying `Promise` resolves to the global lib: a
- * shadowing local named `Promise` is exotic enough that the false-positive
- * risk is negligible next to the complexity of threading a `TypeChecker`
- * into this module, which otherwise stays checker-free.
+ * Strips parens/`as`/`<T>`/`!` wrappers (in any order, repeatedly) around
+ * `expr`, stopping at the first `await` or any other node shape. Does NOT
+ * unwrap `await` itself — callers decide whether an `await` is required,
+ * optional, or must not appear, so unwrapping it here would erase that
+ * distinction.
  */
-function getPromiseRejectArgument(expr: ts.Expression): ts.Expression | undefined {
-  const call = ts.isAwaitExpression(expr) ? expr.expression : expr;
+function unwrapNonAwaitWrappers(expr: ts.Expression): ts.Expression {
+  let current = expr;
+  for (;;) {
+    if (ts.isParenthesizedExpression(current)) {
+      current = current.expression;
+    } else if (ts.isAsExpression(current)) {
+      current = current.expression;
+    } else if (ts.isTypeAssertionExpression(current)) {
+      current = current.expression;
+    } else if (ts.isNonNullExpression(current)) {
+      current = current.expression;
+    } else {
+      return current;
+    }
+  }
+}
+
+/**
+ * `call` is a call to `Promise.reject(<single argument>)` — returns that
+ * argument, or `undefined` if the shape doesn't match. See module doc for
+ * why this is purely syntactic (no `TypeChecker` involvement).
+ */
+function matchPromiseRejectCall(call: ts.Expression): ts.Expression | undefined {
   if (!ts.isCallExpression(call)) return undefined;
   const callee = call.expression;
   if (!ts.isPropertyAccessExpression(callee)) return undefined;
@@ -124,6 +178,35 @@ function getPromiseRejectArgument(expr: ts.Expression): ts.Expression | undefine
   if (!ts.isIdentifier(callee.name) || callee.name.text !== 'reject') return undefined;
   if (call.arguments.length !== 1) return undefined;
   return call.arguments[0];
+}
+
+/**
+ * `expr` (a `ReturnStatement`'s expression), after unwrapping any
+ * combination of parens/`as`/`!` and optionally a single `await` (in either
+ * order — `return await (x as never)` and `return (await x) as never` both
+ * unwrap), is a call to `Promise.reject(<single argument>)`. See module
+ * doc's "`return Promise.reject(...)`" section.
+ */
+function getPromiseRejectArgument(expr: ts.Expression): ts.Expression | undefined {
+  const beforeAwait = unwrapNonAwaitWrappers(expr);
+  const afterAwait = ts.isAwaitExpression(beforeAwait)
+    ? unwrapNonAwaitWrappers(beforeAwait.expression)
+    : beforeAwait;
+  return matchPromiseRejectCall(afterAwait);
+}
+
+/**
+ * `expr` (an `ExpressionStatement`'s expression, e.g. a bare
+ * `await Promise.reject(x);` statement with no `return`), after unwrapping
+ * parens/`as`/`!`, is an `await`ed call to `Promise.reject(<single
+ * argument>)`. Unlike `getPromiseRejectArgument`, the `await` is REQUIRED —
+ * an un-awaited `Promise.reject(x);` statement is a floating rejection that
+ * does not propagate to this function's own response (see module doc).
+ */
+function getAwaitedPromiseRejectStatementArgument(expr: ts.Expression): ts.Expression | undefined {
+  const unwrapped = unwrapNonAwaitWrappers(expr);
+  if (!ts.isAwaitExpression(unwrapped)) return undefined;
+  return matchPromiseRejectCall(unwrapNonAwaitWrappers(unwrapped.expression));
 }
 
 function isNestedFunctionLike(node: ts.Node): boolean {
@@ -236,6 +319,11 @@ export function collectDirectThrows(fn: ts.FunctionLikeDeclarationBase): ThrownE
     }
     if (ts.isReturnStatement(node) && node.expression) {
       const rejectArgument = getPromiseRejectArgument(node.expression);
+      if (rejectArgument) results.push({ node, expression: rejectArgument });
+      return;
+    }
+    if (ts.isExpressionStatement(node)) {
+      const rejectArgument = getAwaitedPromiseRejectStatementArgument(node.expression);
       if (rejectArgument) results.push({ node, expression: rejectArgument });
     }
   });

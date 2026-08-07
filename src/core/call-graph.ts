@@ -41,11 +41,15 @@
  * - A `new X(...)` expression is a `NewExpression`, not a `CallExpression`,
  *   so constructors are never traversed by this module at all — out of
  *   scope, not merely excluded by the ambiguity check.
- * - A bracket/computed-property call site with a string-literal key
- *   (`this.svc['find']()`) resolves the same as `this.svc.find()` — see
- *   `resolveElementAccessSymbol` below. A non-literal key
- *   (`this.svc[methodName]()`) has no statically-known name and resolves to
- *   nothing, same as any other genuinely dynamic dispatch.
+ * - A bracket/computed-property call site with a string-literal (or
+ *   no-substitution template-literal) key (`this.svc['find']()`) resolves the
+ *   same as `this.svc.find()` — see `resolveElementAccessSymbol` below. The
+ *   key must be a string literal AT THE CALL SITE: this module does not
+ *   constant-fold a key that comes from a variable, even a `const` whose
+ *   inferred type is itself a string-literal type (`const KEY = 'find';
+ *   this.svc[KEY]()` resolves to nothing, same as genuinely dynamic dispatch
+ *   `this.svc[methodName]()` does) — an intentional, FP-safe under-report,
+ *   not a claim that no statically-known name could ever be recovered there.
  * - A bare method reference passed as a callback (`items.map(this.validate)`)
  *   is a `PropertyAccessExpression`, not itself a `CallExpression`, so it's
  *   never collected as a call site in the first place. The callback body
@@ -239,14 +243,21 @@ function collectProducibleCallSites(fn: ts.FunctionLikeDeclarationBase): ts.Call
 
 /**
  * Bracket/computed-property call sites (`this.svc['find']()`) with a
- * string-literal key: `checker.getSymbolAtLocation` reliably resolves a
- * `PropertyAccessExpression` callee (`this.svc.find()`) but, empirically,
- * does NOT resolve one directly on the `ElementAccessExpression` node itself
- * even for a literal key — falls back to looking the literal up as a
- * property name on the object expression's own type instead
- * (`objType.getProperty(name)`), which resolves the same way a dotted
- * access would. A non-string-literal key (`this.svc[methodName]()`) stays
- * unresolved — no reliable static name to look up.
+ * string-literal (or no-substitution template-literal) key: TypeScript's
+ * `getSymbolAtLocation` does NOT resolve directly on the
+ * `ElementAccessExpression` node itself (verified empirically — it returns
+ * `undefined` even for a literal key), but it DOES resolve on the key
+ * expression itself (`access.argumentExpression`) the same way it resolves a
+ * `PropertyAccessExpression`'s name — that's the canonical, supported path,
+ * tried first. `objectType.getProperty(name)` is kept as a fallback for any
+ * shape where that doesn't fire, but it is a genuinely different lookup (it
+ * ignores control-flow narrowing on the object expression), so it must not
+ * run first. A key that isn't a string literal at the call site
+ * (`this.svc[methodName]()`, and — deliberately, not a bug — even
+ * `this.svc[KEY]()` for a `const KEY = 'find'`, since this module does not
+ * constant-fold a key coming from a variable, only the type checker's own
+ * literal-type narrowing on the key expression itself) stays unresolved — no
+ * reliable static name to look up without doing that extra work.
  */
 function resolveElementAccessSymbol(
   access: ts.ElementAccessExpression,
@@ -255,14 +266,28 @@ function resolveElementAccessSymbol(
   const key = access.argumentExpression;
   if (!ts.isStringLiteralLike(key)) return undefined;
   try {
-    const direct = checker.getSymbolAtLocation(access);
+    const direct = checker.getSymbolAtLocation(key);
     if (direct) return direct;
   } catch {
     // fall through to the property-lookup fallback below
   }
   try {
     const objectType = checker.getTypeAtLocation(access.expression);
-    return objectType.getProperty(key.text) ?? undefined;
+    // `access.expression` can itself be `undefined`/`null` in its static
+    // type — most commonly an optional-chained object (`this.svc?.['find']`,
+    // or an optional constructor-parameter property) — in which case
+    // `objectType.getProperty` looks the name up on the *union including*
+    // `undefined`/`null` and correctly finds nothing (no constituent of a
+    // union has a property unless ALL constituents do). Optional chaining's
+    // whole point is "skip the call when the object is nullish, otherwise
+    // treat it as present," so the property lookup itself should ignore the
+    // nullish member the same way the runtime `?.` does — fall back to the
+    // non-nullable type.
+    return (
+      objectType.getProperty(key.text) ??
+      checker.getNonNullableType(objectType).getProperty(key.text) ??
+      undefined
+    );
   } catch {
     return undefined;
   }
@@ -367,19 +392,23 @@ function expand(
   unresolvedResults: CallGraphUnresolvedThrow[],
 ): void {
   // Budget exhaustion (`maxDepth`, or — once `SAME_CLASS_HOP_BUDGET` also
-  // runs out — a long same-class helper chain) is a SILENT drop, unlike an
-  // unresolvable callee or an unresolvable thrown status: there is no
+  // runs out — a long same-class helper chain) is a SILENT drop: there is no
   // `unresolvedResults` entry for "a throw might exist past this point, but
   // the budget ran out before reaching it," because at this point in the
   // traversal nothing has been resolved (or failed to resolve) YET — `expand`
-  // hasn't looked at `target` at all. Surfacing that honestly would need a
-  // speculative "is there anything past here" probe, which is exactly the
-  // kind of unbounded work `maxDepth`/`SAME_CLASS_HOP_BUDGET` exist to avoid
-  // paying for. Documented (not fixed) in README's "What's on by default vs.
-  // opt-in" table and covered by a `call-graph.test.ts` fixture proving this
-  // boundary is silent, per issue #12 — increasing `maxDepth` (or auditing
-  // with `unresolvable-status`, which only ever sees throws the traversal
-  // actually reached) is the mitigation, not a new diagnostic here.
+  // hasn't looked at `target` at all. This is one of TWO known silent
+  // boundaries `unresolvable-status` cannot surface (the other is an
+  // unresolvable callee, e.g. an interface-typed dependency — see
+  // `resolveCallTarget`'s own doc and README's "What's on by default vs.
+  // opt-in" table); `unresolvable-status` only ever sees a throw the
+  // traversal actually reached and then failed to resolve a status for.
+  // Surfacing budget exhaustion honestly would need a speculative "is there
+  // anything past here" probe, which is exactly the kind of unbounded work
+  // `maxDepth`/`SAME_CLASS_HOP_BUDGET` exist to avoid paying for. Covered by
+  // `call-graph.test.ts` fixtures pinning both the plain `maxDepth` boundary
+  // and the `SAME_CLASS_HOP_BUDGET` boundary specifically (issue #12) —
+  // increasing the relevant budget is the mitigation, not a new diagnostic
+  // here.
   if (remainingDepth <= 0) return;
   if (visited.has(target.symbol)) return; // cycle guard: mutually recursive services terminate here
 

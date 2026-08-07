@@ -366,16 +366,25 @@ non-goal of this rule for now — see PLAN §5 Phase 7.
 | `documented-but-unreachable`                               | off     | Catches copy-pasted decorator blocks, but needs the full producible set (including the two checks above) to avoid flagging things this run simply didn't verify.                                                                     |
 | `unresolvable-status`                                      | off     | Surfaces a throw this tool couldn't pin to a status, instead of silently dropping it — useful for auditing coverage, noisy as a default gate.                                                                                        |
 
-**Known silent boundary (not gated by any rule):** call-graph traversal stops
-once `maxDepth` (default `2`) or the internal `SAME_CLASS_HOP_BUDGET` (a
-same-class-hop circuit breaker, see `call-graph.ts`) is exhausted, and a throw
-that lives past that boundary is dropped with **no** finding and **no**
-`unresolvable-status` entry — unlike an unresolvable callee or an
-unresolvable thrown status, both of which `unresolvable-status` can surface,
-budget exhaustion happens _before_ the traversal ever looks at what's past
-it, so there is nothing concrete to report. Raising `--max-depth` (CLI) /
-`maxDepth` (ESLint rule) is the mitigation; there's currently no diagnostic
-that flags "some call chain went deeper than the configured budget."
+**Known silent boundaries (not gated by any rule):** two call-graph shapes
+are dropped with **no** finding and **no** `unresolvable-status` entry, and
+turning `unresolvable-status` on surfaces neither of them, because both
+happen _before_ a throw is ever reached — `unresolvable-status` only ever
+surfaces a throw the traversal actually got to and then failed to resolve a
+status for:
+
+- **Budget exhaustion.** Traversal stops once `maxDepth` (default `2`) or the
+  internal `SAME_CLASS_HOP_BUDGET` (a same-class-hop circuit breaker, see
+  `call-graph.ts`) is exhausted, and a throw that lives past that boundary is
+  simply never visited. Raising `--max-depth` (CLI) / `maxDepth` (ESLint
+  rule) is the mitigation; there's currently no diagnostic that flags "some
+  call chain went deeper than the configured budget."
+- **Unresolvable callee.** An interface- or abstract-typed dependency
+  (`constructor(private readonly repo: IUserRepository)`) resolves against
+  its static type, which has no method body to traverse into — arguably the
+  more common of the two in idiomatic NestJS DI, since constructor injection
+  by interface/abstract type is a standard pattern. Same result: no finding,
+  no `unresolvedThrows` entry, nothing to audit against.
 
 The unifying rule (PLAN's "silence over noise"): nothing that can produce a
 false positive under default settings is on by default. `checkSuccessResponse`
