@@ -186,16 +186,23 @@ ruleTester.run('documented-status-codes', documentedStatusCodesRule, {
     {
       // `unresolvable-status`, enabled: `throw new HttpException(msg, dynamicStatus)`
       // whose status is a runtime value, not a literal — resolvable to
-      // nothing, surfaced instead of silently dropped. This fixture's
-      // `UnresolvableController` has five such handlers (a direct throw, one
-      // reached one call-graph hop away, one shared by two HTTP decorators
-      // on the same method — reported once, not twice — one behind an
+      // nothing, surfaced instead of silently dropped. `checkSuccessResponse:
+      // false` here means issue #15's dynamic-`@HttpCode` case (success-status
+      // analysis, now deliberately gated on that same flag — adversarial
+      // review) does NOT fire in this case; that combination (and the
+      // `@Res()` carve-out) is covered instead by
+      // `test/integration/implicit-codes.test.ts`'s `unresolvable-status
+      // rule (opt-in)` describe block, which asserts against `analyze()`
+      // directly rather than needing an exact ESLint error-list match
+      // against every OTHER handler's now-enabled success-status noise. This
+      // fixture's `UnresolvableController` has four throw-based unresolvable
+      // handlers under this option set (a direct throw, one reached one
+      // call-graph hop away, one shared by two HTTP decorators on the same
+      // method — reported once, not twice — and one behind an
       // `@ApiDefaultResponse` wildcard, which does NOT suppress this rule —
-      // see `analyze.ts`'s module doc — and, issue #15, one whose
-      // `@HttpCode(...)` argument is itself dynamically valued), so all five
-      // are asserted here rather than narrowing the fixture: this rule's
-      // "surface every unresolvable status" contract is exactly what having
-      // all five catches.
+      // see `analyze.ts`'s module doc), so all four are asserted here rather
+      // than narrowing the fixture: this rule's "surface every unresolvable
+      // status" contract is exactly what having all four catches.
       name: 'unresolvable-status flags every throw whose status could not be resolved, when enabled',
       code: readFixture(IMPLICIT_CODES_DIR, 'src/unresolvable.controller.ts'),
       filename: 'src/unresolvable.controller.ts',
@@ -211,6 +218,7 @@ ruleTester.run('documented-status-codes', documentedStatusCodesRule, {
           messageId: 'unresolvableStatus',
           data: {
             handlerLabel: 'GET /unresolvable/via-service/:id (UnresolvableController.viaService)',
+            what: 'a throw',
             detail: 'FlakyService.check: HttpException status argument is not a resolvable numeric literal or HttpStatus member',
           },
         },
@@ -218,6 +226,7 @@ ruleTester.run('documented-status-codes', documentedStatusCodesRule, {
           messageId: 'unresolvableStatus',
           data: {
             handlerLabel: 'GET /unresolvable/:id (UnresolvableController.findOne)',
+            what: 'a throw',
             detail: 'HttpException status argument is not a resolvable numeric literal or HttpStatus member',
           },
         },
@@ -225,6 +234,7 @@ ruleTester.run('documented-status-codes', documentedStatusCodesRule, {
           messageId: 'unresolvableStatus',
           data: {
             handlerLabel: 'GET /unresolvable/multi-decorator/:id (UnresolvableController.multiDecorator)',
+            what: 'a throw',
             detail: 'HttpException status argument is not a resolvable numeric literal or HttpStatus member',
           },
         },
@@ -232,14 +242,8 @@ ruleTester.run('documented-status-codes', documentedStatusCodesRule, {
           messageId: 'unresolvableStatus',
           data: {
             handlerLabel: 'GET /unresolvable/wildcard/:id (UnresolvableController.wildcard)',
+            what: 'a throw',
             detail: 'HttpException status argument is not a resolvable numeric literal or HttpStatus member',
-          },
-        },
-        {
-          messageId: 'unresolvableStatus',
-          data: {
-            handlerLabel: 'POST /unresolvable/dynamic-http-code (UnresolvableController.dynamicHttpCode)',
-            detail: '@HttpCode argument is not a statically resolvable literal',
           },
         },
       ],
@@ -271,6 +275,7 @@ ruleTester.run('documented-status-codes', documentedStatusCodesRule, {
           messageId: 'unresolvableStatus',
           data: {
             handlerLabel: 'GET /unresolvable-cross-file/:id (UnresolvableCrossFileController.viaService)',
+            what: 'a throw',
             detail:
               'FlakyCrossFileService.check: HttpException status argument is not a resolvable numeric literal or HttpStatus member (at ' +
               join(IMPLICIT_CODES_DIR, 'src/unresolvable-cross-file.service.ts') +

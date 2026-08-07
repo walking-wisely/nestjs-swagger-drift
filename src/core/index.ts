@@ -53,7 +53,8 @@ export { findUnresolvableHttpCode, resolveSuccessStatus } from './success.js';
 export { collectValidationPipeSource } from './validation-pipe.js';
 export type { GuardFinding } from './guards.js';
 export { collectGuardStatuses } from './guards.js';
-export { collectParsePipesSource } from './parse-pipes.js';
+export type { ParsePipeStatusSource } from './parse-pipes.js';
+export { collectParsePipesSources } from './parse-pipes.js';
 
 export { resolveStatusExpression } from './status-value.js';
 

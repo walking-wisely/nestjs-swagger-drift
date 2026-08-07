@@ -82,35 +82,77 @@ export function hasBodyLikeDecorator(param: ts.ParameterDeclaration, checker: ts
  * public `TypeChecker` API has no direct `getElementTypeOfArrayType`, so this
  * uses the public equivalent: `isArrayType` to confirm the shape, then
  * `getTypeArguments` on the resulting `TypeReference` to pull out the single
- * element type argument.
+ * element type argument — repeated (bounded) to also cover nested arrays
+ * (`CreateItemDto[][]`).
+ *
+ * Two more shapes are handled here, both confirmed as false negatives in
+ * review: an OPTIONAL parameter (`dto?: CreateUserDto`,
+ * `items?: CreateItemDto[]`) widens under `strict` to `T | undefined`, and a
+ * NULLABLE one (`dto: CreateUserDto | null`) to `T | null` — in both cases
+ * `isArrayType`/`getSymbol()` on the raw union type see only the union itself
+ * and fail. Every member of a union type is tried in turn (skipping
+ * `undefined`/`null` members), taking the first that resolves to a class —
+ * this also incidentally covers a plain `A | B` union DTO parameter where
+ * either member alone would qualify.
  */
 function resolveParameterClassDeclaration(
   param: ts.ParameterDeclaration,
   checker: ts.TypeChecker,
 ): ts.ClassDeclaration | undefined {
-  let type: ts.Type;
+  let rootType: ts.Type;
   try {
-    type = checker.getTypeAtLocation(param);
+    rootType = checker.getTypeAtLocation(param);
   } catch {
     return undefined;
   }
-  if (checker.isArrayType(type)) {
-    const [elementType] = checker.getTypeArguments(type as ts.TypeReference);
-    if (elementType) type = elementType;
+
+  const candidates = rootType.isUnion() ? rootType.types : [rootType];
+  for (const candidate of candidates) {
+    if (candidate.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null)) continue;
+
+    let type = candidate;
+    let guard = 0;
+    while (checker.isArrayType(type) && guard++ < 8) {
+      const [elementType] = checker.getTypeArguments(type as ts.TypeReference);
+      if (!elementType) break;
+      type = elementType;
+    }
+
+    const symbol = type.getSymbol();
+    const classDecl = symbol?.getDeclarations()?.find(ts.isClassDeclaration);
+    if (classDecl) return classDecl;
   }
-  const symbol = type.getSymbol();
-  return symbol?.getDeclarations()?.find(ts.isClassDeclaration);
+  return undefined;
 }
 
 const MAX_FACTORY_RESOLUTION_DEPTH = 8;
 
+/** Strips `as`/parenthesized wrappers (`(expr) as X as Y`) down to the underlying expression. */
+function unwrapExpression(expr: ts.Expression): ts.Expression {
+  let current = expr;
+  while (ts.isAsExpression(current) || ts.isParenthesizedExpression(current)) {
+    current = current.expression;
+  }
+  return current;
+}
+
 function functionLikeBodyOf(decl: ts.Declaration): ts.Node | undefined {
-  if (
-    ts.isVariableDeclaration(decl) &&
-    decl.initializer &&
-    (ts.isArrowFunction(decl.initializer) || ts.isFunctionExpression(decl.initializer))
-  ) {
-    return decl.initializer;
+  if (ts.isVariableDeclaration(decl) && decl.initializer) {
+    const initializer = unwrapExpression(decl.initializer);
+    if (ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer)) {
+      return initializer;
+    }
+    // Issue #13b2: `export const X = applyDecorators(IsString(), ...)` — the
+    // decorator factory's result assigned straight to a const (no `function`
+    // wrapper at all; the decorator is then applied bare, `@X` not `@X()`).
+    // `initializer` here IS the `applyDecorators(...)` call itself (modulo
+    // `as`/parenthesized wrapping, common when the result is cast to a
+    // narrower decorator type), so recursing into it directly (rather than
+    // requiring a function body) still lets `callsClassValidator` find the
+    // nested `IsString()` call.
+    if (ts.isCallExpression(initializer)) {
+      return initializer;
+    }
   }
   if (ts.isFunctionDeclaration(decl) && decl.body) return decl;
   return undefined;
@@ -149,7 +191,23 @@ function callsClassValidator(
     const name = getDecoratorName(callee);
     if (name !== undefined) {
       const { provenance } = checkProvenance(callee, checker, CLASS_VALIDATOR_MODULE);
-      if (provenance !== 'mismatch') return true;
+      // Deliberately `'verified'`-only here, unlike the top-level
+      // property-decorator check below (and unlike this project's usual
+      // "accept verified-or-unverified, reject only a demonstrated mismatch"
+      // posture — see `provenance.ts`'s module doc). Walking INTO a factory
+      // body means the callee can be an arbitrary local call this project
+      // has no business asserting anything about — `value.trim()` on a
+      // `class-transformer` `@Transform(({ value }) => value.trim())` call
+      // has an unresolvable `.trim` symbol (its receiver is typed `any`),
+      // which is `'unverified'`, not `'mismatch'`. Accepting `'unverified'`
+      // here previously meant ANY unresolvable callee inside a composed
+      // decorator's body — not just class-validator ones — was treated as
+      // proof of validation, a confirmed false positive on the extremely
+      // common `@Trim()`/`@ToLowerCase()`-style `class-transformer` idiom.
+      // Requiring `'verified'` is strictly FP-safe: it only fires when the
+      // checker can actually see the callee's declaration living under
+      // `class-validator`.
+      if (provenance === 'verified') return true;
     }
     const rawSym = safeSymbol(checker, callee);
     const sym = rawSym ? resolveAliasedSymbol(rawSym, checker) : undefined;

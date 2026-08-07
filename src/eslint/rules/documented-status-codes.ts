@@ -199,8 +199,17 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
       undocumentedStatus: '{{handlerLabel}} is missing @ApiResponse for {{status}} ({{exceptions}}).',
       documentedButUnreachable:
         '{{handlerLabel}} documents {{status}}, but nothing in this run produces it (documented-but-unreachable).',
+      // `{{what}}` names the SOURCE of the unresolvable status — an
+      // unresolvable THROWN status ("a throw") vs. issue #15's unresolvable
+      // `@HttpCode` SUCCESS-status argument ("an @HttpCode(...)") — see
+      // `Finding`'s `kind` field on the `unresolvable-status` variant. The
+      // sentence itself says what failed to resolve ("whose status could not
+      // be resolved"), so `{{detail}}` only needs to add the specific reason
+      // (adversarial review: the previous "has a throw that could not be
+      // resolved" wording was simply wrong — the throw resolved fine, its
+      // STATUS didn't — and redundant for the `@HttpCode` case).
       unresolvableStatus:
-        '{{handlerLabel}} has a throw whose status could not be resolved: {{detail}} (unresolvable-status).',
+        '{{handlerLabel}} has {{what}} whose status could not be resolved: {{detail}} (unresolvable-status).',
     },
   },
   defaultOptions: [DEFAULT_OPTIONS],
@@ -299,6 +308,7 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
             messageId: 'unresolvableStatus',
             data: {
               handlerLabel: handlerLabelStr,
+              what: finding.unresolvableKind === 'success' ? 'an @HttpCode(...)' : 'a throw',
               detail: usedFallback ? `${finding.detail} (at ${crossFileLocation(finding.node)})` : finding.detail,
             },
           });

@@ -307,7 +307,14 @@ export function getHttpHandlerDecorators(
   const decorators = getDecoratorInfos(methodNode, checker);
   const results: HttpHandlerDecoratorInfo[] = [];
   for (const d of decorators) {
-    const httpMethod = HTTP_METHOD_DECORATOR_NAMES[effectiveName(d)];
+    const name = effectiveName(d);
+    // `Object.hasOwn` guard (adversarial review, #8 nit): `HTTP_METHOD_DECORATOR_NAMES`
+    // is a plain object literal, so a decorator literally named `toString`/
+    // `valueOf`/`constructor`/... would otherwise resolve to an inherited
+    // `Object.prototype` member via bracket access, not `undefined` — pushing
+    // a garbage `httpMethod` instead of correctly skipping it.
+    if (!Object.hasOwn(HTTP_METHOD_DECORATOR_NAMES, name)) continue;
+    const httpMethod = HTTP_METHOD_DECORATOR_NAMES[name];
     if (httpMethod === undefined) continue;
     if (!isAccepted(d.provenance, strict)) continue;
     const { paths, unresolvedPath } = extractPaths(getDecoratorCallArgument(d.node), checker);

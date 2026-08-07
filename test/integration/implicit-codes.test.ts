@@ -216,6 +216,77 @@ describe('checkValidationPipe (opt-in)', () => {
       ]);
     }
   });
+
+  // Issue #13b regression (adversarial-review-confirmed false positive): a
+  // locally-composed decorator whose body calls only `class-transformer`'s
+  // `Transform` — never a real `class-validator` export — must NOT count.
+  it('does not flag a DTO whose composed decorator never calls class-validator', () => {
+    const findings = analyze(baseOptions({ checkValidationPipe: true }));
+    expect(findingsFor(findings, 'ValidationPipeController', 'createTrimOnly')).toEqual([]);
+  });
+
+  // Issue #13b2: the same composed-decorator pattern written as a bare
+  // `const` export (`export const X = applyDecorators(...)`, applied as
+  // `@X` with no parens) rather than wrapped in a `function`.
+  it('flags an implicit 400 for a DTO validated via a const-assigned composed decorator', () => {
+    const findings = analyze(baseOptions({ checkValidationPipe: true }));
+    const createConstComposed = findingsFor(findings, 'ValidationPipeController', 'createConstComposed');
+    expect(createConstComposed).toHaveLength(1);
+    expect(createConstComposed[0]).toMatchObject({ rule: 'undocumented-status', status: 400 });
+    if (createConstComposed[0]?.rule === 'undocumented-status') {
+      expect(createConstComposed[0].sources).toEqual([
+        expect.objectContaining({
+          kind: 'implicit',
+          reason: 'validation-pipe',
+          detail: 'ConstComposedDto',
+        }),
+      ]);
+    }
+  });
+
+  // Issue #13a (adversarial review, confirmed false negative): under
+  // `strict`, an optional parameter's static type widens to `T | undefined`
+  // — the pre-fix unwrap (`isArrayType`/`getSymbol()` on the raw union) could
+  // not see through that to `CreateUserDto` at all.
+  it('flags an implicit 400 for an OPTIONAL @Body() DTO parameter (dto?: X)', () => {
+    const findings = analyze(baseOptions({ checkValidationPipe: true }));
+    const createOptional = findingsFor(findings, 'ValidationPipeController', 'createOptional');
+    expect(createOptional).toHaveLength(1);
+    expect(createOptional[0]).toMatchObject({ rule: 'undocumented-status', status: 400 });
+    if (createOptional[0]?.rule === 'undocumented-status') {
+      expect(createOptional[0].sources).toEqual([
+        expect.objectContaining({ kind: 'implicit', reason: 'validation-pipe', detail: 'CreateUserDto' }),
+      ]);
+    }
+  });
+
+  // Issue #13a (adversarial review, confirmed false negative): the fixed
+  // array case (issue #13a's own original target), made OPTIONAL
+  // (`items?: X[]`) — the array-only fix alone still missed this.
+  it('flags an implicit 400 for an OPTIONAL array-typed @Body() DTO parameter (items?: X[])', () => {
+    const findings = analyze(baseOptions({ checkValidationPipe: true }));
+    const createOptionalItems = findingsFor(findings, 'ValidationPipeController', 'createOptionalItems');
+    expect(createOptionalItems).toHaveLength(1);
+    expect(createOptionalItems[0]).toMatchObject({ rule: 'undocumented-status', status: 400 });
+  });
+
+  // Issue #13a (adversarial review, confirmed false negative): a NULLABLE
+  // (not optional) DTO parameter (`dto: X | null`).
+  it('flags an implicit 400 for a NULLABLE @Body() DTO parameter (dto: X | null)', () => {
+    const findings = analyze(baseOptions({ checkValidationPipe: true }));
+    const createNullable = findingsFor(findings, 'ValidationPipeController', 'createNullable');
+    expect(createNullable).toHaveLength(1);
+    expect(createNullable[0]).toMatchObject({ rule: 'undocumented-status', status: 400 });
+  });
+
+  // Issue #13a (adversarial review): a NESTED array (`X[][]`) — the unwrap
+  // loop must peel more than one array layer.
+  it('flags an implicit 400 for a NESTED array-typed @Body() DTO parameter (items: X[][])', () => {
+    const findings = analyze(baseOptions({ checkValidationPipe: true }));
+    const createNestedItems = findingsFor(findings, 'ValidationPipeController', 'createNestedItems');
+    expect(createNestedItems).toHaveLength(1);
+    expect(createNestedItems[0]).toMatchObject({ rule: 'undocumented-status', status: 400 });
+  });
 });
 
 describe('checkGuards (opt-in)', () => {
@@ -474,6 +545,9 @@ describe('unresolvable-status rule (opt-in)', () => {
     const findOne = findingsFor(findings, 'UnresolvableController', 'findOne');
     expect(findOne).toHaveLength(1);
     expect(findOne[0]?.rule).toBe('unresolvable-status');
+    if (findOne[0]?.rule === 'unresolvable-status') {
+      expect(findOne[0].unresolvableKind).toBe('throw');
+    }
   });
 
   it('is silent when disabled (the default) — the unresolved throw is dropped, not reported as anything', () => {
@@ -536,14 +610,52 @@ describe('unresolvable-status rule (opt-in)', () => {
   // noise" default as everywhere else).
   it('surfaces a handler whose @HttpCode argument could not be statically resolved', () => {
     const findings = analyze(
-      baseOptions({ rules: { 'documented-but-unreachable': false, 'unresolvable-status': true } }),
+      baseOptions({
+        checkSuccessResponse: true,
+        rules: { 'documented-but-unreachable': false, 'unresolvable-status': true },
+      }),
     );
     const dynamicHttpCode = findingsFor(findings, 'UnresolvableController', 'dynamicHttpCode');
     expect(dynamicHttpCode).toHaveLength(1);
     expect(dynamicHttpCode[0]?.rule).toBe('unresolvable-status');
     if (dynamicHttpCode[0]?.rule === 'unresolvable-status') {
-      expect(dynamicHttpCode[0].detail).toContain('@HttpCode');
+      expect(dynamicHttpCode[0].detail).toContain('not a statically resolvable literal');
+      // Adversarial review: this is a SUCCESS-status finding, not a throw —
+      // the reporters must not render "has a throw" for it, and `detail`
+      // itself no longer repeats "@HttpCode" (the reporter's `{{what}}` now
+      // names the source as "an @HttpCode(...)", so the sentence and detail
+      // together read as "has an @HttpCode(...) whose status could not be
+      // resolved: argument is not a statically resolvable literal" instead
+      // of the earlier redundant "has a success status ... @HttpCode
+      // argument is not ...").
+      expect(dynamicHttpCode[0].unresolvableKind).toBe('success');
     }
+  });
+
+  // Adversarial review: this is success-status analysis, so a user who
+  // explicitly disabled `checkSuccessResponse` must not see it resurface
+  // under `unresolvable-status` either.
+  it('stays silent about a dynamic @HttpCode when checkSuccessResponse is disabled, even with the rule enabled', () => {
+    const findings = analyze(
+      baseOptions({
+        checkSuccessResponse: false,
+        rules: { 'documented-but-unreachable': false, 'unresolvable-status': true },
+      }),
+    );
+    expect(findingsFor(findings, 'UnresolvableController', 'dynamicHttpCode')).toEqual([]);
+  });
+
+  // Adversarial review: `@HttpCode` on an `@Res()`/`@Redirect()`/`@Sse()`
+  // handler is already a known carve-out (automatic status-setting doesn't
+  // apply there at all) — must not be misreported as "unresolvable".
+  it('does not flag a dynamic @HttpCode on a handler that takes the raw response object', () => {
+    const findings = analyze(
+      baseOptions({
+        checkSuccessResponse: true,
+        rules: { 'documented-but-unreachable': false, 'unresolvable-status': true },
+      }),
+    );
+    expect(findingsFor(findings, 'UnresolvableController', 'dynamicHttpCodeWithRes')).toEqual([]);
   });
 
   it('is silent about the dynamic @HttpCode when the rule is disabled (the default)', () => {
@@ -584,5 +696,131 @@ describe('checkParsePipes (opt-in, issue #17)', () => {
   it('produces no 400 finding at all when disabled (the default)', () => {
     const findings = analyze(baseOptions({ checkParsePipes: false }));
     expect(findings.some((f) => f.handler.className === 'ParsePipesController')).toBe(false);
+  });
+
+  // Adversarial review: `new ParseIntPipe({ errorHttpStatusCode:
+  // HttpStatus.NOT_ACCEPTABLE })` must report 406, not the default 400 —
+  // reporting a flat 400 here would tell the user to document a status the
+  // handler can never actually produce.
+  it('reports the errorHttpStatusCode override status instead of the default 400', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const overridden = findingsFor(findings, 'ParsePipesController', 'overridden');
+    expect(overridden).toHaveLength(1);
+    expect(overridden[0]).toMatchObject({ rule: 'undocumented-status', status: 406 });
+    if (overridden[0]?.rule === 'undocumented-status') {
+      expect(overridden[0].sources).toEqual([
+        expect.objectContaining({ kind: 'implicit', reason: 'parse-pipe', detail: 'ParseIntPipe' }),
+      ]);
+    }
+  });
+
+  // Adversarial review: `errorHttpStatusCode` present but NOT statically
+  // resolvable — must contribute NOTHING, not a guessed 400.
+  it('does not flag a Parse*Pipe whose errorHttpStatusCode is not statically resolvable', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    expect(findingsFor(findings, 'ParsePipesController', 'unresolvableOverride')).toEqual([]);
+  });
+
+  // Adversarial review: the array-literal pipe form.
+  it('recognizes a pipe named inside an array-literal pipes argument', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const arrayForm = findingsFor(findings, 'ParsePipesController', 'arrayForm');
+    expect(arrayForm).toHaveLength(1);
+    expect(arrayForm[0]).toMatchObject({ status: 400 });
+  });
+
+  // Adversarial review: no property-name argument at all.
+  it('recognizes a pipe with no property-name argument (@Param(ParseIntPipe))', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const noPropertyName = findingsFor(findings, 'ParsePipesController', 'noPropertyName');
+    expect(noPropertyName).toHaveLength(1);
+    expect(noPropertyName[0]).toMatchObject({ status: 400 });
+  });
+
+  // Adversarial review: de-duplicated detail string.
+  it('de-duplicates the same pipe name across multiple parameters', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const duplicatePipe = findingsFor(findings, 'ParsePipesController', 'duplicatePipe');
+    expect(duplicatePipe).toHaveLength(1);
+    if (duplicatePipe[0]?.rule === 'undocumented-status') {
+      expect(duplicatePipe[0].sources).toEqual([
+        expect.objectContaining({ detail: 'ParseIntPipe' }),
+      ]);
+    }
+  });
+
+  // Adversarial review: `@Headers()` is a valid pipe-host decorator too, not
+  // just `@Body()`/`@Param()`/`@Query()`.
+  it('recognizes a pipe attached to a @Headers() parameter', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const headers = findingsFor(findings, 'ParsePipesController', 'headers');
+    expect(headers).toHaveLength(1);
+    expect(headers[0]).toMatchObject({ status: 400 });
+  });
+
+  // Adversarial review: `ParseFilePipe` via `@UploadedFile()` — structurally
+  // unreachable under the old Body/Param/Query-only gate.
+  it('recognizes ParseFilePipe attached to an @UploadedFile() parameter', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const upload = findingsFor(findings, 'ParsePipesController', 'upload');
+    expect(upload).toHaveLength(1);
+    if (upload[0]?.rule === 'undocumented-status') {
+      expect(upload[0].sources).toEqual([
+        expect.objectContaining({ detail: 'ParseFilePipe' }),
+      ]);
+    }
+  });
+
+  // Adversarial review, confirmed false positive: `ParseEnumPipe`'s
+  // constructor is `(enumType, options?)` — the options object sits at
+  // `arguments[1]`, not `arguments[0]`. Hard-coding index 0 silently ignored
+  // a resolvable `errorHttpStatusCode` and guessed 400 instead.
+  it('reads errorHttpStatusCode off ParseEnumPipe(theEnum, options), not just arguments[0]', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const byRole = findingsFor(findings, 'ParsePipesController', 'byRole');
+    expect(byRole).toHaveLength(1);
+    expect(byRole[0]).toMatchObject({ rule: 'undocumented-status', status: 406 });
+  });
+
+  // Adversarial review, confirmed false positive: `exceptionFactory` takes
+  // precedence over `errorHttpStatusCode` at runtime — a pipe usage naming
+  // one must contribute NOTHING, not a guessed 400.
+  it('does not flag a Parse*Pipe whose options carry an exceptionFactory', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    expect(findingsFor(findings, 'ParsePipesController', 'exceptionFactory')).toEqual([]);
+  });
+
+  // Adversarial review, confirmed false positive: shorthand and
+  // string-literal property names for `errorHttpStatusCode`.
+  it('resolves errorHttpStatusCode given as a shorthand property', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const shorthand = findingsFor(findings, 'ParsePipesController', 'shorthandOverride');
+    expect(shorthand).toHaveLength(1);
+    expect(shorthand[0]).toMatchObject({ status: 406 });
+  });
+
+  it('resolves errorHttpStatusCode given as a string-literal property name', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const stringLiteral = findingsFor(findings, 'ParsePipesController', 'stringLiteralOverride');
+    expect(stringLiteral).toHaveLength(1);
+    expect(stringLiteral[0]).toMatchObject({ status: 406 });
+  });
+
+  // Adversarial review: `ParseDatePipe` was missing from the built-in set.
+  it('recognizes ParseDatePipe as a built-in Parse*Pipe', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const dateRange = findingsFor(findings, 'ParsePipesController', 'dateRange');
+    expect(dateRange).toHaveLength(1);
+    expect(dateRange[0]).toMatchObject({ status: 400 });
+  });
+
+  // Adversarial review, confirmed false positive: two distinct pipes on the
+  // SAME decorator call must both contribute their own status, not just the
+  // first one found.
+  it('collects every distinct Parse*Pipe status when more than one pipe is named on the same decorator', () => {
+    const findings = analyze(baseOptions({ checkParsePipes: true }));
+    const multiPipe = findingsFor(findings, 'ParsePipesController', 'multiPipe');
+    const statuses = multiPipe.map((f) => (f.rule === 'undocumented-status' ? f.status : undefined)).sort();
+    expect(statuses).toEqual([400, 422]);
   });
 });

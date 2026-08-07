@@ -186,11 +186,17 @@ For `--project` (findings mode):
   service; carries `via: string[]`, the call chain by method name), or
   `"implicit"` (one of the checks in
   ["What's on by default vs. opt-in"](#whats-on-by-default-vs-opt-in) below;
-  carries `reason: "success" | "validation-pipe" | "guard"` and optionally
+  carries `reason: "success" | "validation-pipe" | "guard" | "parse-pipe"` and optionally
   `detail`) — only populated for `undocumented-status` findings; empty for
   the other two rules.
 - `detail` — only present for `unresolvable-status` findings; omitted
   otherwise.
+- `unresolvableKind` — only present for `unresolvable-status` findings:
+  `"throw"` when a thrown status couldn't be statically resolved, `"success"`
+  when a handler's `@HttpCode(...)` argument couldn't be. Named
+  `unresolvableKind` rather than `kind` deliberately, so it doesn't collide in
+  meaning with `sources[].kind` above (a different field, a different value
+  set, always empty for this rule).
 
 For `--routes` (route-table mode): `{ "handlers": [{ httpMethod, path, unresolvedPath, className, methodName, location }] }`, no `findings`/`summary`.
 
@@ -367,7 +373,7 @@ non-goal of this rule for now — see PLAN §5 Phase 7.
 | 2xx success response (`checkSuccessResponse`)              | **on**  | Every handler that returns normally produces _some_ status; documenting none at all is the single most common miss. `@Redirect()` and `@Res()`/`@Response()` handlers are excluded (see below) rather than asserted a wrong default. |
 | `ValidationPipe` implicit 400 (`checkValidationPipe`)      | off     | A `class-validator`-decorated DTO parameter doesn't prove `ValidationPipe` is actually registered anywhere in the app — this tool can't see that.                                                                                    |
 | `@UseGuards(...)` implicit 401/403 (`checkGuards`)         | off     | A guard is provably _attached_, not provably _throwing_ the way this analysis assumes (it could reject without throwing).                                                                                                            |
-| Built-in `Parse*Pipe` implicit 400 (`checkParsePipes`)     | off     | A `@Param()`/`@Query()`/`@Body()` argument naming `ParseIntPipe`/`ParseUUIDPipe`/... doesn't prove the pipe genuinely runs at request time, same caveat as `checkValidationPipe`.                                                    |
+| Built-in `Parse*Pipe` implicit 400 (`checkParsePipes`)     | off     | A `@Body()`/`@Param()`/`@Query()`/`@Headers()`/`@UploadedFile()`/`@UploadedFiles()` argument naming `ParseIntPipe`/`ParseUUIDPipe`/... doesn't prove the pipe genuinely runs at request time, same caveat as `checkValidationPipe`. Reports the pipe's own `errorHttpStatusCode` override (e.g. 406) instead of 400 when it's statically resolvable. |
 | `documented-but-unreachable`                               | off     | Catches copy-pasted decorator blocks, but needs the full producible set (including the two checks above) to avoid flagging things this run simply didn't verify.                                                                     |
 | `unresolvable-status`                                      | off     | Surfaces a throw this tool couldn't pin to a status, instead of silently dropping it — useful for auditing coverage, noisy as a default gate.                                                                                        |
 
@@ -489,22 +495,46 @@ No undocumented status codes found.
 - **`checkValidationPipe`** (`validation-pipe.ts`) — treats `400` as
   producible when a handler parameter is decorated with `@Body()`/`@Param()`/
   `@Query()` AND its type — or, for an array-typed parameter
-  (`items: CreateItemDto[]`), its element type — is a class carrying at least
-  one `class-validator` decorator (`@IsString()`, `@IsNotEmpty()`, ...),
-  applied directly OR via a locally-composed decorator
+  (`items: CreateItemDto[]`, including nested arrays and optional/nullable
+  variants like `items?: CreateItemDto[]`) — its element type is a class
+  carrying at least one `class-validator` decorator (`@IsString()`,
+  `@IsNotEmpty()`, ...), applied directly OR via a locally-composed decorator
   (`applyDecorators(IsString(), MinLength(8))`) whose own body calls one.
-  Inherited DTO base-class decorators are not walked — deliberately narrow.
+  Inherited DTO base-class decorators are not walked — deliberately narrow —
+  and this specifically includes a `PartialType(CreateDto)`/
+  `IntersectionType(...)`-style mixin DTO (`class UpdateUserDto extends
+  PartialType(CreateUserDto) {}`): it has no own property declarations to
+  scan, so it is NOT recognized as carrying `CreateUserDto`'s validators even
+  though `ValidationPipe` genuinely still validates it at runtime. If you use
+  that pattern, expect a false negative here — declare the DTO's own
+  validated properties on the subclass itself to be picked up, or don't rely
+  on this check for it.
 - **`checkGuards`** (`guards.ts`) — resolves each `@UseGuards(SomeGuard)`
   class (method- and class-level), finds its `canActivate`, and recurses into
   it with the same bounded call-graph traversal used for services, collecting
   whatever it throws (typically `UnauthorizedException`/`ForbiddenException`).
-- **`checkParsePipes`** (`parse-pipes.ts`) — treats `400` as producible when a
-  handler parameter decorated with `@Body()`/`@Param()`/`@Query()` also names
-  one of NestJS's built-in transformation pipes (`ParseIntPipe`,
-  `ParseUUIDPipe`, `ParseBoolPipe`, `ParseEnumPipe`, `ParseFloatPipe`,
-  `ParseArrayPipe`, `ParseFilePipe`) among the decorator's call arguments —
-  as a bare class reference, a `new X()` instantiation, or inside a pipe
-  array. Same "can't prove it's actually wired up" caveat as
+- **`checkParsePipes`** (`parse-pipes.ts`) — treats `400` (or an overridden
+  status, see below) as producible when a handler parameter decorated with
+  `@Body()`/`@Param()`/`@Query()`/`@Headers()`/`@UploadedFile()`/
+  `@UploadedFiles()` also names one of NestJS's built-in transformation pipes
+  (`ParseIntPipe`, `ParseUUIDPipe`, `ParseBoolPipe`, `ParseEnumPipe`,
+  `ParseFloatPipe`, `ParseArrayPipe`, `ParseFilePipe`, `ParseDatePipe`) among
+  the decorator's call arguments — as a bare class reference, a `new X()`
+  instantiation, or inside a pipe array; every distinct pipe named on a
+  single decorator call is collected, not just the first. The decorator set
+  is wider than `checkValidationPipe`'s Body/Param/Query-only scope, because
+  (unlike a global `ValidationPipe`) an explicitly-attached pipe runs the
+  same way regardless of which request-data decorator hosts it — this is how
+  `ParseFilePipe` (canonically attached via `@UploadedFile()`) becomes
+  reachable at all. When a `new Parse*Pipe({ errorHttpStatusCode: ... })`
+  instantiation's `errorHttpStatusCode` is statically resolvable (searched
+  across every constructor argument, not just the first — `ParseEnumPipe`'s
+  is `(enumType, options)`, so its options object is the SECOND argument),
+  that status is reported instead of `400`; if it's present but not
+  resolvable, or the options object instead names an `exceptionFactory`
+  (which NestJS always prefers over `errorHttpStatusCode` when both are
+  given), the pipe usage contributes NO finding at all — never a guessed
+  `400`. Same "can't prove it's actually wired up" caveat as
   `checkValidationPipe`.
 - **`documented-but-unreachable`** — scoped to a handler's own METHOD-level
   documented statuses only (a class-level `@ApiResponse` is usually a blanket
