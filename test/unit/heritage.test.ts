@@ -183,4 +183,64 @@ describe('#11: mixin-based classes (extends SomeMixin(Base))', () => {
 
     expect(resolveClassDeclaration(identifier, checker)).toBeUndefined();
   });
+
+  it('(adversarial P2) resolves through a genuinely GENERIC mixin — `Timestamped<TBase extends Ctor>(Base: TBase)` — not just the non-generic strawman', () => {
+    const { program, sourceFile } = buildProgram(
+      `import { NotFoundException } from '@nestjs/common';
+
+       type Ctor<T = {}> = new (...args: any[]) => T;
+       function Timestamped<TBase extends Ctor>(Base: TBase) {
+         return class extends Base {
+           ts = 0;
+         };
+       }
+
+       class MyErr extends Timestamped(NotFoundException) {}`,
+    );
+    const checker = program.getTypeChecker();
+    const myErr = findClass(sourceFile, 'MyErr');
+
+    const base = getBaseClassDeclaration(myErr, checker);
+    // The checker types the call's return as an intersection of the
+    // anonymous mixin class and `NotFoundException` itself (the generic
+    // parameter substituted in) — resolving to the named `NotFoundException`
+    // constituent (rather than the anonymous wrapper) is what lets the
+    // extends-chain walk in `resolve-status.ts` find it.
+    expect(base?.name?.getText()).toBe('NotFoundException');
+  });
+
+  it('(adversarial P3) does not resolve a union-returning factory to an arbitrary arm', () => {
+    const { program, sourceFile } = buildProgram(
+      `class ProdGuard { canActivate(): boolean { return false; } }
+       class NoopGuard { canActivate(): boolean { return true; } }
+       declare function pickGuard(env: string): typeof ProdGuard | typeof NoopGuard;
+       const G = pickGuard('x');`,
+    );
+    const checker = program.getTypeChecker();
+
+    let identifier: ts.Identifier | undefined;
+    ts.forEachChild(sourceFile, function visit(node) {
+      if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === 'G') {
+        identifier = node.name;
+      }
+      ts.forEachChild(node, visit);
+    });
+    if (!identifier) throw new Error('G declaration not found');
+
+    // Must stay unresolved — silently picking `ProdGuard` (or `NoopGuard`,
+    // depending on which arm the checker lists first) would be a
+    // source-order-dependent false positive/negative, not a real answer.
+    expect(resolveClassDeclaration(identifier, checker)).toBeUndefined();
+  });
+
+  it('(adversarial P5) a self-referential `extends` through the type fallback resolves to undefined, not the class itself', () => {
+    const { program, sourceFile } = buildProgram(
+      `declare const Self: typeof MyClass;
+       class MyClass extends Self {}`,
+    );
+    const checker = program.getTypeChecker();
+    const myClass = findClass(sourceFile, 'MyClass');
+
+    expect(getBaseClassDeclaration(myClass, checker)).toBeUndefined();
+  });
 });
