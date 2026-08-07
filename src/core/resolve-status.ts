@@ -47,6 +47,17 @@
  *    exception (`const err = new MyException(); ...; throw err;`) stays
  *    `unknown`; narrow, deliberate scope, not an oversight.
  *
+ * `resolveThrownStatus` strips a non-null assertion (`throw err!`), a cast
+ * (`throw (err as NotFoundException)`, `throw <NotFoundException>err`), a
+ * `satisfies` (`throw e satisfies NotFoundException`), and parentheses off
+ * the THROWN EXPRESSION AS A WHOLE before any strategy above ever sees it
+ * (#14) — see `stripExpressionWrappers`'s doc comment. This is why it's
+ * hoisted to the ladder's entry point rather than living inside
+ * `tryIdentifierRethrow` alone: `throw (new NotFoundException('x')) as
+ * Error` is exactly as resolvable as `throw new NotFoundException('x')`
+ * once the wrapper is gone, and every strategy — not just the identifier
+ * one — benefits identically.
+ *
  * Everything else — a class extending something that only *looks* like a
  * Nest exception (never checker-verified, so it never resolves), a
  * dynamically computed status (`throw new HttpException(msg, someVar)`,
@@ -332,12 +343,65 @@ const tryCustomExceptionClass: Strategy = (expression, checker) => {
   return unknown(`"${label}"'s \`extends\` chain is too deep to resolve`);
 };
 
+/**
+ * Strips wrapper expressions that only ANNOTATE what's thrown, never
+ * change WHAT is actually thrown at runtime, off the top of `expression`
+ * (#14): `throw err!`'s `NonNullExpression`, `throw (err as X)`'s
+ * `AsExpression`, `throw <X>err`'s `TypeAssertionExpression` (the
+ * angle-bracket cast form), `throw e satisfies X`'s `SatisfiesExpression`,
+ * and any enclosing `ParenthesizedExpression` — in any order, repeated
+ * (`throw (err!)`, `throw (err as X)!`, ...). Called once, at
+ * `resolveThrownStatus`'s entry point, on the whole thrown expression —
+ * not just when it happens to wrap an identifier — so `throw (new
+ * NotFoundException('x')) as Error` reaches `tryBuiltInExceptionClass` as
+ * plainly as `throw new NotFoundException('x')` does (adversarial review
+ * P7: a cast/non-null/parens wrapper around a `new X(...)` call, not just
+ * around an identifier, was previously invisible to every strategy).
+ *
+ * None of these wrappers changes what the checker can PROVE about the
+ * underlying expression's type — a non-null assertion only removes
+ * `null`/`undefined` from a type the checker already knows is otherwise
+ * correct (safe to trust: `tryIdentifierRethrow` additionally calls
+ * `checker.getNonNullableType` so a `throw err!` where `err`'s declared
+ * type is `NotFoundException | undefined` resolves, not just the redundant
+ * `!` on an already-narrowed type — adversarial review P6). An `as X`/
+ * `<X>`/`satisfies X`, by contrast, is an unverified assertion, not proof —
+ * stripping the WRAPPER here does not mean trusting X; the strategies below
+ * still resolve the TYPE from the checker at the unwrapped expression's own
+ * location, never from the asserted type, preserving this module's
+ * "silence over noise" bias (see this module's doc comment): a `catch
+ * (err)` variable cast with `as NotFoundException` stays statically
+ * `unknown` and still resolves to `unknown` here, exactly as it would have
+ * without the cast.
+ */
+function stripExpressionWrappers(expression: ts.Expression): ts.Expression {
+  let current = expression;
+  while (
+    ts.isNonNullExpression(current) ||
+    ts.isAsExpression(current) ||
+    ts.isTypeAssertionExpression(current) ||
+    ts.isSatisfiesExpression(current) ||
+    ts.isParenthesizedExpression(current)
+  ) {
+    current = current.expression;
+  }
+  return current;
+}
+
 const tryIdentifierRethrow: Strategy = (expression, checker) => {
   if (!ts.isIdentifier(expression)) return undefined;
 
   let type: ts.Type;
   try {
-    type = checker.getTypeAtLocation(expression);
+    // `getNonNullableType` strips `null`/`undefined` constituents from the
+    // identifier's own checker-known type — a no-op when the type already
+    // excludes them (the common case), and what makes `throw err!` resolve
+    // even when the `!` isn't redundant, e.g. `err`'s declared type is
+    // `NotFoundException | undefined` (#14 P6). It does NOT trust anything
+    // from a cast: by the time control reaches here, `stripExpressionWrappers`
+    // has already discarded any `as`/`satisfies`/angle-bracket wrapper, and
+    // this reads the TYPE straight from the checker at the bare identifier.
+    type = checker.getNonNullableType(checker.getTypeAtLocation(expression));
   } catch {
     return unknown('could not resolve the type of the thrown identifier');
   }
@@ -380,8 +444,9 @@ export function resolveThrownStatus(
   expression: ts.Expression,
   checker: ts.TypeChecker,
 ): ResolvedStatus {
+  const stripped = stripExpressionWrappers(expression);
   for (const strategy of STRATEGIES) {
-    const result = strategy(expression, checker);
+    const result = strategy(stripped, checker);
     if (result) return result;
   }
   return unknown(

@@ -24,9 +24,12 @@
  * Deliberately narrow resolution, silence-over-noise same as everywhere
  * else: only a `@UseGuards(SomeGuard)` argument that is a plain class
  * reference (an `Identifier`, or `new SomeGuard(...)` — a guard instantiated
- * inline, whose class is still statically known) is followed. A factory call
- * (`@UseGuards(AuthGuardFactory())`), a variable holding an unresolved
- * value, or a spread contributes nothing.
+ * inline, whose class is still statically known), or a factory/mixin CALL
+ * whose return type is itself statically a class (`AuthGuard('jwt')`, the
+ * common Passport pattern — #11, `heritage.ts`'s `resolveClassDeclaration`)
+ * is followed. A variable holding an unresolved value, a spread, or a
+ * factory call whose return type genuinely isn't pinned to a concrete class
+ * (an opaque interface, `any`, ...) contributes nothing.
  *
  * ## Handler-specific narrowing (adversarial-testing finding, post-Phase-6)
  *
@@ -91,10 +94,25 @@ function collectUseGuardsArguments(
   return args;
 }
 
-/** Resolves a `@UseGuards(...)` argument to the guard class it statically names — see module doc's resolution scope. */
+/**
+ * Resolves a `@UseGuards(...)` argument to the guard class it statically
+ * names — see module doc's resolution scope. A `CallExpression` argument is
+ * now accepted too (#11): the common Passport mixin pattern
+ * (`AuthGuard('jwt')`, used either inline — `@UseGuards(AuthGuard('jwt'))`
+ * — or via a `const AuthGuardJwt = AuthGuard('jwt');` an `Identifier`
+ * already covers) calls a factory that returns a class rather than naming
+ * one directly. `resolveClassDeclaration` (`heritage.ts`) itself handles
+ * resolving that call's return type down to a class declaration — this
+ * function just needs to stop discarding a `CallExpression` argument before
+ * it gets there. A genuine factory whose return type ISN'T statically a
+ * class (an opaque interface, `any`, ...) still contributes nothing:
+ * `resolveClassDeclaration` returns `undefined` for those, same as today.
+ */
 function resolveGuardClassExpression(arg: ts.Expression): ts.Expression | undefined {
   if (ts.isNewExpression(arg)) return arg.expression;
-  if (ts.isIdentifier(arg) || ts.isPropertyAccessExpression(arg)) return arg;
+  if (ts.isIdentifier(arg) || ts.isPropertyAccessExpression(arg) || ts.isCallExpression(arg)) {
+    return arg;
+  }
   return undefined;
 }
 
@@ -111,7 +129,11 @@ function resolveCanActivateMethod(
 ): FunctionDeclWithBody | undefined {
   let current: ts.ClassLikeDeclaration | undefined = classDecl;
   const visited = new Set<ts.ClassLikeDeclaration>();
-  for (let depth = 0; depth < MAX_GUARD_HERITAGE_DEPTH && current && !visited.has(current); depth++) {
+  for (
+    let depth = 0;
+    depth < MAX_GUARD_HERITAGE_DEPTH && current && !visited.has(current);
+    depth++
+  ) {
     visited.add(current);
     const method = current.members.find(
       (m): m is ts.MethodDeclaration =>

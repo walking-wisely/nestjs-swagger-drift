@@ -137,28 +137,36 @@ export interface SuppressionCheck {
  * see module doc) use `checkHandlerSuppression`/`checkSourceSuppression`
  * below rather than calling this directly.
  */
-function checkNode(node: ts.Node, status: number): SuppressionCheck {
-  const sourceFile = node.getSourceFile();
-  // Nodes built by `test/helpers/in-memory-program.ts` and hand-rolled unit
-  // fixtures always carry a real `ts.SourceFile`, but this guards defensively
-  // against any future caller handing in a detached node.
-  if (sourceFile === undefined) return { suppressed: false };
-
+/**
+ * The shared adjacency check underneath `checkNode` and `checkAtElseKeyword`
+ * below: does a `swagger-drift-disable-next-line` directive naming `status`
+ * (or naming no statuses at all) appear among the comments in the leading
+ * trivia starting at `searchFromPos`, ending on the line immediately before
+ * `targetLine`? Factored out so both "a node's own leading trivia, checked
+ * against that node's own start line" (`checkNode`) and "the trivia leading
+ * up to a bare `else` keyword, checked against THAT keyword's line"
+ * (`checkAtElseKeyword`, #16 P9) share one adjacency rule rather than two
+ * copies that could drift.
+ */
+function checkCommentsEndingBeforeLine(
+  sourceFile: ts.SourceFile,
+  searchFromPos: number,
+  targetLine: number,
+  status: number,
+): SuppressionCheck {
   const text = sourceFile.text;
-  const ranges = ts.getLeadingCommentRanges(text, node.getFullStart());
+  const ranges = ts.getLeadingCommentRanges(text, searchFromPos);
   if (ranges === undefined || ranges.length === 0) return { suppressed: false };
-
-  const nodeStartLine = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line;
 
   for (const range of ranges) {
     const directive = parseDirective(text.slice(range.pos, range.end));
     if (directive === undefined) continue;
 
-    // Must be the line immediately before the node's own first token —
-    // an otherwise-matching directive two lines up (a stray blank line, or
-    // attached to a different, earlier comment block) does not suppress.
+    // Must be the line immediately before the target line — an otherwise-
+    // matching directive two lines up (a stray blank line, or attached to a
+    // different, earlier comment block) does not suppress.
     const commentEndLine = sourceFile.getLineAndCharacterOfPosition(range.end).line;
-    if (commentEndLine !== nodeStartLine - 1) continue;
+    if (commentEndLine !== targetLine - 1) continue;
 
     if (directive.statuses === 'all' || directive.statuses.has(status)) {
       const directiveLine = sourceFile.getLineAndCharacterOfPosition(range.pos).line + 1;
@@ -167,6 +175,17 @@ function checkNode(node: ts.Node, status: number): SuppressionCheck {
   }
 
   return { suppressed: false };
+}
+
+function checkNode(node: ts.Node, status: number): SuppressionCheck {
+  const sourceFile = node.getSourceFile();
+  // Nodes built by `test/helpers/in-memory-program.ts` and hand-rolled unit
+  // fixtures always carry a real `ts.SourceFile`, but this guards defensively
+  // against any future caller handing in a detached node.
+  if (sourceFile === undefined) return { suppressed: false };
+
+  const nodeStartLine = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line;
+  return checkCommentsEndingBeforeLine(sourceFile, node.getFullStart(), nodeStartLine, status);
 }
 
 /**
@@ -221,21 +240,86 @@ function isStatementListParent(node: ts.Node): boolean {
  * `IfStatement` (not a statement-list container), so this keeps walking up
  * and returns the `IfStatement` — the node a directive placed above the
  * whole `if` actually attaches to.
+ *
+ * An unbraced `if`/`else`/`else if` chain (`if (a) throw X(); else if (b)
+ * throw Y(); else throw Z();`) is parsed as nested `IfStatement`s — each
+ * `else` branch (whether it's another `if` or a plain statement) lives in
+ * the outer `IfStatement`'s `elseStatement` slot, not in any `Block`'s
+ * statement array — so climbing that only stopped at `isStatementListParent`
+ * would walk straight past every inner branch up to the OUTERMOST
+ * `IfStatement`, which sits in a real statement list. Left unguarded, that
+ * means a suppression comment above the chain's first branch silently
+ * suppresses every status thrown anywhere else in the chain too (#16). Fix:
+ * a node sitting directly in an `IfStatement`'s `elseStatement` slot is
+ * ITSELF a valid boundary — the climb stops there rather than continuing
+ * into the outer `if`, regardless of whether that `elseStatement` is
+ * another `IfStatement` (`else if`) or a plain statement (a trailing bare
+ * `else`, #16 P8) — treating only the `IfStatement`-shaped case as a
+ * boundary (the original #16 fix) left the extremely common two-branch
+ * `if (...) throw X(); else throw Y();` shape still over-suppressed, since
+ * `Y`'s `ThrowStatement` isn't itself an `IfStatement`.
+ *
+ * `thenStatement` is deliberately NOT given the same treatment: unlike
+ * `else`, a `then` branch's own leading trivia can't ever be the geometric
+ * "line above" position a user writes a comment at (`if (a) throw X();` —
+ * the `throw` starts on the same line as `if`), so stopping there would
+ * make the ordinary `// comment\nif (a) throw X();` placement stop
+ * resolving (P10: it would also wrongly treat `if (a) if (b) throw X();`,
+ * an unbraced if-with-no-else nested inside another unbraced if, as if the
+ * inner `if` were its own boundary — it isn't; nothing marks that inner
+ * `if` as addressable on its own without an `else`, so the climb correctly
+ * continues to the outermost `if`, matching pre-#16 behavior for this
+ * shape).
  */
 function findEnclosingStatement(node: ts.Node): ts.Node | undefined {
   let current: ts.Node = node;
   while (current.parent !== undefined) {
-    if (ts.isStatement(current) && isStatementListParent(current.parent)) return current;
-    current = current.parent;
+    const parent = current.parent;
+    if (ts.isStatement(current)) {
+      if (isStatementListParent(parent)) return current;
+      if (ts.isIfStatement(parent) && current === parent.elseStatement) return current;
+    }
+    current = parent;
   }
   return undefined;
 }
 
+/** Finds an `IfStatement`'s own `else` keyword token, if it has one. */
+function findElseKeyword(ifStatement: ts.IfStatement): ts.Node | undefined {
+  return ifStatement.getChildren().find((c) => c.kind === ts.SyntaxKind.ElseKeyword);
+}
+
 /**
- * Checks both positions a suppression above a `StatusSource` can land: the
- * source node itself (a `ThrowStatement`), and — when the throw isn't
- * itself directly in a statement list (the unbraced `if (!x) throw ...;`
- * idiom) — its enclosing statement. See `findEnclosingStatement`.
+ * Checks for a suppression directive whose comment trivia ends immediately
+ * before `ifStatement`'s own `else` keyword — the position a comment placed
+ * directly above a natural, unindented `else`/`else if` branch actually
+ * lands at (#16 P9). Neither `elseStatement`'s own leading trivia (which
+ * starts only AFTER the `else` keyword — covers a comment squeezed between
+ * `else` and `if`) nor `ifStatement`'s leading trivia (which is before the
+ * whole `if`, not this branch) covers this position; the `else` keyword
+ * itself is a bare token with no dedicated AST node of its own to hang
+ * `checkNode` off of, so this reimplements that check directly against the
+ * keyword's own position — mirroring how `checkHandlerSuppression` already
+ * probes a method's `name` node for the analogous decorator-adjacent gap.
+ */
+function checkAtElseKeyword(ifStatement: ts.IfStatement, status: number): SuppressionCheck {
+  const elseKeyword = findElseKeyword(ifStatement);
+  if (elseKeyword === undefined) return { suppressed: false };
+  const sourceFile = ifStatement.getSourceFile();
+  const targetLine = sourceFile.getLineAndCharacterOfPosition(
+    elseKeyword.getStart(sourceFile),
+  ).line;
+  return checkCommentsEndingBeforeLine(sourceFile, elseKeyword.getFullStart(), targetLine, status);
+}
+
+/**
+ * Checks all positions a suppression above a `StatusSource` can land: the
+ * source node itself (a `ThrowStatement`), its enclosing statement when the
+ * throw isn't itself directly in a statement list (the unbraced
+ * `if (!x) throw ...;` idiom — see `findEnclosingStatement`), and, when
+ * that enclosing statement is itself an `else`/`else if` branch, the
+ * position directly above that branch's `else` keyword (#16 P9 — see
+ * `checkAtElseKeyword`).
  */
 export function checkSourceSuppression(node: ts.Node, status: number): SuppressionCheck {
   const direct = checkNode(node, status);
@@ -244,6 +328,14 @@ export function checkSourceSuppression(node: ts.Node, status: number): Suppressi
   if (enclosing !== undefined && enclosing !== node) {
     const atEnclosing = checkNode(enclosing, status);
     if (atEnclosing.suppressed) return atEnclosing;
+  }
+  if (
+    enclosing !== undefined &&
+    ts.isIfStatement(enclosing.parent) &&
+    enclosing === enclosing.parent.elseStatement
+  ) {
+    const atElse = checkAtElseKeyword(enclosing.parent, status);
+    if (atElse.suppressed) return atElse;
   }
   return { suppressed: false };
 }
