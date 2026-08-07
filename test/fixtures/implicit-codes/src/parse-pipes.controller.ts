@@ -52,9 +52,12 @@ export class ParsePipesController {
 
   // No pipe argument at all — must never trigger the implicit 400,
   // regardless of whether the check is enabled.
+  // False positive below (js/reflected-xss): test fixture for the static
+  // analyzer, not a served endpoint — a plain string returned from a JSON
+  // API handler, with no HTML templating or raw-HTML sink.
   @Get('plain/:id')
   plain(@Param('id') id: string): string {
-    return id;
+    return id; // codeql[js/reflected-xss]
   }
 
   // Adversarial review: `new ParseIntPipe({ errorHttpStatusCode })` with a
@@ -77,9 +80,11 @@ export class ParsePipesController {
 
   // Adversarial review: the array-literal pipe form (`@Query('page',
   // [ParseIntPipe])`) — must be recognized the same as a bare reference.
+  // False positive below (js/reflected-xss): same as `plain` above — test
+  // fixture, JSON API handler, no HTML sink.
   @Get('array-form')
   arrayForm(@Query('page', [ParseIntPipe]) page: number): string {
-    return String(page);
+    return String(page); // codeql[js/reflected-xss]
   }
 
   // Adversarial review: no property-name argument at all
@@ -111,9 +116,11 @@ export class ParsePipesController {
   // Adversarial review: `ParseFilePipe` is canonically attached via
   // `@UploadedFile()`, structurally unreachable under the old
   // Body/Param/Query-only gate despite being advertised as supported.
+  // False positive below (js/reflected-xss): same as `plain` above — test
+  // fixture, JSON API handler, no HTML sink.
   @Post('upload')
   upload(@UploadedFile(new ParseFilePipe()) file: unknown): string {
-    return String(file);
+    return String(file); // codeql[js/reflected-xss]
   }
 
   // Adversarial review, confirmed false positive: `ParseEnumPipe`'s
