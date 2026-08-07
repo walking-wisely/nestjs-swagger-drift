@@ -45,7 +45,12 @@
  *    type resolve to a known exception class" check. Deliberately NOT
  *    extended to custom exception classes in Phase 3 — a rethrown custom
  *    exception (`const err = new MyException(); ...; throw err;`) stays
- *    `unknown`; narrow, deliberate scope, not an oversight.
+ *    `unknown`; narrow, deliberate scope, not an oversight. A `throw`'d
+ *    identifier wrapped in a non-null assertion (`throw err!`), a type
+ *    assertion (`throw (err as NotFoundException)`), or parentheses is
+ *    unwrapped down to the bare identifier first (#14) — see
+ *    `unwrapIdentifier`'s doc comment for why the TYPE is still resolved
+ *    from the bare identifier, not trusted from the cast.
  *
  * Everything else — a class extending something that only *looks* like a
  * Nest exception (never checker-verified, so it never resolves), a
@@ -332,12 +337,41 @@ const tryCustomExceptionClass: Strategy = (expression, checker) => {
   return unknown(`"${label}"'s \`extends\` chain is too deep to resolve`);
 };
 
+/**
+ * Unwraps `throw err!`'s `NonNullExpression`, `throw (err as X)`'s
+ * `AsExpression`, and any enclosing `ParenthesizedExpression`, down to the
+ * identifier underneath (#14) — a typed rethrow doesn't stop being a plain
+ * identifier rethrow just because it's annotated with a non-null assertion
+ * or a cast. The TYPE is still resolved from the bare identifier's own
+ * checker-known (possibly control-flow-narrowed) type, not from the cast's
+ * asserted type: an `as X` is an unverified assertion, not proof, and
+ * trusting it blindly would abandon this module's "silence over noise"
+ * bias (see this module's doc comment) — a `catch (err)` variable cast with
+ * `as NotFoundException` stays statically `unknown` and correctly resolves
+ * to `unknown` here too, exactly as it would have without the cast; a
+ * `NotFoundException`-typed variable narrowed via an `instanceof` check (or
+ * simply declared/assigned as one) resolves whether or not it's wrapped in
+ * `!`.
+ */
+function unwrapIdentifier(expression: ts.Expression): ts.Expression {
+  let current = expression;
+  while (
+    ts.isNonNullExpression(current) ||
+    ts.isAsExpression(current) ||
+    ts.isParenthesizedExpression(current)
+  ) {
+    current = current.expression;
+  }
+  return current;
+}
+
 const tryIdentifierRethrow: Strategy = (expression, checker) => {
-  if (!ts.isIdentifier(expression)) return undefined;
+  const identifier = unwrapIdentifier(expression);
+  if (!ts.isIdentifier(identifier)) return undefined;
 
   let type: ts.Type;
   try {
-    type = checker.getTypeAtLocation(expression);
+    type = checker.getTypeAtLocation(identifier);
   } catch {
     return unknown('could not resolve the type of the thrown identifier');
   }
