@@ -136,6 +136,24 @@ describe('collectCallGraphStatuses — depth bounding', () => {
 
     expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
   });
+
+  // Issue #12: budget exhaustion (`maxDepth`, or `SAME_CLASS_HOP_BUDGET` once
+  // a same-class chain runs out of free hops) drops a reachable throw with
+  // NO diagnostic at all — not even an `unresolvedThrows` entry, unlike an
+  // unresolvable callee or unresolvable status. Documented, not fixed (see
+  // `expand`'s comment in `call-graph.ts` and README's "What's on by default
+  // vs. opt-in"); this fixture pins that silent-drop behavior down so it
+  // can't regress into throwing, crashing, or (just as bad) starting to emit
+  // a phantom finding for a throw that was never actually reached.
+  it('a reachable throw past the maxDepth boundary is dropped with NO unresolvedThrows entry either (#12)', () => {
+    const program = programWithMain(TWO_HOP_SOURCE);
+    const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 1 }));
+    const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
+
+    const result = collectCallGraphStatuses(handler, ctx);
+    expect(result.findings).toHaveLength(0);
+    expect(result.unresolvedThrows).toHaveLength(0);
+  });
 });
 
 describe('collectCallGraphStatuses — same-class hops are free', () => {

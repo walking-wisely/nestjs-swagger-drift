@@ -366,6 +366,20 @@ function expand(
   results: CallGraphFinding[],
   unresolvedResults: CallGraphUnresolvedThrow[],
 ): void {
+  // Budget exhaustion (`maxDepth`, or — once `SAME_CLASS_HOP_BUDGET` also
+  // runs out — a long same-class helper chain) is a SILENT drop, unlike an
+  // unresolvable callee or an unresolvable thrown status: there is no
+  // `unresolvedResults` entry for "a throw might exist past this point, but
+  // the budget ran out before reaching it," because at this point in the
+  // traversal nothing has been resolved (or failed to resolve) YET — `expand`
+  // hasn't looked at `target` at all. Surfacing that honestly would need a
+  // speculative "is there anything past here" probe, which is exactly the
+  // kind of unbounded work `maxDepth`/`SAME_CLASS_HOP_BUDGET` exist to avoid
+  // paying for. Documented (not fixed) in README's "What's on by default vs.
+  // opt-in" table and covered by a `call-graph.test.ts` fixture proving this
+  // boundary is silent, per issue #12 — increasing `maxDepth` (or auditing
+  // with `unresolvable-status`, which only ever sees throws the traversal
+  // actually reached) is the mitigation, not a new diagnostic here.
   if (remainingDepth <= 0) return;
   if (visited.has(target.symbol)) return; // cycle guard: mutually recursive services terminate here
 
