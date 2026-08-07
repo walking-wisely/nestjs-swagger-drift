@@ -464,4 +464,118 @@ describe('checkSourceSuppression (Phase 4 review, finding S5)', () => {
     expect(checkSourceSuppression(firstBranch, 409).suppressed).toBe(false);
     expect(checkSourceSuppression(secondBranch, 409).suppressed).toBe(true);
   });
+
+  it('#16 P8: a directive above the `if` of a two-branch if/else does not suppress the bare `else` throw', () => {
+    const program = createInMemoryProgram(
+      {
+        'main.ts': `
+          function f(x: unknown) {
+            // swagger-drift-disable-next-line 404
+            if (!x) throw new Error('not found');
+            else throw new Error('conflict');
+          }
+        `,
+      },
+      ['main.ts'],
+      COMPILER_OPTIONS,
+    );
+    const sourceFile = program.getSourceFile('main.ts');
+    if (!sourceFile) throw new Error('missing main.ts');
+    const thenBranch = nthThrow(sourceFile, 0);
+    const elseBranch = nthThrow(sourceFile, 1);
+    expect(checkSourceSuppression(thenBranch, 404).suppressed).toBe(true);
+    // Pre-fix, this was `true` too: the walk climbed straight past the bare
+    // `else` (not itself an `IfStatement`, so the original #16 fix's
+    // `ts.isIfStatement(current)` guard never fired) up to the outermost
+    // `if`, where the directive's leading trivia lives.
+    expect(checkSourceSuppression(elseBranch, 404).suppressed).toBe(false);
+  });
+
+  it('#16 P8: a directive above the trailing bare `else` of an if/else-if/else chain suppresses only that branch', () => {
+    const program = createInMemoryProgram(
+      {
+        'main.ts': `
+          function f(x: unknown, y: unknown) {
+            if (!x) throw new Error('a');
+            else if (!y) throw new Error('b');
+            // swagger-drift-disable-next-line 409
+            else throw new Error('c');
+          }
+        `,
+      },
+      ['main.ts'],
+      COMPILER_OPTIONS,
+    );
+    const sourceFile = program.getSourceFile('main.ts');
+    if (!sourceFile) throw new Error('missing main.ts');
+    const firstBranch = nthThrow(sourceFile, 0);
+    const secondBranch = nthThrow(sourceFile, 1);
+    const thirdBranch = nthThrow(sourceFile, 2);
+    expect(checkSourceSuppression(firstBranch, 409).suppressed).toBe(false);
+    expect(checkSourceSuppression(secondBranch, 409).suppressed).toBe(false);
+    expect(checkSourceSuppression(thirdBranch, 409).suppressed).toBe(true);
+  });
+
+  it('#16 P9: a directive naturally placed directly above (before `else`) an `else if` branch suppresses only that branch', () => {
+    const program = createInMemoryProgram(
+      {
+        'main.ts': `
+          function f(x: unknown, y: unknown) {
+            if (!x) throw new Error('a');
+            // swagger-drift-disable-next-line 409
+            else if (!y) throw new Error('b');
+          }
+        `,
+      },
+      ['main.ts'],
+      COMPILER_OPTIONS,
+    );
+    const sourceFile = program.getSourceFile('main.ts');
+    if (!sourceFile) throw new Error('missing main.ts');
+    const firstBranch = nthThrow(sourceFile, 0);
+    const secondBranch = nthThrow(sourceFile, 1);
+    expect(checkSourceSuppression(firstBranch, 409).suppressed).toBe(false);
+    expect(checkSourceSuppression(secondBranch, 409).suppressed).toBe(true);
+  });
+
+  it('#16 P9: a directive naturally placed directly above a bare `else` throw (before `else`) suppresses it', () => {
+    const program = createInMemoryProgram(
+      {
+        'main.ts': `
+          function f(x: unknown) {
+            if (!x) throw new Error('a');
+            // swagger-drift-disable-next-line 409
+            else throw new Error('b');
+          }
+        `,
+      },
+      ['main.ts'],
+      COMPILER_OPTIONS,
+    );
+    const sourceFile = program.getSourceFile('main.ts');
+    if (!sourceFile) throw new Error('missing main.ts');
+    const thenBranch = nthThrow(sourceFile, 0);
+    const elseBranch = nthThrow(sourceFile, 1);
+    expect(checkSourceSuppression(thenBranch, 409).suppressed).toBe(false);
+    expect(checkSourceSuppression(elseBranch, 409).suppressed).toBe(true);
+  });
+
+  it('#16 P10: an unbraced `if` nested directly inside another unbraced `if` (no `else`) is unchanged — suppressible only at the outermost `if`', () => {
+    const program = createInMemoryProgram(
+      {
+        'main.ts': `
+          function f(a: unknown, b: unknown) {
+            // swagger-drift-disable-next-line 404
+            if (a) if (b) throw new Error('not found');
+          }
+        `,
+      },
+      ['main.ts'],
+      COMPILER_OPTIONS,
+    );
+    const sourceFile = program.getSourceFile('main.ts');
+    if (!sourceFile) throw new Error('missing main.ts');
+    const throwStatement = nthThrow(sourceFile, 0);
+    expect(checkSourceSuppression(throwStatement, 404).suppressed).toBe(true);
+  });
 });
