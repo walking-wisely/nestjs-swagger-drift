@@ -41,6 +41,11 @@
  * - A `new X(...)` expression is a `NewExpression`, not a `CallExpression`,
  *   so constructors are never traversed by this module at all — out of
  *   scope, not merely excluded by the ambiguity check.
+ * - A bracket/computed-property call site with a string-literal key
+ *   (`this.svc['find']()`) resolves the same as `this.svc.find()` — see
+ *   `resolveElementAccessSymbol` below. A non-literal key
+ *   (`this.svc[methodName]()`) has no statically-known name and resolves to
+ *   nothing, same as any other genuinely dynamic dispatch.
  * - A bare method reference passed as a callback (`items.map(this.validate)`)
  *   is a `PropertyAccessExpression`, not itself a `CallExpression`, so it's
  *   never collected as a call site in the first place. The callback body
@@ -233,6 +238,37 @@ function collectProducibleCallSites(fn: ts.FunctionLikeDeclarationBase): ts.Call
 }
 
 /**
+ * Bracket/computed-property call sites (`this.svc['find']()`) with a
+ * string-literal key: `checker.getSymbolAtLocation` reliably resolves a
+ * `PropertyAccessExpression` callee (`this.svc.find()`) but, empirically,
+ * does NOT resolve one directly on the `ElementAccessExpression` node itself
+ * even for a literal key — falls back to looking the literal up as a
+ * property name on the object expression's own type instead
+ * (`objType.getProperty(name)`), which resolves the same way a dotted
+ * access would. A non-string-literal key (`this.svc[methodName]()`) stays
+ * unresolved — no reliable static name to look up.
+ */
+function resolveElementAccessSymbol(
+  access: ts.ElementAccessExpression,
+  checker: ts.TypeChecker,
+): ts.Symbol | undefined {
+  const key = access.argumentExpression;
+  if (!ts.isStringLiteralLike(key)) return undefined;
+  try {
+    const direct = checker.getSymbolAtLocation(access);
+    if (direct) return direct;
+  } catch {
+    // fall through to the property-lookup fallback below
+  }
+  try {
+    const objectType = checker.getTypeAtLocation(access.expression);
+    return objectType.getProperty(key.text) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Resolves `call`'s callee to a single, unambiguous, in-program declaration
  * with a body — see module doc's "callee resolution: unambiguous or
  * nothing" for the full reasoning behind each `undefined` return.
@@ -244,7 +280,9 @@ function resolveCallTarget(
 ): { decl: FunctionDeclWithBody; symbol: ts.Symbol } | undefined {
   let calleeSymbol: ts.Symbol | undefined;
   try {
-    calleeSymbol = checker.getSymbolAtLocation(call.expression);
+    calleeSymbol = ts.isElementAccessExpression(call.expression)
+      ? resolveElementAccessSymbol(call.expression, checker)
+      : checker.getSymbolAtLocation(call.expression);
   } catch {
     calleeSymbol = undefined;
   }

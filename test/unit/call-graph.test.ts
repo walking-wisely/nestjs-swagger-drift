@@ -480,6 +480,85 @@ describe('collectCallGraphStatuses — ambiguity guards', () => {
   });
 });
 
+describe('collectCallGraphStatuses — bracket/computed-property call sites (#10)', () => {
+  it("resolves a string-literal element-access call site (`this.svc['find']()`)", () => {
+    const program = programWithMain(`
+      import { NotFoundException } from '@nestjs/common';
+
+      export class WidgetsService {
+        find(): string {
+          throw new NotFoundException('widget');
+        }
+      }
+      export class BracketController {
+        constructor(private readonly svc: WidgetsService) {}
+        get(): string {
+          return this.svc['find']();
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions());
+    const handler = findMethod(program, 'main.ts', 'BracketController', 'get');
+
+    const { findings } = collectCallGraphStatuses(handler, ctx);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.resolved.status).toBe(404);
+  });
+
+  it('reaches a two-hop status through a chain of bracket-access call sites', () => {
+    const program = programWithMain(`
+      import { ConflictException } from '@nestjs/common';
+
+      export class OrgRepository {
+        save(name: string): string {
+          if (!name) throw new ConflictException('org exists');
+          return 'saved';
+        }
+      }
+      export class OrgService {
+        constructor(private readonly repo: OrgRepository) {}
+        create(name: string): string {
+          return this.repo['save'](name);
+        }
+      }
+      export class OrgController {
+        constructor(private readonly orgs: OrgService) {}
+        create(name: string): string {
+          return this.orgs['create'](name);
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 2 }));
+    const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
+
+    const { findings } = collectCallGraphStatuses(handler, ctx);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.resolved.status).toBe(409);
+  });
+
+  it('a non-literal computed key (`this.svc[methodName]()`) still contributes nothing (sanity control)', () => {
+    const program = programWithMain(`
+      import { NotFoundException } from '@nestjs/common';
+
+      export class WidgetsService {
+        find(): string {
+          throw new NotFoundException('widget');
+        }
+      }
+      export class DynamicKeyController {
+        constructor(private readonly svc: WidgetsService) {}
+        get(methodName: 'find'): string {
+          return this.svc[methodName]();
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions());
+    const handler = findMethod(program, 'main.ts', 'DynamicKeyController', 'get');
+
+    expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
+  });
+});
+
 describe('collectCallGraphStatuses — try/catch suppression at the call site', () => {
   it('a call wrapped in a swallowing try/catch contributes nothing', () => {
     const program = programWithMain(`
