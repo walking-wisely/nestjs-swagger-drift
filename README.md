@@ -44,7 +44,7 @@ problem, not a static one.
   controllers that share a service doesn't re-walk that service 500 times.
 - **Custom exception classes** — `class UserNotFound extends NotFoundException`
   inherits `404`; `class Conflict extends HttpException { constructor() {
-  super(msg, 409) } }` resolves the literal (or `HttpStatus.CONFLICT`) it
+super(msg, 409) } }` resolves the literal (or `HttpStatus.CONFLICT`) it
   passes to `super`.
 - **The full `@Api*Response` decorator family** — the generic
   `@ApiResponse({ status })` plus every shorthand (`@ApiNotFoundResponse`,
@@ -70,7 +70,7 @@ npm install --save-dev nestjs-swagger-drift
 ```
 
 Peer dependency: `typescript >=5.0.0 <7.0.0` (already a dependency of any
-NestJS project). This is deliberate: the analysis engine uses *your*
+NestJS project). This is deliberate: the analysis engine uses _your_
 project's TypeScript, not a bundled copy, so results match your actual
 `tsconfig.json`/compiler target.
 
@@ -90,7 +90,7 @@ npx nestjs-swagger-drift --project ./tsconfig.json
 Exits `0` if nothing was found, `3` if it found drift `--fail-on` cares
 about, `1` on a usage error (bad flag, missing/unparsable tsconfig or config
 file), `2` if it couldn't determine anything at all (zero handlers found
-*and* `@nestjs/common` itself couldn't be resolved — "I don't know," not
+_and_ `@nestjs/common` itself couldn't be resolved — "I don't know," not
 "there's nothing here"), `4` if the tool itself crashed (a bug in
 `nestjs-swagger-drift`, not a bad invocation or real drift — treat this one
 as "file an issue," not "fix my code or my flags").
@@ -207,13 +207,13 @@ one `.gitignore`-flavored addition layered on top: a pattern with no `/` in
 it also matches that path segment at any depth, not just the full relative
 path (see `src/cli/ignore.ts`).
 
-| Pattern | Matches |
-|---|---|
-| `*` | any run of characters within one path segment (never crosses `/`) |
-| `**` | zero or more whole path segments, only when it stands alone as a full segment (e.g. `src/**/*.spec.ts`, or `test/**` matching everything under `test/`) |
-| `?` | exactly one character, not `/` |
-| `node_modules` (no `/` in the pattern) | that path segment anywhere in the path, `.gitignore`-style — equivalent to `**/node_modules/**` |
-| `src/**.ts` | **not** the same as `src/**/*.ts` — a `**` that isn't segment-standalone degrades to a plain `*`, so this only matches one extra path segment past `src/`, e.g. `src/foo.ts`, not `src/a/b.ts` |
+| Pattern                                | Matches                                                                                                                                                                                        |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*`                                    | any run of characters within one path segment (never crosses `/`)                                                                                                                              |
+| `**`                                   | zero or more whole path segments, only when it stands alone as a full segment (e.g. `src/**/*.spec.ts`, or `test/**` matching everything under `test/`)                                        |
+| `?`                                    | exactly one character, not `/`                                                                                                                                                                 |
+| `node_modules` (no `/` in the pattern) | that path segment anywhere in the path, `.gitignore`-style — equivalent to `**/node_modules/**`                                                                                                |
+| `src/**.ts`                            | **not** the same as `src/**/*.ts` — a `**` that isn't segment-standalone degrades to a plain `*`, so this only matches one extra path segment past `src/`, e.g. `src/foo.ts`, not `src/a/b.ts` |
 
 Repeatable: `--ignore '**/*.spec.ts' --ignore dist`.
 
@@ -259,22 +259,20 @@ type-aware `typescript-eslint` linting set up, here's a complete, working
 import tseslint from 'typescript-eslint';
 import nestjsSwaggerDrift from 'nestjs-swagger-drift/eslint';
 
-export default tseslint.config(
-  {
-    files: ['**/*.ts'],
-    extends: [...tseslint.configs.recommendedTypeChecked],
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-    plugins: { 'nestjs-swagger-drift': nestjsSwaggerDrift },
-    rules: {
-      'nestjs-swagger-drift/documented-status-codes': 'error',
+export default tseslint.config({
+  files: ['**/*.ts'],
+  extends: [...tseslint.configs.recommendedTypeChecked],
+  languageOptions: {
+    parserOptions: {
+      projectService: true,
+      tsconfigRootDir: import.meta.dirname,
     },
   },
-);
+  plugins: { 'nestjs-swagger-drift': nestjsSwaggerDrift },
+  rules: {
+    'nestjs-swagger-drift/documented-status-codes': 'error',
+  },
+});
 ```
 
 (`tseslint.configs.recommendedTypeChecked` is what actually wires up the
@@ -359,18 +357,38 @@ non-goal of this rule for now — see PLAN §5 Phase 7.
 
 ## What's on by default vs. opt-in
 
-| Check | Default | Why |
-|---|---|---|
-| Direct throws, call-graph throws, custom exception classes | **on** | Deterministic — a resolved status is never a guess. |
-| 2xx success response (`checkSuccessResponse`) | **on** | Every handler that returns normally produces *some* status; documenting none at all is the single most common miss. `@Redirect()` and `@Res()`/`@Response()` handlers are excluded (see below) rather than asserted a wrong default. |
-| `ValidationPipe` implicit 400 (`checkValidationPipe`) | off | A `class-validator`-decorated DTO parameter doesn't prove `ValidationPipe` is actually registered anywhere in the app — this tool can't see that. |
-| `@UseGuards(...)` implicit 401/403 (`checkGuards`) | off | A guard is provably *attached*, not provably *throwing* the way this analysis assumes (it could reject without throwing). |
-| `documented-but-unreachable` | off | Catches copy-pasted decorator blocks, but needs the full producible set (including the two checks above) to avoid flagging things this run simply didn't verify. |
-| `unresolvable-status` | off | Surfaces a throw this tool couldn't pin to a status, instead of silently dropping it — useful for auditing coverage, noisy as a default gate. |
+| Check                                                      | Default | Why                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Direct throws, call-graph throws, custom exception classes | **on**  | Deterministic — a resolved status is never a guess.                                                                                                                                                                                  |
+| 2xx success response (`checkSuccessResponse`)              | **on**  | Every handler that returns normally produces _some_ status; documenting none at all is the single most common miss. `@Redirect()` and `@Res()`/`@Response()` handlers are excluded (see below) rather than asserted a wrong default. |
+| `ValidationPipe` implicit 400 (`checkValidationPipe`)      | off     | A `class-validator`-decorated DTO parameter doesn't prove `ValidationPipe` is actually registered anywhere in the app — this tool can't see that.                                                                                    |
+| `@UseGuards(...)` implicit 401/403 (`checkGuards`)         | off     | A guard is provably _attached_, not provably _throwing_ the way this analysis assumes (it could reject without throwing).                                                                                                            |
+| `documented-but-unreachable`                               | off     | Catches copy-pasted decorator blocks, but needs the full producible set (including the two checks above) to avoid flagging things this run simply didn't verify.                                                                     |
+| `unresolvable-status`                                      | off     | Surfaces a throw this tool couldn't pin to a status, instead of silently dropping it — useful for auditing coverage, noisy as a default gate.                                                                                        |
+
+**Known silent boundaries (not gated by any rule):** two call-graph shapes
+are dropped with **no** finding and **no** `unresolvable-status` entry, and
+turning `unresolvable-status` on surfaces neither of them, because both
+happen _before_ a throw is ever reached — `unresolvable-status` only ever
+surfaces a throw the traversal actually got to and then failed to resolve a
+status for:
+
+- **Budget exhaustion.** Traversal stops once `maxDepth` (default `2`) or the
+  internal `SAME_CLASS_HOP_BUDGET` (a same-class-hop circuit breaker, see
+  `call-graph.ts`) is exhausted, and a throw that lives past that boundary is
+  simply never visited. Raising `--max-depth` (CLI) / `maxDepth` (ESLint
+  rule) is the mitigation; there's currently no diagnostic that flags "some
+  call chain went deeper than the configured budget."
+- **Unresolvable callee.** An interface- or abstract-typed dependency
+  (`constructor(private readonly repo: IUserRepository)`) resolves against
+  its static type, which has no method body to traverse into — arguably the
+  more common of the two in idiomatic NestJS DI, since constructor injection
+  by interface/abstract type is a standard pattern. Same result: no finding,
+  no `unresolvedThrows` entry, nothing to audit against.
 
 The unifying rule (PLAN's "silence over noise"): nothing that can produce a
 false positive under default settings is on by default. `checkSuccessResponse`
-is the closest thing to an exception — NestJS always returns *some* status on
+is the closest thing to an exception — NestJS always returns _some_ status on
 a normal return, so a plain handler's implicit success code is never a guess.
 It isn't a blanket "no false-positive risk" claim, though: `@Redirect()`
 (NestJS defaults a redirect to `302`, not `200`/`201`) and `@Res()`/

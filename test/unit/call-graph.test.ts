@@ -110,13 +110,19 @@ const TWO_HOP_SOURCE = `
 `;
 
 describe('collectCallGraphStatuses — depth bounding', () => {
-  it('maxDepth: 1 finds the one-hop status but not the two-hop status', () => {
+  it('maxDepth: 1 finds the one-hop status but not the two-hop status, and drops the two-hop throw silently (#12: no unresolvedThrows entry either)', () => {
     const program = programWithMain(TWO_HOP_SOURCE);
     const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 1 }));
     const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
 
-    const { findings } = collectCallGraphStatuses(handler, ctx);
-    expect(findings).toHaveLength(0); // OrgService.create itself throws nothing directly
+    const result = collectCallGraphStatuses(handler, ctx);
+    expect(result.findings).toHaveLength(0); // OrgService.create itself throws nothing directly
+    // Issue #12: budget exhaustion is a genuinely silent drop, not merely an
+    // "unresolved status" — pin that down here too so it can't regress into
+    // starting to emit a phantom `unresolvedThrows` entry for a throw the
+    // traversal never actually reached (see `expand`'s comment in
+    // `call-graph.ts` and README's "What's on by default vs. opt-in").
+    expect(result.unresolvedThrows).toHaveLength(0);
   });
 
   it('maxDepth: 2 (the default) reaches the two-hop status', () => {
@@ -135,6 +141,61 @@ describe('collectCallGraphStatuses — depth bounding', () => {
     const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
 
     expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
+  });
+
+  // Issue #12: the OTHER budget, `SAME_CLASS_HOP_BUDGET` (6 free same-class
+  // hops before a same-class hop starts costing depth again — see
+  // `call-graph.ts`), has its own exhaustion boundary, distinct from the
+  // plain `maxDepth` case above. `DeepService` chains nine same-class
+  // methods (`h0` -> `h1` -> ... -> `h8`, `h8` throws): the handler's call
+  // into `h0` is the one genuine cross-class hop (costs 1 of `maxDepth`),
+  // then `h0` -> `h1` ... `h5` -> `h6` are six free same-class hops (the
+  // whole `SAME_CLASS_HOP_BUDGET`), leaving `h6` -> `h7` and `h7` -> `h8` to
+  // fall back to costing depth exactly like a cross-class hop would. At the
+  // shipped default `maxDepth: 2`, that's one hop short of `h8`'s throw —
+  // pins the exact boundary both README and `expand`'s comment describe,
+  // not just the simpler pure-`maxDepth` case.
+  const DEEP_SAME_CLASS_SOURCE = `
+    import { ConflictException } from '@nestjs/common';
+
+    export class DeepService {
+      private h8(): string { throw new ConflictException('deep'); }
+      private h7(): string { return this.h8(); }
+      private h6(): string { return this.h7(); }
+      private h5(): string { return this.h6(); }
+      private h4(): string { return this.h5(); }
+      private h3(): string { return this.h4(); }
+      private h2(): string { return this.h3(); }
+      private h1(): string { return this.h2(); }
+      h0(): string { return this.h1(); }
+    }
+
+    export class DeepController {
+      constructor(private readonly s: DeepService) {}
+      get(): string {
+        return this.s.h0();
+      }
+    }
+  `;
+
+  it('SAME_CLASS_HOP_BUDGET exhaustion silently drops a throw one hop past the shipped default maxDepth (#12)', () => {
+    const program = programWithMain(DEEP_SAME_CLASS_SOURCE);
+    const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 2 }));
+    const handler = findMethod(program, 'main.ts', 'DeepController', 'get');
+
+    const result = collectCallGraphStatuses(handler, ctx);
+    expect(result.findings).toHaveLength(0);
+    expect(result.unresolvedThrows).toHaveLength(0);
+  });
+
+  it('one extra maxDepth hop is enough to cross the SAME_CLASS_HOP_BUDGET boundary and reach the throw', () => {
+    const program = programWithMain(DEEP_SAME_CLASS_SOURCE);
+    const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 3 }));
+    const handler = findMethod(program, 'main.ts', 'DeepController', 'get');
+
+    const { findings } = collectCallGraphStatuses(handler, ctx);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.resolved.status).toBe(409);
   });
 });
 
@@ -477,6 +538,159 @@ describe('collectCallGraphStatuses — ambiguity guards', () => {
     const handler = findMethod(program, 'main.ts', 'InterfaceController', 'get');
 
     expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
+  });
+});
+
+describe('collectCallGraphStatuses — bracket/computed-property call sites (#10)', () => {
+  it("resolves a string-literal element-access call site (`this.svc['find']()`)", () => {
+    const program = programWithMain(`
+      import { NotFoundException } from '@nestjs/common';
+
+      export class WidgetsService {
+        find(): string {
+          throw new NotFoundException('widget');
+        }
+      }
+      export class BracketController {
+        constructor(private readonly svc: WidgetsService) {}
+        get(): string {
+          return this.svc['find']();
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions());
+    const handler = findMethod(program, 'main.ts', 'BracketController', 'get');
+
+    const { findings } = collectCallGraphStatuses(handler, ctx);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.resolved.status).toBe(404);
+  });
+
+  it('reaches a two-hop status through a chain of bracket-access call sites', () => {
+    const program = programWithMain(`
+      import { ConflictException } from '@nestjs/common';
+
+      export class OrgRepository {
+        save(name: string): string {
+          if (!name) throw new ConflictException('org exists');
+          return 'saved';
+        }
+      }
+      export class OrgService {
+        constructor(private readonly repo: OrgRepository) {}
+        create(name: string): string {
+          return this.repo['save'](name);
+        }
+      }
+      export class OrgController {
+        constructor(private readonly orgs: OrgService) {}
+        create(name: string): string {
+          return this.orgs['create'](name);
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions({ maxDepth: 2 }));
+    const handler = findMethod(program, 'main.ts', 'OrgController', 'create');
+
+    const { findings } = collectCallGraphStatuses(handler, ctx);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.resolved.status).toBe(409);
+  });
+
+  it('a genuinely dynamic computed key (`this.svc[methodName]()`, `methodName: string`) still contributes nothing (sanity control)', () => {
+    const program = programWithMain(`
+      import { NotFoundException } from '@nestjs/common';
+
+      export class WidgetsService {
+        find(): string {
+          throw new NotFoundException('widget');
+        }
+      }
+      export class DynamicKeyController {
+        constructor(private readonly svc: WidgetsService) {}
+        get(methodName: string): string {
+          return this.svc[methodName]();
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions());
+    const handler = findMethod(program, 'main.ts', 'DynamicKeyController', 'get');
+
+    expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
+  });
+
+  it('a key held in a const local (not a string literal at the call site) also contributes nothing — documents a known under-report, not a bug', () => {
+    const program = programWithMain(`
+      import { NotFoundException } from '@nestjs/common';
+
+      export class WidgetsService {
+        find(): string {
+          throw new NotFoundException('widget');
+        }
+      }
+      export class ConstKeyController {
+        constructor(private readonly svc: WidgetsService) {}
+        get(): string {
+          const KEY = 'find';
+          return this.svc[KEY]();
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions());
+    const handler = findMethod(program, 'main.ts', 'ConstKeyController', 'get');
+
+    expect(collectCallGraphStatuses(handler, ctx).findings).toHaveLength(0);
+  });
+
+  it("an optional-chained bracket call (`this.svc?.['find']()`) resolves", () => {
+    const program = programWithMain(`
+      import { NotFoundException } from '@nestjs/common';
+
+      export class WidgetsService {
+        find(): string {
+          throw new NotFoundException('widget');
+        }
+      }
+      export class OptionalChainController {
+        constructor(private readonly svc?: WidgetsService) {}
+        get(): string | undefined {
+          return this.svc?.['find']();
+        }
+      }
+    `);
+    const ctx = createAnalysisContext(program, defaultOptions());
+    const handler = findMethod(program, 'main.ts', 'OptionalChainController', 'get');
+
+    const { findings } = collectCallGraphStatuses(handler, ctx);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.resolved.status).toBe(404);
+  });
+
+  it('a template-literal key (no substitutions) resolves the same as a string literal', () => {
+    const backtick = String.fromCharCode(96);
+    const program = programWithMain(
+      [
+        "import { NotFoundException } from '@nestjs/common';",
+        '',
+        'export class WidgetsService {',
+        '  find(): string {',
+        "    throw new NotFoundException('widget');",
+        '  }',
+        '}',
+        'export class TemplateKeyController {',
+        '  constructor(private readonly svc: WidgetsService) {}',
+        '  get(): string {',
+        `    return this.svc[${backtick}find${backtick}]();`,
+        '  }',
+        '}',
+      ].join('\n'),
+    );
+    const ctx = createAnalysisContext(program, defaultOptions());
+    const handler = findMethod(program, 'main.ts', 'TemplateKeyController', 'get');
+
+    const { findings } = collectCallGraphStatuses(handler, ctx);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.resolved.status).toBe(404);
   });
 });
 

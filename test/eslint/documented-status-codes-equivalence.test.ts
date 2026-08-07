@@ -123,6 +123,38 @@ function analyzeViaEslint(fixtureDir: string, options: Partial<AnalysisOptions>)
               tsconfigRootDir: fixtureDir,
               ecmaVersion: 'latest',
               sourceType: 'module',
+              // Root cause of a real (CI-only, `CI=true`-triggered) CLI/ESLint
+              // parity gap: `@typescript-eslint/typescript-estree`'s
+              // `inferSingleRun` (`parseSettings/inferSingleRun.js`) treats
+              // `process.env.CI === 'true'` as "this is a one-shot CLI lint",
+              // and in that mode it tracks how many times `parseAndGenerateServices`
+              // has been called for each exact file PATH across the whole
+              // process (`parser.js`'s module-level `parseAndGenerateServicesCalls`
+              // counter) — a heuristic meant to detect ESLint's own internal
+              // `--fix` multi-pass loop re-parsing a fixed-up file. The SECOND
+              // time it sees the same path, it silently swaps the real,
+              // full-cross-file-type-info `ts.Program` for `createIsolatedProgram`'s
+              // "quickest possible" per-file program — which is why, under
+              // `CI=true`, only the SECOND `it` block sharing a fixture
+              // (`ALL_RULES_OPTIONS`, since `DEFAULT_OPTIONS` always runs
+              // first for the same fixture dir) lost cross-file resolution
+              // (custom exception classes, typed rethrows, etc.) that
+              // `analyzeHandler`'s own single, freshly-built `ts.Program`
+              // (`analyzeViaCore`) never loses.
+              //
+              // This is a property of THIS TEST's driving methodology, not of
+              // real ESLint usage: a real `eslint` CLI invocation parses each
+              // file exactly once per process, so it never trips the "called
+              // more than once" branch in the first place — only this file's
+              // deliberate re-`Linter.verify()`-ing of the SAME fixture paths
+              // across multiple `describe.each` option profiles does.
+              // `disallowAutomaticSingleRunInference` (the parser's own
+              // documented escape hatch — `parser-options.d.ts`) opts back
+              // into always building the full project program, matching what
+              // both drivers get in every other environment (this bug is
+              // invisible without `CI=true`, which is exactly why it only
+              // showed up in GitHub Actions, never locally).
+              disallowAutomaticSingleRunInference: true,
             },
           },
           rules: { 'nestjs-swagger-drift/documented-status-codes': ['error', options] },

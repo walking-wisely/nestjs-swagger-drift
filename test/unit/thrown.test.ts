@@ -152,6 +152,145 @@ describe('collectDirectThrows', () => {
     expect(collectDirectThrows(method)).toHaveLength(1);
   });
 
+  it('collects a `return Promise.reject(...)`', () => {
+    const method = findMethod(`class C { m() { return Promise.reject(new Error('x')); } }`, 'm');
+    const throws = collectDirectThrows(method);
+    expect(throws).toHaveLength(1);
+    expect(throws[0]?.expression.getText()).toContain("new Error('x')");
+  });
+
+  it('collects a `return await Promise.reject(...)`', () => {
+    const method = findMethod(
+      `class C { async m() { return await Promise.reject(new Error('x')); } }`,
+      'm',
+    );
+    const throws = collectDirectThrows(method);
+    expect(throws).toHaveLength(1);
+    expect(throws[0]?.expression.getText()).toContain("new Error('x')");
+  });
+
+  it('collects a conditional `return Promise.reject(...)`', () => {
+    const method = findMethod(
+      `class C { m(x: boolean) { if (x) { return Promise.reject(new Error('x')); } return Promise.resolve(1); } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(1);
+  });
+
+  it('does NOT collect `return Promise.reject(...)` inside a try block with a catch (swallowed)', () => {
+    const method = findMethod(
+      `class C { async m() { try { return Promise.reject(new Error('x')); } catch { return null; } } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
+  it('does NOT collect a plain `return Promise.resolve(...)`', () => {
+    const method = findMethod(`class C { m() { return Promise.resolve(1); } }`, 'm');
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
+  it('does NOT collect `Promise.reject(...)` called with the wrong arity', () => {
+    const method = findMethod(
+      `class C { m() { return Promise.reject(new Error('x'), 'extra'); } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
+  it('does NOT collect a bare `return;` with no expression', () => {
+    const method = findMethod(`class C { m() { return; } }`, 'm');
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
+  it('does NOT collect `return Promise.reject(...)` inside a nested callback', () => {
+    const method = findMethod(
+      `class C { m() { [1,2].forEach(() => { return Promise.reject(new Error('x')); }); } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
+  // Reviewer P-1: the issue asked for "a ReturnStatement (or awaited
+  // expression)" — a bare, statement-level `await Promise.reject(x);` (no
+  // `return`) genuinely propagates the rejection out of the enclosing
+  // `async` method and must be collected too.
+  it('collects a bare `await Promise.reject(...)` statement (no `return`)', () => {
+    const method = findMethod(
+      `class C { async m() { await Promise.reject(new Error('x')); } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(1);
+  });
+
+  // An UNawaited `Promise.reject(...)` statement is a floating rejection —
+  // it does not stop control flow and does not propagate synchronously to
+  // this method's own response, so it must stay uncollected.
+  it('does NOT collect an un-awaited `Promise.reject(...)` statement', () => {
+    const method = findMethod(`class C { m() { Promise.reject(new Error('x')); } }`, 'm');
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
+  it('does NOT collect an un-awaited `Promise.reject(...)` statement even with a `.catch()` tacked on', () => {
+    const method = findMethod(
+      `class C { m() { Promise.reject(new Error('x')).catch(() => {}); } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(0);
+  });
+
+  // Reviewer P-2: `as`/paren/non-null wrappers around `Promise.reject(...)`
+  // are a standard spelling for a helper typed to return a concrete `T`,
+  // not exotic — must unwrap through them.
+  it('collects `return Promise.reject(...) as never`', () => {
+    const method = findMethod(
+      `class C { m() { return Promise.reject(new Error('x')) as never; } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(1);
+  });
+
+  it('collects `return (Promise.reject(...))` (parenthesized)', () => {
+    const method = findMethod(`class C { m() { return (Promise.reject(new Error('x'))); } }`, 'm');
+    expect(collectDirectThrows(method)).toHaveLength(1);
+  });
+
+  it('collects `return await (Promise.reject(...) as never)`', () => {
+    const method = findMethod(
+      `class C { async m() { return await (Promise.reject(new Error('x')) as never); } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(1);
+  });
+
+  it('collects `return (await Promise.reject(...)) as never`', () => {
+    const method = findMethod(
+      `class C { async m() { return (await Promise.reject(new Error('x'))) as never; } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(1);
+  });
+
+  it('collects an `await`ed, parenthesized `Promise.reject(...)` statement', () => {
+    const method = findMethod(
+      `class C { async m() { await (Promise.reject(new Error('x')) as never); } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(1);
+  });
+
+  // Reviewer P-3: the documented shadowing false-positive is real and
+  // reachable, not hypothetical — pin it down as a known, accepted
+  // trade-off rather than leave it unverified.
+  it('KNOWN FALSE POSITIVE (documented, accepted): a local binding named `Promise` that shadows the global is still matched', () => {
+    const method = findMethod(
+      `const Promise = { reject: (x: unknown) => x };
+       class C { m() { return Promise.reject(new Error('x')); } }`,
+      'm',
+    );
+    expect(collectDirectThrows(method)).toHaveLength(1);
+  });
+
   it('returns [] for a bodyless method (overload signature)', () => {
     const program = createInMemoryProgram(
       { 'main.ts': `class C { m(): void; m(x?: number): void {} }` },

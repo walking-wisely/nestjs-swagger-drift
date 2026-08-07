@@ -48,6 +48,15 @@
     "rule": "undocumented-status",
     "status": 404,
     "httpMethod": "GET",
+    "path": "/promise-reject/:id",
+    "className": "PromiseRejectController",
+    "methodName": "findOne",
+    "sources": [{ "kind": "throw", "exception": "NotFoundException" }]
+  },
+  {
+    "rule": "undocumented-status",
+    "status": 404,
+    "httpMethod": "GET",
     "path": "/rethrow/:id",
     "className": "RethrowController",
     "methodName": "findOne",
