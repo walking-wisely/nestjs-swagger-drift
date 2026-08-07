@@ -201,6 +201,29 @@ describe('checkGuards (opt-in)', () => {
     expect(findings.some((f) => f.handler.className === 'GuardsController')).toBe(false);
   });
 
+  // #11: the common `@nestjs/passport` mixin pattern — `AuthGuard('jwt')`
+  // returns a class rather than naming one, whether the call result is
+  // stashed in a `const` first or inlined directly in `@UseGuards(...)`.
+  it('resolves a guard named by a const holding a mixin factory call result', () => {
+    const findings = analyze(baseOptions({ checkGuards: true }));
+    const mixinViaConst = findingsFor(findings, 'GuardsController', 'mixinViaConst');
+    expect(mixinViaConst).toHaveLength(1);
+    expect(mixinViaConst[0]).toMatchObject({ status: 401 });
+    if (mixinViaConst[0]?.rule === 'undocumented-status') {
+      expect(mixinViaConst[0].sources[0]).toMatchObject({ detail: 'AuthGuardBase.canActivate' });
+    }
+  });
+
+  it('resolves a guard named by an inline mixin factory call', () => {
+    const findings = analyze(baseOptions({ checkGuards: true }));
+    const mixinInline = findingsFor(findings, 'GuardsController', 'mixinInline');
+    expect(mixinInline).toHaveLength(1);
+    expect(mixinInline[0]).toMatchObject({ status: 401 });
+    if (mixinInline[0]?.rule === 'undocumented-status') {
+      expect(mixinInline[0].sources[0]).toMatchObject({ detail: 'AuthGuardBase.canActivate' });
+    }
+  });
+
   // CodeRabbit review on PR #4: the same guard class applied at both
   // class-level and method-level (valid, additive NestJS) must be resolved
   // once, not once per place it's listed — otherwise the same source shows
@@ -434,7 +457,9 @@ describe('unresolvable-status rule (opt-in)', () => {
       baseOptions({ rules: { 'documented-but-unreachable': false, 'unresolvable-status': true } }),
     );
     const multiDecorator = findings.filter(
-      (f) => f.handler.className === 'UnresolvableController' && f.handler.methodName === 'multiDecorator',
+      (f) =>
+        f.handler.className === 'UnresolvableController' &&
+        f.handler.methodName === 'multiDecorator',
     );
     expect(multiDecorator).toHaveLength(1);
   });

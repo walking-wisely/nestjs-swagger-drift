@@ -37,13 +37,58 @@ export function resolveAliasedSymbol(symbol: ts.Symbol, checker: ts.TypeChecker)
 }
 
 /**
- * Resolves an arbitrary expression (an `extends` clause's expression, or a
- * `new X(...)` callee) to the class declaration it statically refers to,
- * following import aliases the same way `provenance.ts`'s `checkProvenance`
- * does. Factored out of `getBaseClassDeclaration` in Phase 3 so
- * `resolve-status.ts`'s custom-exception strategy (PLAN §4.2 step 1) can
- * resolve the class a `new SomeCustomException(...)` expression instantiates
- * with the identical alias-resolution logic, rather than a second copy of it.
+ * Finds a `ts.ClassLikeDeclaration` behind `type`, for the mixin fallback
+ * below: first `type`'s own symbol directly (covers a `typeof SomeClass`-
+ * shaped type — e.g. a non-generic mixin function's parameter, or its
+ * return type, typed as a concrete class rather than a generic type
+ * parameter), then, if that comes up empty, every call/construct
+ * signature's return type (covers `SomeMixin(Base)` itself — the CALL's own
+ * type is the returned class's constructor type, e.g. `typeof Mixed`, whose
+ * construct signature's return type is `Mixed`'s instance type). Both call
+ * and construct signatures are checked since a mixin factory can be typed
+ * either way (a plain function returning a class value has call signatures
+ * on its OWN type only when the class itself is invoked as a function,
+ * which never applies to a class — so in practice it's the construct
+ * signature that matters here; call signatures are checked too since the
+ * checker doesn't guarantee which bucket a given callable type's signatures
+ * land in).
+ */
+function resolveClassDeclarationFromType(type: ts.Type): ts.ClassLikeDeclaration | undefined {
+  const direct = type.getSymbol()?.getDeclarations()?.find(ts.isClassLike);
+  if (direct) return direct;
+
+  for (const signature of [...type.getConstructSignatures(), ...type.getCallSignatures()]) {
+    const returnType = signature.getReturnType();
+    const decl = returnType.getSymbol()?.getDeclarations()?.find(ts.isClassLike);
+    if (decl) return decl;
+  }
+  return undefined;
+}
+
+/**
+ * Resolves an arbitrary expression (an `extends` clause's expression, a
+ * `new X(...)` callee, or a `@UseGuards(...)`/decorator argument) to the
+ * class declaration it statically refers to, following import aliases the
+ * same way `provenance.ts`'s `checkProvenance` does. Factored out of
+ * `getBaseClassDeclaration` in Phase 3 so `resolve-status.ts`'s custom-
+ * exception strategy (PLAN §4.2 step 1) can resolve the class a `new
+ * SomeCustomException(...)` expression instantiates with the identical
+ * alias-resolution logic, rather than a second copy of it.
+ *
+ * Falls back to a TYPE-based lookup (`resolveClassDeclarationFromType`) when
+ * `expr`'s own symbol doesn't resolve to a class declaration directly (#11)
+ * — the mixin pattern, `class X extends SomeMixin(Base) {}` or `const
+ * AuthGuardJwt = AuthGuard('jwt'); @UseGuards(AuthGuardJwt)`. Neither shape
+ * is "a plain identifier/property access referring to a class": the first
+ * is a `CallExpression` outright, whose own symbol is whatever `SomeMixin`
+ * itself resolves to (a function, not a class); the second IS a plain
+ * identifier, but the identifier is a `const` holding a mixin factory's
+ * CALL RESULT — its symbol resolves to the `VariableDeclaration`, not a
+ * class. In both cases the checker still statically knows the value's
+ * TYPE (the class the mixin factory returns), which is what the fallback
+ * reads instead. Checked for every `expr`, not gated on `ts.isCallExpression`
+ * specifically, since the `AuthGuardJwt` identifier case needs the same
+ * fallback without itself being a call expression.
  */
 export function resolveClassDeclaration(
   expr: ts.Expression,
@@ -55,10 +100,17 @@ export function resolveClassDeclaration(
   } catch {
     symbol = undefined;
   }
-  if (!symbol) return undefined;
+  if (symbol) {
+    const resolved = resolveAliasedSymbol(symbol, checker);
+    const direct = resolved.getDeclarations()?.find(ts.isClassLike);
+    if (direct) return direct;
+  }
 
-  const resolved = resolveAliasedSymbol(symbol, checker);
-  return resolved.getDeclarations()?.find(ts.isClassLike);
+  try {
+    return resolveClassDeclarationFromType(checker.getTypeAtLocation(expr));
+  } catch {
+    return undefined;
+  }
 }
 
 export function getBaseClassDeclaration(

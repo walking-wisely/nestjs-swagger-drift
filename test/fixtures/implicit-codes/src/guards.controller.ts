@@ -2,6 +2,7 @@
 // opt-in via `AnalysisOptions.checkGuards`.
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AuthGuard, DerivedGuard } from './auth.guard.js';
+import { AuthGuard as PassportAuthGuard, AuthGuardJwt } from './mixin-auth.guard.js';
 
 @Controller('guarded')
 export class GuardsController {
@@ -18,6 +19,22 @@ export class GuardsController {
   @UseGuards(DerivedGuard)
   @Get('derived')
   derived(): string[] {
+    return [];
+  }
+
+  // #11: `AuthGuardJwt` is `const AuthGuardJwt = AuthGuard('jwt');` — a
+  // plain identifier, but one holding a mixin factory's CALL RESULT rather
+  // than naming a class directly (the common `@nestjs/passport` pattern).
+  @UseGuards(AuthGuardJwt)
+  @Get('mixin-via-const')
+  mixinViaConst(): string[] {
+    return [];
+  }
+
+  // #11: the mixin call inline, with no intermediate `const` at all.
+  @UseGuards(PassportAuthGuard('jwt'))
+  @Get('mixin-inline')
+  mixinInline(): string[] {
     return [];
   }
 }
