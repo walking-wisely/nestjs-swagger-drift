@@ -35,6 +35,7 @@ export {
   BUILTIN_HTTP_EXCEPTIONS,
   HTTP_STATUS_ENUM_VALUES,
   SHORTHAND_RESPONSE_DECORATORS,
+  UNEXPORTED_SHORTHAND_STATUSES,
 } from './nest-exceptions.js';
 
 export type { ThrownExpression } from './thrown.js';

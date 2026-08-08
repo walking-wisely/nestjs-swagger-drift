@@ -26,6 +26,8 @@ describe('parseArgs', () => {
         config: undefined,
         noConfig: false,
         audit: false,
+        fixDryRun: false,
+        fix: false,
       },
     });
   });

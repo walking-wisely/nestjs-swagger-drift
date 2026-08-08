@@ -170,9 +170,26 @@ export function shorthandResponseDecoratorName(httpStatusMemberName: string): st
  * code it documents, mechanically derived from `HTTP_STATUS_ENUM_VALUES` via
  * `shorthandResponseDecoratorName` — this is exactly how `@nestjs/swagger`
  * itself generates these decorators, so this table cannot drift out of sync
- * with `HTTP_STATUS_ENUM_VALUES`; only that one table needs the drift test.
+ * with `HTTP_STATUS_ENUM_VALUES` for the NAME <-> status mapping.
  * `ApiResponse` (generic) and `ApiDefaultResponse` (wildcard) are handled
  * separately in `documented.ts` since neither maps to a single fixed status.
+ *
+ * That mechanical-derivation claim is about the TRANSFORM only, and is
+ * weaker than it sounds: `@nestjs/swagger`'s own `api-response.decorator.js`
+ * builds an internal `decorators` object for every `HttpStatus` member (the
+ * same mechanical transform this file mirrors), but then RE-EXPORTS only a
+ * hand-maintained subset — a separate, non-mechanical list that has fallen
+ * behind `HttpStatus` by 7 members (found running Tier 1 autofix's generated
+ * decorator calls against the REAL package,
+ * `test/integration/fix-decorator-runtime.test.ts`). This table stays a
+ * superset including those 7 — see `UNEXPORTED_SHORTHAND_STATUSES` below —
+ * because it's also used to RECOGNIZE an already-written decorator
+ * (`documented.ts`), where an entry for a name nobody could have legally
+ * written (the export doesn't exist to import) is simply inert, not wrong.
+ * A caller that instead GENERATES a decorator name to insert (Tier 1
+ * autofix, `cli/fix/status-text.ts`) must consult `UNEXPORTED_SHORTHAND_
+ * STATUSES` too — inserting a call to a name `@nestjs/swagger` doesn't
+ * export produces a real `TypeError` the moment the fixed file runs.
  */
 export const SHORTHAND_RESPONSE_DECORATORS: Readonly<Record<string, number>> = Object.fromEntries(
   Object.entries(HTTP_STATUS_ENUM_VALUES).map(([key, status]) => [
@@ -180,3 +197,22 @@ export const SHORTHAND_RESPONSE_DECORATORS: Readonly<Record<string, number>> = O
     status,
   ]),
 );
+
+/**
+ * `HttpStatus` values whose mechanically-transformed shorthand name
+ * (`SHORTHAND_RESPONSE_DECORATORS`) `@nestjs/swagger` builds internally but
+ * does NOT re-export from `dist/decorators/api-response.decorator.js` —
+ * verified against the real package in both directions by
+ * `test/unit/nest-exceptions-drift.test.ts` (so this list is the thing that
+ * goes stale and gets caught, not a permanent hand-maintained assumption):
+ * `207` (`MULTI_STATUS`), `208` (`ALREADY_REPORTED`), `210`
+ * (`CONTENT_DIFFERENT`), `423` (`LOCKED`), `456` (`UNRECOVERABLE_ERROR`),
+ * `507` (`INSUFFICIENT_STORAGE`), `508` (`LOOP_DETECTED`) — as of
+ * `@nestjs/swagger@11.4.6`. Every caller that GENERATES a shorthand
+ * decorator name (as opposed to merely recognizing one already in source)
+ * must treat a status in this set the same as one with no shorthand at all
+ * and fall back to generic `@ApiResponse({ status, ... })`.
+ */
+export const UNEXPORTED_SHORTHAND_STATUSES: ReadonlySet<number> = new Set([
+  207, 208, 210, 423, 456, 507, 508,
+]);

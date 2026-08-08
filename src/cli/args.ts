@@ -60,6 +60,10 @@ export interface CliFlags {
   config: string | undefined;
   noConfig: boolean;
   audit: boolean;
+  /** PLAN §10.2 Tier 1: print a unified diff of the `@Api*Response` insertions autofix would make, without writing. */
+  fixDryRun: boolean;
+  /** PLAN §10.2 Tier 1: write the `@Api*Response` insertions autofix would make. */
+  fix: boolean;
 }
 
 export type ParseArgsResult = { ok: true; flags: CliFlags } | { ok: false; error: string };
@@ -85,6 +89,8 @@ function emptyFlags(): CliFlags {
     config: undefined,
     noConfig: false,
     audit: false,
+    fixDryRun: false,
+    fix: false,
   };
 }
 
@@ -279,6 +285,14 @@ export function parseArgs(argv: string[]): ParseArgsResult {
 
       case '--audit':
         flags.audit = true;
+        break;
+
+      case '--fix-dry-run':
+        flags.fixDryRun = true;
+        break;
+
+      case '--fix':
+        flags.fix = true;
         break;
 
       default:

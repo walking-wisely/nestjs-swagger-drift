@@ -1,6 +1,6 @@
 {
   "name": "nestjs-swagger-drift",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Static analysis for NestJS controllers: fails CI when a handler can produce an HTTP status code that isn't documented with an @ApiResponse-family decorator.",
   "keywords": [
     "nestjs",
@@ -82,16 +82,20 @@
     "@typescript-eslint/utils": "^8.66.0",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
+    "lodash": "^4.18.1",
     "nest-common-snapshot": "npm:@nestjs/common@^11.1.28",
     "nest-swagger-snapshot": "npm:@nestjs/swagger@^11.4.6",
     "prettier": "^3.9.6",
     "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.66.0",
     "vitest": "^4.1.10"
   },
   "dependencies": {
-    "picomatch": "^4.0.5"
+    "diff": "^9.0.0",
+    "picomatch": "^4.0.5",
+    "ts-morph": "^28.0.0"
   }
 }

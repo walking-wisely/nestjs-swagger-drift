@@ -56,6 +56,7 @@
 import * as ts from 'typescript';
 import { pathToFileURL } from 'node:url';
 import { dirname, relative, resolve } from 'node:path';
+import { writeFileSync } from 'node:fs';
 import { createProgramFromTsConfig } from './program.js';
 import {
   collectDiscoveryWarnings,
@@ -68,6 +69,7 @@ import { isIgnored } from './ignore.js';
 import { locationOf } from './report/location.js';
 import { reportFindingsJson, reportRoutesJson } from './report/json.js';
 import { reportFindingsPretty, reportRoutesPretty } from './report/pretty.js';
+import { applyFixesToFile, buildFixPlan, formatFileDiff, groupEntriesByFile } from './fix/index.js';
 import type { AnalysisOptions, Finding, HandlerInfo } from '../core/index.js';
 import { analyzeHandler, createAnalysisContext, listDirectiveCommentLines } from '../core/index.js';
 
@@ -106,6 +108,10 @@ function printUsage(): void {
       '      --no-config             Skip loading/auto-discovering a config file entirely.',
       '      --audit                 Ignore swagger-drift-disable-next-line directives, so',
       '                               every finding they would otherwise hide is reported.',
+      '      --fix-dry-run           Print a unified diff of the @Api*Response decorators',
+      '                               autofix would insert for undocumented-status findings',
+      '                               with a deterministic source, without writing anything.',
+      '      --fix                   Write those same @Api*Response decorator insertions.',
       '  -h, --help                  Print this message.',
     ].join('\n'),
   );
@@ -233,6 +239,8 @@ interface ResolvedOptions {
   checkParsePipes: boolean;
   baseDir: string | undefined;
   audit: boolean;
+  fixDryRun: boolean;
+  fix: boolean;
 }
 
 type MergeResult = { ok: true; options: ResolvedOptions } | { ok: false; error: string };
@@ -310,6 +318,8 @@ export function mergeOptions(flags: CliFlags, config: CliConfigFile, configPath:
       checkParsePipes: flags.checkParsePipes ?? config.checkParsePipes ?? false,
       baseDir: flags.baseDir ?? resolveFromConfig(config.baseDir),
       audit: flags.audit,
+      fixDryRun: flags.fixDryRun,
+      fix: flags.fix,
     },
   };
 }
@@ -330,6 +340,15 @@ export async function main(argv: string[]): Promise<number> {
 
   if (flags.noConfig && flags.config !== undefined) {
     console.error('nestjs-swagger-drift: --no-config and --config cannot be used together.');
+    return EXIT_USAGE_ERROR;
+  }
+
+  if (flags.fix && flags.fixDryRun) {
+    console.error('nestjs-swagger-drift: --fix and --fix-dry-run cannot be used together.');
+    return EXIT_USAGE_ERROR;
+  }
+  if (flags.routes && (flags.fix || flags.fixDryRun)) {
+    console.error('nestjs-swagger-drift: --routes and --fix/--fix-dry-run cannot be used together.');
     return EXIT_USAGE_ERROR;
   }
 
@@ -578,6 +597,50 @@ export async function main(argv: string[]): Promise<number> {
       `nestjs-swagger-drift: found ${findings.length} finding(s), ${failingFindings.length} ` +
         `matched by --fail-on, ${suppressedCount} suppressed.`,
     );
+  }
+
+  // Tier 1 autofix (PLAN §10.2). Runs against the SAME `findings` this run
+  // already computed and reported above — `--fix`/`--fix-dry-run` never
+  // change what counts as drift or this run's exit code (see the doc
+  // comment on `EXIT_FOUND_DRIFT` above); they're strictly additive: "and
+  // also, here's what autofix would do about it."
+  if (options.fixDryRun || options.fix) {
+    const plan = buildFixPlan(findings, baseDir);
+    if (plan.entries.length === 0 && plan.skipped.length === 0) {
+      console.error('nestjs-swagger-drift: nothing to fix.');
+    } else {
+      console.error(
+        `nestjs-swagger-drift: fix plan: ${plan.entries.length} insertion(s) fixable, ` +
+          `${plan.skipped.length} finding(s) skipped (inferred sources only).`,
+      );
+      let filesChanged = 0;
+      let insertionsApplied = 0;
+      for (const [file, entries] of groupEntriesByFile(plan.entries)) {
+        const result = applyFixesToFile(file, entries);
+        if (!result) continue;
+        filesChanged++;
+        insertionsApplied += result.applied.length;
+        if (options.fixDryRun) {
+          // stderr, not stdout (post-implementation fix): `--reporter json`
+          // promises stdout is one parseable JSON document — printing a
+          // diff via `console.log` here would corrupt that the moment
+          // `--fix-dry-run` is combined with it, the exact "JSON reporter
+          // must never fall through to prose on stdout" bug class the
+          // no-handlers-found branches above already guard against.
+          console.error(formatFileDiff(result, baseDir));
+        } else {
+          writeFileSync(result.file, result.after);
+          console.error(
+            `nestjs-swagger-drift: fixed ${result.applied.length} finding(s) in ` +
+              `${relative(baseDir, result.file).split('\\').join('/')}`,
+          );
+        }
+      }
+      console.error(
+        `nestjs-swagger-drift: ${options.fix ? 'wrote' : 'would write'} ${insertionsApplied} ` +
+          `@Api*Response insertion(s) across ${filesChanged} file(s).`,
+      );
+    }
   }
 
   return failingFindings.length > 0 ? EXIT_FOUND_DRIFT : EXIT_OK;
