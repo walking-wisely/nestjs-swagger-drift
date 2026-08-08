@@ -198,6 +198,23 @@ describe('applyFixesToFile (dry run — no writes)', () => {
 });
 
 describe('applyFixesToFile — existing @nestjs/swagger import edge cases', () => {
+  /** Re-parses `after` in an isolated copy of the fixture dir and asserts the 404 finding for `className` is now resolved — a cheap proxy for "the emitted file is syntactically valid and semantically correct", same pattern as the "inserts multiple decorators" test above. */
+  function expect404Resolved(sourceFileName: string, className: string, after: string): void {
+    const reprogrammed = fs.mkdtempSync(path.join(os.tmpdir(), 'swagger-drift-fix-reparse-'));
+    try {
+      fs.cpSync(FIXTURE_DIR, reprogrammed, { recursive: true });
+      fs.writeFileSync(join(reprogrammed, 'src', sourceFileName), after);
+      const { findings } = analyzeFixture(reprogrammed);
+      const stillUndocumented = findings.filter(
+        (f): f is Extract<Finding, { rule: 'undocumented-status' }> =>
+          f.rule === 'undocumented-status' && f.handler.className === className,
+      );
+      expect(stillUndocumented.some((f) => f.status === 404)).toBe(false);
+    } finally {
+      fs.rmSync(reprogrammed, { recursive: true, force: true });
+    }
+  }
+
   it('an ALIASED existing import (`ApiResponse as Res`) gets a second, plain-named specifier — not silently treated as already covering the plain name', () => {
     const { findings, baseDir } = analyzeFixture(FIXTURE_DIR);
     const plan = buildFixPlan(findings, baseDir);
@@ -220,26 +237,31 @@ describe('applyFixesToFile — existing @nestjs/swagger import edge cases', () =
     // The hand-written aliased usage is untouched.
     expect(result.after).toContain("@Res({ description: 'existing, hand-written' })");
 
-    // Re-parse in an isolated copy of the fixture dir: the 404 finding is
-    // now resolved — a cheap proxy for "the emitted file is syntactically
-    // valid and semantically correct" (same pattern as the "inserts
-    // multiple decorators" test above), which also proves the emitted bare
-    // `@ApiNotFoundResponse` call actually has a binding in scope (it would
-    // NOT, pre-fix: the alias check wrongly treated the plain name as
-    // already imported, so no import for it was ever added).
-    const reprogrammed = fs.mkdtempSync(path.join(os.tmpdir(), 'swagger-drift-fix-reparse-'));
-    try {
-      fs.cpSync(FIXTURE_DIR, reprogrammed, { recursive: true });
-      fs.writeFileSync(join(reprogrammed, 'src/aliased-import.controller.ts'), result.after);
-      const { findings: after } = analyzeFixture(reprogrammed);
-      const stillUndocumented = after.filter(
-        (f): f is Extract<Finding, { rule: 'undocumented-status' }> =>
-          f.rule === 'undocumented-status' && f.handler.className === 'AliasedImportController',
-      );
-      expect(stillUndocumented.some((f) => f.status === 404)).toBe(false);
-    } finally {
-      fs.rmSync(reprogrammed, { recursive: true, force: true });
-    }
+    // This also proves the emitted bare `@ApiNotFoundResponse` call
+    // actually has a binding in scope (it would NOT, pre-fix: the alias
+    // check wrongly treated the plain name as already imported, so no
+    // import for it was ever added).
+    expect404Resolved('aliased-import.controller.ts', 'AliasedImportController', result.after);
+  });
+
+  it('a TYPE-ONLY existing import (`import type { ... }`) is left alone; a separate value import is added', () => {
+    const { findings, baseDir } = analyzeFixture(FIXTURE_DIR);
+    const plan = buildFixPlan(findings, baseDir);
+    const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) =>
+      f.endsWith('type-only-import.controller.ts'),
+    )!;
+
+    const result = applyFixesToFile(file, entries)!;
+
+    // The type-only import is untouched — appending a value specifier to it
+    // would be a compile error (TS1361) — and a separate value import
+    // declaration carries the new names instead.
+    expect(result.after).toContain("import type { ApiResponseOptions } from '@nestjs/swagger';");
+    expect(result.after).toContain("import { ApiNotFoundResponse, ApiOkResponse } from '@nestjs/swagger';");
+    expect(result.after.match(/^import .* from '@nestjs\/swagger';$/gm)?.length).toBe(2);
+    expect(result.after).toContain("@ApiNotFoundResponse({ description: 'Not Found' })");
+
+    expect404Resolved('type-only-import.controller.ts', 'TypeOnlyImportController', result.after);
   });
 });
 

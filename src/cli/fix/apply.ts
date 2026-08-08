@@ -136,18 +136,40 @@ function decoratorArgumentText(entry: FixEntry): string {
  * specifier is added to the SAME declaration alongside it instead (`import
  * { ApiResponse as Res, ApiResponse } from ...`) — legal TS, two local
  * bindings for the same export.
+ *
+ * A TYPE-ONLY existing import (`import type { ... } from '@nestjs/swagger'`)
+ * is erased at runtime, so it can never satisfy a value reference like a
+ * decorator call — and appending a value specifier to it is itself a
+ * compile error (TS1361, "cannot be used as a value because it was imported
+ * using 'import type'"). Such a declaration is skipped entirely: both for
+ * the "already covered" check (its named imports don't count) and as a
+ * target to merge into. If it's the ONLY `@nestjs/swagger` import in the
+ * file, a brand-new sibling value `import { ... } from '@nestjs/swagger'`
+ * declaration is added instead — legal alongside a type-only import from
+ * the same module.
  */
 function ensureSwaggerImport(sourceFile: SourceFile, decoratorNames: ReadonlySet<string>): void {
   if (decoratorNames.size === 0) return;
-  const existing = sourceFile.getImportDeclaration(SWAGGER_MODULE);
+
+  const swaggerImports = sourceFile
+    .getImportDeclarations()
+    .filter((declaration) => declaration.getModuleSpecifierValue() === SWAGGER_MODULE);
+
   const needed = new Set(decoratorNames);
-  if (existing) {
-    for (const named of existing.getNamedImports()) {
+  for (const declaration of swaggerImports) {
+    if (declaration.isTypeOnly()) continue;
+    for (const named of declaration.getNamedImports()) {
       needed.delete(named.getAliasNode()?.getText() ?? named.getName());
     }
-    if (needed.size > 0) existing.addNamedImports([...needed].sort());
+  }
+  if (needed.size === 0) return;
+
+  const mergeable = swaggerImports.find((declaration) => !declaration.isTypeOnly());
+  if (mergeable) {
+    mergeable.addNamedImports([...needed].sort());
     return;
   }
+
   sourceFile.addImportDeclaration({
     moduleSpecifier: SWAGGER_MODULE,
     namedImports: [...needed].sort(),
