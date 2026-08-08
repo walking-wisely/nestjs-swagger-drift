@@ -758,9 +758,27 @@ whether it's worth chasing further:
    correctly accumulate `Reflect` metadata rather than clobbering — the two
    shapes Tier 1 actually produces in practice, as opposed to one decorator
    applied to an isolated dummy class per call.
-3. Tier 2 spike runs (research only, nothing shipped) against Ever Gauzy plus
-   2–3 structurally different repos.
-4. Tier 2 ships only if the spike shows the "already has `@ApiProperty`" gate
-   fires usefully often in practice — if most real handlers fail the gate and
-   fall back to Tier 1 anyway, the added complexity isn't earning its keep,
-   and that's a legitimate outcome of the spike, not a failure of it.
+3. [x] Tier 2 implemented directly (2026-08-08), collapsing the planned
+   "spike against 2–3 external repos, then decide" into one pass: the two
+   fixtures §10.3 already specified (a class resolving cleanly through
+   `Promise<T>`, and an interface-typed union that must fall back) are the
+   validation evidence, built locally rather than re-derived from a fresh
+   Ever Gauzy clone. Implementation: `core/resolve-response-type.ts`
+   (`resolveSuccessResponseType` — the two gates, pure, no `fs`/`checker`
+   mutation) plus `cli/fix/plan.ts` (`resolveTier2`, gated on `finding`
+   being success-sourced AND a `ts.TypeChecker` being supplied —
+   `buildFixPlan`'s `checker` param is optional, so every existing Tier 1
+   call site/test is unaffected) and `cli/fix/apply.ts` (`ensureDtoImport`:
+   reuses an existing same-module import of the exact class, merges into a
+   mergeable declaration, otherwise adds a fresh one; same-file DTOs need no
+   import at all; a colliding local name gets a numbered alias). One
+   difference from the written design: gate-failed cases are NOT wired to a
+   new `documented-status-untyped` opt-in rule (never built) — instead
+   `FixEntry.typeSkippedReason` carries the reason and the CLI's `--fix`/
+   `--fix-dry-run` summary prints a `typed N / untyped M` count, satisfying
+   §10.3's "tell the user, don't just drop it" without standing up a whole
+   new rule surface for a first cut.
+4. [x] Shipped unconditionally rather than gated on spike results (see 3) —
+   the gate-fires-usefully-often question stays open pending real usage;
+   worth revisiting once the tool has run against more than the two local
+   fixtures.

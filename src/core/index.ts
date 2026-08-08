@@ -71,3 +71,6 @@ export type { SuppressionCheck } from './suppress.js';
 
 export type { SuppressedFinding } from './analyze.js';
 export { analyzeHandler, createAnalysisCache, createAnalysisContext } from './analyze.js';
+
+export type { ResponseTypeResolution } from './resolve-response-type.js';
+export { resolveSuccessResponseType } from './resolve-response-type.js';
