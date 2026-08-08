@@ -256,7 +256,23 @@ function documentedFromNode(
       continue;
     }
 
-    const shorthandStatus = SHORTHAND_RESPONSE_DECORATORS[effectiveName];
+    // `Object.hasOwn` guard (not a bare `!== undefined` check on the
+    // indexed value): `SHORTHAND_RESPONSE_DECORATORS` is a plain object
+    // literal built via `Object.fromEntries`, so it inherits from
+    // `Object.prototype`. A decorator import that merely SHARES A NAME with
+    // an `Object.prototype` member — `toString`, `valueOf`, `constructor`,
+    // `hasOwnProperty`, `isPrototypeOf`, `propertyIsEnumerable`,
+    // `toLocaleString` — need not exist in `@nestjs/swagger` at all; writing
+    // `import { toString } from '@nestjs/swagger'` and `@toString()` is
+    // enough to make `effectiveName === 'toString'`, and an unguarded
+    // `SHORTHAND_RESPONSE_DECORATORS['toString']` resolves to
+    // `Object.prototype.toString` (a function, so `!== undefined`), which
+    // then gets pushed into `results` as a bogus `status` and crashes far
+    // downstream code that expects `status` to be a number/string. Found via
+    // adversarial review of PR #21.
+    const shorthandStatus = Object.hasOwn(SHORTHAND_RESPONSE_DECORATORS, effectiveName)
+      ? SHORTHAND_RESPONSE_DECORATORS[effectiveName]
+      : undefined;
     if (shorthandStatus !== undefined) {
       results.push({ status: shorthandStatus, decorator: d.name, node: d.node, level });
     }

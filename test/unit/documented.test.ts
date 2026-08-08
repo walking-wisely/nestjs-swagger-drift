@@ -128,6 +128,47 @@ describe('getDocumentedStatuses', () => {
     expect(result).toEqual([]);
   });
 
+  // --- Object.prototype pollution guard (adversarial review of PR #21) ---
+
+  it('a shorthand-table lookup on an Object.prototype-colliding name does not crash and is not treated as documented', () => {
+    // `toString` need not even be a real `@nestjs/swagger` export — the
+    // decorator recognizer falls back to name-based matching when the
+    // checker can't resolve the import (see decorators.ts's `Provenance`
+    // doc comment), so this alone is enough to make `effectiveName ===
+    // 'toString'` reach the shorthand lookup.
+    expect(() =>
+      analyzeMethod(
+        `import { toString } from '@nestjs/swagger';
+         class C { @toString() m() {} }`,
+        'm',
+      ),
+    ).not.toThrow();
+    const result = analyzeMethod(
+      `import { toString } from '@nestjs/swagger';
+       class C { @toString() m() {} }`,
+      'm',
+    );
+    expect(result).toEqual([]);
+  });
+
+  it('other Object.prototype-colliding shorthand names (valueOf, constructor, hasOwnProperty) are likewise ignored', () => {
+    for (const name of ['valueOf', 'constructor', 'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable', 'toLocaleString']) {
+      const result = analyzeMethod(
+        `import { ${name} } from '@nestjs/swagger';
+         class C { @${name}() m() {} }`,
+        'm',
+      );
+      expect(result).toEqual([]);
+    }
+  });
+
+  it('a legitimate own-property shorthand lookup still works alongside the guard', () => {
+    const result = analyzeMethod(`class C { @ApiNotFoundResponse() m() {} }`, 'm');
+    expect(result).toEqual([
+      expect.objectContaining({ status: 404, decorator: 'ApiNotFoundResponse', level: 'method' }),
+    ]);
+  });
+
   // --- Phase 2 review S1: class-level decorators on an ancestor class ---
 
   it("reads a class-level decorator from a BASE class, not just the handler's own class", () => {
