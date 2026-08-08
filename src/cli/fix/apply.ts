@@ -122,19 +122,29 @@ function decoratorArgumentText(entry: FixEntry): string {
 /**
  * Adds/dedupes a single `@nestjs/swagger` import covering every name in
  * `decoratorNames` (PLAN §10.2: "One `@nestjs/swagger` import managed/
- * deduped per file"). Matched by module specifier text only — an existing
- * import aliased via `as` (`import { ApiResponse as Res } from
- * '@nestjs/swagger'`) is not recognized as already covering that name and
- * gets a second, differently-named import added alongside it; documented as
- * a V1 gap (mirrors PLAN §6's existing "alias matching covers named-import
- * aliasing but not..." class of gap) rather than silently guessed at.
+ * deduped per file"). An existing import aliased via `as` (`import {
+ * ApiResponse as Res } from '@nestjs/swagger'`) is deliberately NOT
+ * recognized as already covering the plain name: the decorator text this
+ * module emits always uses the PLAIN name (`entry.decoratorName`, e.g.
+ * `@ApiResponse(...)`), which needs a bare `ApiResponse` binding in scope —
+ * `Res` alone doesn't provide that, so treating the alias as covering it
+ * would silently insert a decorator call referencing a name nothing
+ * imports (`TS2304`). The "already covered" check below therefore keys on
+ * each specifier's LOCAL binding (`getAliasNode()?.getText() ?? getName()`
+ * — `ImportSpecifier.getName()` returns the IMPORTED name, not the alias),
+ * so an alias never satisfies the plain name and a second, differently-named
+ * specifier is added to the SAME declaration alongside it instead (`import
+ * { ApiResponse as Res, ApiResponse } from ...`) — legal TS, two local
+ * bindings for the same export.
  */
 function ensureSwaggerImport(sourceFile: SourceFile, decoratorNames: ReadonlySet<string>): void {
   if (decoratorNames.size === 0) return;
   const existing = sourceFile.getImportDeclaration(SWAGGER_MODULE);
   const needed = new Set(decoratorNames);
   if (existing) {
-    for (const named of existing.getNamedImports()) needed.delete(named.getName());
+    for (const named of existing.getNamedImports()) {
+      needed.delete(named.getAliasNode()?.getText() ?? named.getName());
+    }
     if (needed.size > 0) existing.addNamedImports([...needed].sort());
     return;
   }
