@@ -403,6 +403,27 @@ describe('applyFixesToFile — line-ending detection', () => {
   });
 });
 
+describe('formatFileDiff — terminal safety', () => {
+  it('strips a raw ESC byte from a string literal before rendering the dry-run diff', () => {
+    const { findings, baseDir } = analyzeFixture(FIXTURE_DIR);
+    const plan = buildFixPlan(findings, baseDir);
+    const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) =>
+      f.endsWith('ansi-escape.controller.ts'),
+    )!;
+
+    expect(fs.readFileSync(file, 'utf8')).toContain('\x1b[31m');
+
+    const result = applyFixesToFile(file, entries)!;
+    expect(result.before).toContain('\x1b[31m');
+
+    const diff = formatFileDiff(result, baseDir);
+    expect(diff).not.toContain('\x1b');
+    // The rest of the ANSI sequence's printable text survives — only the
+    // control byte itself is stripped, not the whole line/string.
+    expect(diff).toContain('[31m');
+  });
+});
+
 describe('--fix write mode + idempotency', () => {
   const tempDirs: string[] = [];
   afterEach(() => {
