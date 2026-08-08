@@ -354,6 +354,37 @@ describe('FileFixResult.notApplied surfacing (issue 7)', () => {
   });
 });
 
+describe('applyFixesToFile — indentation detection', () => {
+  it('detects 4-space indentation even when the file has a JSDoc block comment above the class', () => {
+    const { findings, baseDir } = analyzeFixture(FIXTURE_DIR);
+    const plan = buildFixPlan(findings, baseDir);
+    const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) =>
+      f.endsWith('jsdoc-four-space.controller.ts'),
+    )!;
+
+    const result = applyFixesToFile(file, entries)!;
+    const lines = result.after.split('\n');
+
+    // The newly-inserted decorator must be 4-space indented, matching the
+    // file's real body indentation — not 2-space, which is what the JSDoc
+    // block's ` * ...` continuation lines (each with exactly ONE leading
+    // space) would incorrectly vote for if they weren't excluded.
+    const notFoundLine = lines.find((l) => l.trimStart().startsWith('@ApiNotFoundResponse'));
+    expect(notFoundLine).toBe("    @ApiNotFoundResponse({ description: 'Not Found' })");
+
+    // Every pre-existing line — including the JSDoc block itself and the
+    // 4-space method body — must be byte-for-byte untouched by the fix; only
+    // newly inserted lines (the import and the new decorator) may differ.
+    const beforeLines = result.before.split('\n');
+    const afterSet = new Set(lines);
+    for (const line of beforeLines) {
+      expect(afterSet.has(line)).toBe(true);
+    }
+    expect(lines).toContain(' * Widgets controller.');
+    expect(lines).toContain(' * @remarks Something.');
+  });
+});
+
 describe('--fix write mode + idempotency', () => {
   const tempDirs: string[] = [];
   afterEach(() => {

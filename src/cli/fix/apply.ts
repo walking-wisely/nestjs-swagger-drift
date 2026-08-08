@@ -43,6 +43,15 @@ const SWAGGER_MODULE = '@nestjs/swagger';
  * whichever is more common wins, spaces defaulting to two unless the smallest
  * observed space-indent is 4+ (a four-space codebase's top-level members
  * would otherwise get double-indented relative to everything else in the file).
+ *
+ * Block-comment continuation lines (` * foo`, the JSDoc-style block comment
+ * body) are deliberately EXCLUDED from the vote: every such line has
+ * exactly one leading space before the `*`, which — left in — registers as
+ * a "1-space indent" and pins `minSpaceIndent` to 1 for the whole file,
+ * defeating the 4+ check above even in a purely 4-space-indented file (a
+ * real bug: a 4-space controller with a JSDoc block got its newly-inserted
+ * decorator, and via ts-morph's own reformatting of the surrounding node,
+ * some of its EXISTING lines, indented as if the file were 2-space).
  */
 function detectIndentationText(text: string): IndentationText {
   let tabLines = 0;
@@ -54,9 +63,11 @@ function detectIndentationText(text: string): IndentationText {
       tabLines++;
       continue;
     }
-    const match = /^( +)\S/.exec(line);
+    const match = /^( +)(\S)/.exec(line);
     const captured = match?.[1];
     if (captured === undefined) continue;
+    // Skip block-comment continuation lines (` * ...`) — see doc comment.
+    if (match?.[2] === '*') continue;
     spaceLines++;
     const indent = captured.length;
     if (minSpaceIndent === undefined || indent < minSpaceIndent) minSpaceIndent = indent;
