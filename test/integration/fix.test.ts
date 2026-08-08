@@ -385,6 +385,24 @@ describe('applyFixesToFile — indentation detection', () => {
   });
 });
 
+describe('applyFixesToFile — line-ending detection', () => {
+  it('preserves a CRLF file\'s line endings on newly-inserted lines', () => {
+    const { findings, baseDir } = analyzeFixture(FIXTURE_DIR);
+    const plan = buildFixPlan(findings, baseDir);
+    const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) => f.endsWith('crlf.controller.ts'))!;
+
+    expect(fs.readFileSync(file, 'utf8')).toContain('\r\n');
+
+    const result = applyFixesToFile(file, entries)!;
+
+    // No bare `\n` anywhere: every line ending in the fixed output is `\r\n`.
+    const bareLf = result.after.split('\r\n').join('').match(/\n/g);
+    expect(bareLf).toBeNull();
+    expect(result.after).toContain('\r\n');
+    expect(result.after).toContain("import { ApiNotFoundResponse, ApiOkResponse } from '@nestjs/swagger';\r\n");
+  });
+});
+
 describe('--fix write mode + idempotency', () => {
   const tempDirs: string[] = [];
   afterEach(() => {

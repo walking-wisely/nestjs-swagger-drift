@@ -20,6 +20,7 @@
 import {
   IndentationText,
   Node,
+  NewLineKind,
   Project,
   QuoteKind,
   SyntaxKind,
@@ -75,6 +76,25 @@ function detectIndentationText(text: string): IndentationText {
   if (tabLines > spaceLines) return IndentationText.Tab;
   if (minSpaceIndent !== undefined && minSpaceIndent >= 4) return IndentationText.FourSpaces;
   return IndentationText.TwoSpaces;
+}
+
+/**
+ * Sniffs `text`'s dominant line-ending style, the same rationale as
+ * `detectIndentationText` above but for `\r\n` vs `\n`: ts-morph's
+ * `newLineKind` defaults to LF regardless of the source file's own
+ * convention, so a CRLF file that goes through autofix ends up with LF on
+ * every line ts-morph itself formats (the new import/decorator lines, plus
+ * whatever surrounding lines its formatter touches) next to `\r\n` on every
+ * untouched line — a mixed-line-ending file where there wasn't one before.
+ * Counts `\r\n` occurrences against bare `\n` occurrences (i.e. `\n` not
+ * preceded by `\r`); CRLF wins on a strict majority, LF otherwise (including
+ * the common all-LF case, where the CRLF count is simply 0).
+ */
+function detectNewLineKind(text: string): NewLineKind {
+  const crlfCount = (text.match(/\r\n/g) ?? []).length;
+  const totalNewlines = (text.match(/\n/g) ?? []).length;
+  const lfCount = totalNewlines - crlfCount;
+  return crlfCount > lfCount ? NewLineKind.CarriageReturnLineFeed : NewLineKind.LineFeed;
 }
 
 /** A `FixEntry` this file's mutation pass declined to insert, and why. */
@@ -285,6 +305,7 @@ export function applyFixesToFile(filePath: string, entries: readonly FixEntry[])
       // would fix it anyway, but not every consumer runs Prettier on save.
       quoteKind: QuoteKind.Single,
       indentationText: detectIndentationText(rawText),
+      newLineKind: detectNewLineKind(rawText),
     },
   });
   const sourceFile = project.addSourceFileAtPath(filePath);
