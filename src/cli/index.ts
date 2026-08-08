@@ -69,7 +69,13 @@ import { isIgnored } from './ignore.js';
 import { locationOf } from './report/location.js';
 import { reportFindingsJson, reportRoutesJson } from './report/json.js';
 import { reportFindingsPretty, reportRoutesPretty } from './report/pretty.js';
-import { applyFixesToFile, buildFixPlan, formatFileDiff, groupEntriesByFile } from './fix/index.js';
+import {
+  applyFixesToFile,
+  buildFixPlan,
+  formatFileDiff,
+  groupEntriesByFile,
+  type FileFixResult,
+} from './fix/index.js';
 import type { AnalysisOptions, Finding, HandlerInfo } from '../core/index.js';
 import { analyzeHandler, createAnalysisContext, listDirectiveCommentLines } from '../core/index.js';
 
@@ -615,8 +621,27 @@ export async function main(argv: string[]): Promise<number> {
       );
       let filesChanged = 0;
       let insertionsApplied = 0;
+      const skippedFiles: string[] = [];
       for (const [file, entries] of groupEntriesByFile(plan.entries)) {
-        const result = applyFixesToFile(file, entries);
+        // Defense in depth: a single pathological file (a shape
+        // `applyFixesToFile`/ts-morph doesn't handle) must not abort the
+        // whole batch — by the time we reach file N, files 1..N-1 may
+        // already have been written to disk (`--fix`, not `--fix-dry-run`),
+        // so an uncaught throw here would crash via `EXIT_UNEXPECTED_ERROR`
+        // leaving a partially-fixed, uncommitted working tree with no
+        // summary of what happened. Skip and keep going instead.
+        let result: FileFixResult | undefined;
+        try {
+          result = applyFixesToFile(file, entries);
+        } catch (err) {
+          const relativePath = relative(baseDir, file).split('\\').join('/');
+          console.error(
+            `nestjs-swagger-drift: warning: could not apply fix(es) to ${relativePath}, skipping: ` +
+              `${err instanceof Error ? err.message : String(err)}`,
+          );
+          skippedFiles.push(relativePath);
+          continue;
+        }
         if (!result) continue;
         filesChanged++;
         insertionsApplied += result.applied.length;
@@ -638,7 +663,10 @@ export async function main(argv: string[]): Promise<number> {
       }
       console.error(
         `nestjs-swagger-drift: ${options.fix ? 'wrote' : 'would write'} ${insertionsApplied} ` +
-          `@Api*Response insertion(s) across ${filesChanged} file(s).`,
+          `@Api*Response insertion(s) across ${filesChanged} file(s)` +
+          (skippedFiles.length > 0
+            ? `; ${skippedFiles.length} file(s) skipped due to errors: ${skippedFiles.join(', ')}.`
+            : '.'),
       );
     }
   }

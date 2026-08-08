@@ -263,6 +263,26 @@ describe('applyFixesToFile — existing @nestjs/swagger import edge cases', () =
 
     expect404Resolved('type-only-import.controller.ts', 'TypeOnlyImportController', result.after);
   });
+
+  it('a NAMESPACE existing import (`import * as swagger from ...`) does not crash `addNamedImports`; a separate named import is added', () => {
+    const { findings, baseDir } = analyzeFixture(FIXTURE_DIR);
+    const plan = buildFixPlan(findings, baseDir);
+    const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) =>
+      f.endsWith('namespace-import.controller.ts'),
+    )!;
+
+    expect(() => applyFixesToFile(file, entries)).not.toThrow();
+    const result = applyFixesToFile(file, entries)!;
+
+    expect(result.after).toContain("import * as swagger from '@nestjs/swagger';");
+    expect(result.after).toContain("import { ApiNotFoundResponse, ApiOkResponse } from '@nestjs/swagger';");
+    expect(result.after.match(/^import .* from '@nestjs\/swagger';$/gm)?.length).toBe(2);
+    expect(result.after).toContain("@ApiNotFoundResponse({ description: 'Not Found' })");
+    // The hand-written namespace usage is untouched.
+    expect(result.after).toContain("@swagger.ApiTags('namespace')");
+
+    expect404Resolved('namespace-import.controller.ts', 'NamespaceImportController', result.after);
+  });
 });
 
 describe('--fix write mode + idempotency', () => {

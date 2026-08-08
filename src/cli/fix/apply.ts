@@ -147,6 +147,16 @@ function decoratorArgumentText(entry: FixEntry): string {
  * file, a brand-new sibling value `import { ... } from '@nestjs/swagger'`
  * declaration is added instead — legal alongside a type-only import from
  * the same module.
+ *
+ * A NAMESPACE existing import (`import * as swagger from '@nestjs/swagger'`)
+ * doesn't provide any of the bare names the emitted decorator text needs
+ * either, and — separately — ts-morph's `addNamedImports` THROWS
+ * `InvalidOperationError` if called on a declaration that itself has a
+ * namespace import (illegal syntax: a single import declaration can't mix
+ * `* as ns` and `{ named }`). Such a declaration is skipped as a merge
+ * target for the same reason a type-only one is — a brand-new sibling named
+ * import declaration carries the new names instead, which is legal
+ * alongside a namespace import from the same module.
  */
 function ensureSwaggerImport(sourceFile: SourceFile, decoratorNames: ReadonlySet<string>): void {
   if (decoratorNames.size === 0) return;
@@ -164,7 +174,9 @@ function ensureSwaggerImport(sourceFile: SourceFile, decoratorNames: ReadonlySet
   }
   if (needed.size === 0) return;
 
-  const mergeable = swaggerImports.find((declaration) => !declaration.isTypeOnly());
+  const mergeable = swaggerImports.find(
+    (declaration) => !declaration.isTypeOnly() && declaration.getNamespaceImport() === undefined,
+  );
   if (mergeable) {
     mergeable.addNamedImports([...needed].sort());
     return;
