@@ -7,6 +7,11 @@ declare module '@nestjs/swagger' {
   export interface ApiResponseOptions {
     status?: number;
     description?: string;
+    // Present only so `substring-trap.controller.ts` can put a nested
+    // `{ status: <n> }` shape inside `schema` — exercising the
+    // substring-match trap `decoratorAlreadyPresent` used to fall into
+    // (issue 6) — without a strict-mode type error.
+    schema?: { example?: unknown };
   }
 
   export function ApiResponse(options?: ApiResponseOptions): MethodDecorator & ClassDecorator;

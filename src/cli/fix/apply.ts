@@ -19,9 +19,11 @@
 
 import {
   IndentationText,
+  Node,
   Project,
   QuoteKind,
   SyntaxKind,
+  type Decorator,
   type MethodDeclaration,
   type SourceFile,
 } from 'ts-morph';
@@ -93,23 +95,50 @@ function findMethodAtPos(sourceFile: SourceFile, pos: number): MethodDeclaration
 }
 
 /**
+ * `true` if `decorator`'s first argument is an object literal with an own
+ * `status: <numeric literal>` property equal to `status`. Deliberately
+ * narrow and conservative, mirroring `decoratorAlreadyPresent`'s own
+ * "good enough for our own output" contract: a non-object-literal argument
+ * (spread, variable reference, a computed/`HttpStatus.X` value, `{ status }`
+ * shorthand) can't be compared without re-implementing `documented.ts`'s
+ * full resolution, so this returns `false` — "not confirmed already
+ * present" — rather than guessing, in either direction.
+ *
+ * Originally a `firstArg.getText().includes(\`status: ${status}\`)`
+ * substring search, which matched anywhere in the argument's text — a
+ * nested `schema: { example: { status: 404 } }`, or free text in a
+ * `description` string containing `"... { status: 423 }"` — causing the
+ * autofixer to silently skip inserting a genuinely-needed decorator with no
+ * indication anything was suppressed (adversarial review of PR #21).
+ */
+function apiResponseStatusMatches(decorator: Decorator, status: number): boolean {
+  const firstArg = decorator.getArguments()[0];
+  if (firstArg === undefined || !Node.isObjectLiteralExpression(firstArg)) return false;
+  const statusProp = firstArg.getProperty('status');
+  if (statusProp === undefined || !Node.isPropertyAssignment(statusProp)) return false;
+  const initializer = statusProp.getInitializer();
+  if (initializer === undefined || !Node.isNumericLiteral(initializer)) return false;
+  return initializer.getLiteralValue() === status;
+}
+
+/**
  * `true` if `method` already carries a decorator that documents `entry`'s
  * status — the idempotency guard PLAN §10.2's exit criterion requires
  * ("running `--fix` a second time is a no-op"). Deliberately narrow: only
  * recognizes the EXACT decorator shape this module itself would insert (a
  * bare shorthand call, or a generic `ApiResponse({ status: N, ... })`
- * literal with `N` textually present) — good enough to make a repeated
- * `--fix` run a no-op on ITS OWN output, without trying to re-implement
- * `documented.ts`'s full resolution (constant folding, `HttpStatus.X`,
- * spreads, ...) just to decide "should I skip this insertion."
+ * literal with `N` a real numeric-literal property, via
+ * `apiResponseStatusMatches`) — good enough to make a repeated `--fix` run a
+ * no-op on ITS OWN output, without trying to re-implement `documented.ts`'s
+ * full resolution (constant folding, `HttpStatus.X`, spreads, ...) just to
+ * decide "should I skip this insertion."
  */
 function decoratorAlreadyPresent(method: MethodDeclaration, entry: FixEntry): boolean {
   return method.getDecorators().some((decorator) => {
     const name = decorator.getName();
     if (entry.isShorthand) return name === entry.decoratorName;
     if (name !== 'ApiResponse') return false;
-    const firstArg = decorator.getArguments()[0];
-    return firstArg !== undefined && firstArg.getText().includes(`status: ${entry.status}`);
+    return apiResponseStatusMatches(decorator, entry.status);
   });
 }
 

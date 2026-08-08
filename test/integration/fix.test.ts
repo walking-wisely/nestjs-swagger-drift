@@ -285,6 +285,29 @@ describe('applyFixesToFile — existing @nestjs/swagger import edge cases', () =
   });
 });
 
+describe('decoratorAlreadyPresent (issue 6 — no false positive from substring matching)', () => {
+  it('does not treat a nested/free-text "status: 404" elsewhere in the argument as the decorator already being present', () => {
+    const { findings, baseDir } = analyzeFixture(FIXTURE_DIR);
+    const plan = buildFixPlan(findings, baseDir);
+    const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) =>
+      f.endsWith('substring-trap.controller.ts'),
+    )!;
+
+    // The 404 finding (direct throw) is still fixable — the existing
+    // @ApiResponse only documents 200; "status: 404" merely appears inside
+    // its schema example and description text.
+    expect(entries.some((e) => e.status === 404)).toBe(true);
+
+    const result = applyFixesToFile(file, entries)!;
+    expect(result.applied.some((e) => e.status === 404)).toBe(true);
+    expect(result.notApplied).toEqual([]);
+    expect(result.after).toContain("@ApiNotFoundResponse({ description: 'Not Found' })");
+    // The original decorator (and its trap text) is untouched, not replaced.
+    expect(result.after).toContain('{ status: 404 }');
+    expect(result.after).toContain("status: 200");
+  });
+});
+
 describe('--fix write mode + idempotency', () => {
   const tempDirs: string[] = [];
   afterEach(() => {
