@@ -66,7 +66,7 @@ import {
 import { parseArgs, type CliFlags, type OptionalRuleName } from './args.js';
 import { loadConfigFile, type CliConfigFile } from './config.js';
 import { isIgnored } from './ignore.js';
-import { locationOf } from './report/location.js';
+import { locationOf, formatLocation } from './report/location.js';
 import { reportFindingsJson, reportRoutesJson } from './report/json.js';
 import { reportFindingsPretty, reportRoutesPretty } from './report/pretty.js';
 import {
@@ -75,6 +75,7 @@ import {
   formatFileDiff,
   groupEntriesByFile,
   type FileFixResult,
+  type FixNotApplied,
 } from './fix/index.js';
 import type { AnalysisOptions, Finding, HandlerInfo } from '../core/index.js';
 import { analyzeHandler, createAnalysisContext, listDirectiveCommentLines } from '../core/index.js';
@@ -622,6 +623,11 @@ export async function main(argv: string[]): Promise<number> {
       let filesChanged = 0;
       let insertionsApplied = 0;
       const skippedFiles: string[] = [];
+      // Every planned insertion this file's mutation pass declined to make
+      // (already present, or unlocatable) — surfaced below so "N fixable /
+      // fewer written" is always explainable rather than a silent gap
+      // (issue 7 / adversarial review of PR #21).
+      const notApplied: FixNotApplied[] = [];
       for (const [file, entries] of groupEntriesByFile(plan.entries)) {
         // Defense in depth: a single pathological file (a shape
         // `applyFixesToFile`/ts-morph doesn't handle) must not abort the
@@ -643,6 +649,8 @@ export async function main(argv: string[]): Promise<number> {
           continue;
         }
         if (!result) continue;
+        notApplied.push(...result.notApplied);
+        if (result.applied.length === 0) continue;
         filesChanged++;
         insertionsApplied += result.applied.length;
         if (options.fixDryRun) {
@@ -664,10 +672,20 @@ export async function main(argv: string[]): Promise<number> {
       console.error(
         `nestjs-swagger-drift: ${options.fix ? 'wrote' : 'would write'} ${insertionsApplied} ` +
           `@Api*Response insertion(s) across ${filesChanged} file(s)` +
+          (notApplied.length > 0 ? `, ${notApplied.length} insertion(s) not applied` : '') +
           (skippedFiles.length > 0
             ? `; ${skippedFiles.length} file(s) skipped due to errors: ${skippedFiles.join(', ')}.`
             : '.'),
       );
+      // One line per skipped insertion, matching the existing findings
+      // report's own `location: reason` style — without this, "N fixable /
+      // 0 written" gave no way to tell why (issue 7).
+      for (const { entry, reason } of notApplied) {
+        console.error(
+          `nestjs-swagger-drift:   not applied: ${entry.decoratorName} (status ${entry.status}) on ` +
+            `${entry.handlerClassName}.${entry.handlerMethodName} at ${formatLocation(entry.location)} — ${reason}`,
+        );
+      }
     }
   }
 

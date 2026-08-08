@@ -308,6 +308,52 @@ describe('decoratorAlreadyPresent (issue 6 — no false positive from substring 
   });
 });
 
+describe('FileFixResult.notApplied surfacing (issue 7)', () => {
+  it('reports a skipped-as-already-present entry via notApplied with a reason, instead of silently dropping it', () => {
+    // `fresh-import.controller.ts`'s handler yields two genuine entries
+    // (404, 200). A duplicated 404 entry simulates the defensive case
+    // `decoratorAlreadyPresent`'s true-branch guards against — e.g. a stale
+    // re-plan against a file a concurrent edit already touched — without
+    // depending on `documented.ts` ever re-finding a status it now
+    // recognizes as documented (which would just never plan it again,
+    // never reaching `applyFixesToFile` at all).
+    const { findings, baseDir } = analyzeFixture(FIXTURE_DIR);
+    const plan = buildFixPlan(findings, baseDir);
+    const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) =>
+      f.endsWith('fresh-import.controller.ts'),
+    )!;
+    expect(entries.map((e) => e.status).sort()).toEqual([200, 404]);
+
+    const notFoundEntry = entries.find((e) => e.status === 404)!;
+    const withDuplicate = [...entries, notFoundEntry];
+
+    const result = applyFixesToFile(file, withDuplicate)!;
+    expect(result.applied.map((e) => e.status).sort()).toEqual([200, 404]);
+    expect(result.notApplied).toEqual([{ entry: notFoundEntry, reason: 'decorator already present' }]);
+    // Only ONE @ApiNotFoundResponse actually landed in the output, not two.
+    expect(result.after.match(/@ApiNotFoundResponse/g)?.length).toBe(1);
+  });
+
+  it("reports an unlocatable entry (stale methodStartPos) via notApplied", () => {
+    const { findings, baseDir } = analyzeFixture(FIXTURE_DIR);
+    const plan = buildFixPlan(findings, baseDir);
+    const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) =>
+      f.endsWith('fresh-import.controller.ts'),
+    )!;
+    const staleEntries = entries.map((e) => ({ ...e, methodStartPos: 999_999 }));
+
+    const result = applyFixesToFile(file, staleEntries);
+    expect(result).toBeDefined();
+    expect(result!.applied).toEqual([]);
+    expect(result!.notApplied).toHaveLength(staleEntries.length);
+    for (const { reason } of result!.notApplied) {
+      expect(reason).toBe('method not found (handler moved or removed since analysis)');
+    }
+    // Nothing was actually changed.
+    expect(result!.after).toBe(result!.before);
+  });
+});
+
 describe('--fix write mode + idempotency', () => {
   const tempDirs: string[] = [];
   afterEach(() => {

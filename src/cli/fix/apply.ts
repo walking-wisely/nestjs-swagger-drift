@@ -66,6 +66,13 @@ function detectIndentationText(text: string): IndentationText {
   return IndentationText.TwoSpaces;
 }
 
+/** A `FixEntry` this file's mutation pass declined to insert, and why. */
+export interface FixNotApplied {
+  entry: FixEntry;
+  /** Human-readable, e.g. `'method not found (handler moved or removed since analysis)'` or `'decorator already present'`. */
+  reason: string;
+}
+
 export interface FileFixResult {
   file: string;
   before: string;
@@ -73,7 +80,7 @@ export interface FileFixResult {
   /** Entries actually inserted — excludes any `entries` input already present (idempotency) or unlocatable. */
   applied: FixEntry[];
   /** Entries this file's mutation pass could not locate (handler moved/removed since analysis) or already had the decorator. */
-  notApplied: FixEntry[];
+  notApplied: FixNotApplied[];
 }
 
 /**
@@ -233,8 +240,11 @@ function groupByMethodPos(entries: readonly FixEntry[]): Map<number, FixEntry[]>
  * filePath` — callers use `groupEntriesByFile`) to one in-memory ts-morph
  * `SourceFile`, and returns the before/after text without writing anything
  * — `index.ts` decides whether to diff (`--fix-dry-run`) or write
- * (`--fix`). Returns `undefined` if nothing was actually applied (every
- * entry already present, or none locatable).
+ * (`--fix`). Returns `undefined` only when `entries` was empty to begin
+ * with; if every entry was skipped (already present, or unlocatable), the
+ * result is still returned — `before === after` and `applied` is empty —
+ * so the caller can report `notApplied`'s reasons instead of that silently
+ * looking identical to "this file had nothing to fix."
  *
  * Methods are processed in DESCENDING original-position order: inserting a
  * decorator above a method shifts every position AFTER the insertion point
@@ -272,17 +282,22 @@ export function applyFixesToFile(filePath: string, entries: readonly FixEntry[])
   const byMethod = [...groupByMethodPos(entries)].sort(([a], [b]) => b - a);
   const decoratorNamesNeeded = new Set<string>();
   const applied: FixEntry[] = [];
-  const notApplied: FixEntry[] = [];
+  const notApplied: FixNotApplied[] = [];
 
   for (const [pos, methodEntries] of byMethod) {
     const method = findMethodAtPos(sourceFile, pos);
     if (!method) {
-      notApplied.push(...methodEntries);
+      notApplied.push(
+        ...methodEntries.map((entry) => ({
+          entry,
+          reason: 'method not found (handler moved or removed since analysis)',
+        })),
+      );
       continue;
     }
     for (const entry of methodEntries) {
       if (decoratorAlreadyPresent(method, entry)) {
-        notApplied.push(entry);
+        notApplied.push({ entry, reason: 'decorator already present' });
         continue;
       }
       // `insertDecorator(0, ...)` — prepend, not `addDecorator` (append) —
@@ -303,7 +318,13 @@ export function applyFixesToFile(filePath: string, entries: readonly FixEntry[])
     }
   }
 
-  if (applied.length === 0) return undefined;
+  // `entries.length > 0` (checked above) plus every entry landing in either
+  // `applied` or `notApplied` means `applied.length === 0` here only when
+  // EVERY entry was skipped — still worth returning, not `undefined`, so the
+  // caller can report why (issue 7 / adversarial review of PR #21): a
+  // `--fix` run that skips insertions must not look identical to a run that
+  // had nothing to do in the first place.
+  if (applied.length === 0 && notApplied.length === 0) return undefined;
 
   ensureSwaggerImport(sourceFile, decoratorNamesNeeded);
 
