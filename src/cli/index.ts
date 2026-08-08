@@ -56,6 +56,7 @@
 import * as ts from 'typescript';
 import { pathToFileURL } from 'node:url';
 import { dirname, relative, resolve } from 'node:path';
+import { writeFileSync } from 'node:fs';
 import { createProgramFromTsConfig } from './program.js';
 import {
   collectDiscoveryWarnings,
@@ -65,9 +66,17 @@ import {
 import { parseArgs, type CliFlags, type OptionalRuleName } from './args.js';
 import { loadConfigFile, type CliConfigFile } from './config.js';
 import { isIgnored } from './ignore.js';
-import { locationOf } from './report/location.js';
+import { locationOf, formatLocation } from './report/location.js';
 import { reportFindingsJson, reportRoutesJson } from './report/json.js';
 import { reportFindingsPretty, reportRoutesPretty } from './report/pretty.js';
+import {
+  applyFixesToFile,
+  buildFixPlan,
+  formatFileDiff,
+  groupEntriesByFile,
+  type FileFixResult,
+  type FixNotApplied,
+} from './fix/index.js';
 import type { AnalysisOptions, Finding, HandlerInfo } from '../core/index.js';
 import { analyzeHandler, createAnalysisContext, listDirectiveCommentLines } from '../core/index.js';
 
@@ -106,6 +115,10 @@ function printUsage(): void {
       '      --no-config             Skip loading/auto-discovering a config file entirely.',
       '      --audit                 Ignore swagger-drift-disable-next-line directives, so',
       '                               every finding they would otherwise hide is reported.',
+      '      --fix-dry-run           Print a unified diff of the @Api*Response decorators',
+      '                               autofix would insert for undocumented-status findings',
+      '                               with a deterministic source, without writing anything.',
+      '      --fix                   Write those same @Api*Response decorator insertions.',
       '  -h, --help                  Print this message.',
     ].join('\n'),
   );
@@ -233,6 +246,8 @@ interface ResolvedOptions {
   checkParsePipes: boolean;
   baseDir: string | undefined;
   audit: boolean;
+  fixDryRun: boolean;
+  fix: boolean;
 }
 
 type MergeResult = { ok: true; options: ResolvedOptions } | { ok: false; error: string };
@@ -310,6 +325,8 @@ export function mergeOptions(flags: CliFlags, config: CliConfigFile, configPath:
       checkParsePipes: flags.checkParsePipes ?? config.checkParsePipes ?? false,
       baseDir: flags.baseDir ?? resolveFromConfig(config.baseDir),
       audit: flags.audit,
+      fixDryRun: flags.fixDryRun,
+      fix: flags.fix,
     },
   };
 }
@@ -330,6 +347,15 @@ export async function main(argv: string[]): Promise<number> {
 
   if (flags.noConfig && flags.config !== undefined) {
     console.error('nestjs-swagger-drift: --no-config and --config cannot be used together.');
+    return EXIT_USAGE_ERROR;
+  }
+
+  if (flags.fix && flags.fixDryRun) {
+    console.error('nestjs-swagger-drift: --fix and --fix-dry-run cannot be used together.');
+    return EXIT_USAGE_ERROR;
+  }
+  if (flags.routes && (flags.fix || flags.fixDryRun)) {
+    console.error('nestjs-swagger-drift: --routes and --fix/--fix-dry-run cannot be used together.');
     return EXIT_USAGE_ERROR;
   }
 
@@ -578,6 +604,89 @@ export async function main(argv: string[]): Promise<number> {
       `nestjs-swagger-drift: found ${findings.length} finding(s), ${failingFindings.length} ` +
         `matched by --fail-on, ${suppressedCount} suppressed.`,
     );
+  }
+
+  // Tier 1 autofix (PLAN §10.2). Runs against the SAME `findings` this run
+  // already computed and reported above — `--fix`/`--fix-dry-run` never
+  // change what counts as drift or this run's exit code (see the doc
+  // comment on `EXIT_FOUND_DRIFT` above); they're strictly additive: "and
+  // also, here's what autofix would do about it."
+  if (options.fixDryRun || options.fix) {
+    const plan = buildFixPlan(findings, baseDir);
+    if (plan.entries.length === 0 && plan.skipped.length === 0) {
+      console.error('nestjs-swagger-drift: nothing to fix.');
+    } else {
+      console.error(
+        `nestjs-swagger-drift: fix plan: ${plan.entries.length} insertion(s) fixable, ` +
+          `${plan.skipped.length} finding(s) skipped (inferred sources only).`,
+      );
+      let filesChanged = 0;
+      let insertionsApplied = 0;
+      const skippedFiles: string[] = [];
+      // Every planned insertion this file's mutation pass declined to make
+      // (already present, or unlocatable) — surfaced below so "N fixable /
+      // fewer written" is always explainable rather than a silent gap
+      // (issue 7 / adversarial review of PR #21).
+      const notApplied: FixNotApplied[] = [];
+      for (const [file, entries] of groupEntriesByFile(plan.entries)) {
+        // Defense in depth: a single pathological file (a shape
+        // `applyFixesToFile`/ts-morph doesn't handle) must not abort the
+        // whole batch — by the time we reach file N, files 1..N-1 may
+        // already have been written to disk (`--fix`, not `--fix-dry-run`),
+        // so an uncaught throw here would crash via `EXIT_UNEXPECTED_ERROR`
+        // leaving a partially-fixed, uncommitted working tree with no
+        // summary of what happened. Skip and keep going instead.
+        let result: FileFixResult | undefined;
+        try {
+          result = applyFixesToFile(file, entries);
+        } catch (err) {
+          const relativePath = relative(baseDir, file).split('\\').join('/');
+          console.error(
+            `nestjs-swagger-drift: warning: could not apply fix(es) to ${relativePath}, skipping: ` +
+              `${err instanceof Error ? err.message : String(err)}`,
+          );
+          skippedFiles.push(relativePath);
+          continue;
+        }
+        if (!result) continue;
+        notApplied.push(...result.notApplied);
+        if (result.applied.length === 0) continue;
+        filesChanged++;
+        insertionsApplied += result.applied.length;
+        if (options.fixDryRun) {
+          // stderr, not stdout (post-implementation fix): `--reporter json`
+          // promises stdout is one parseable JSON document — printing a
+          // diff via `console.log` here would corrupt that the moment
+          // `--fix-dry-run` is combined with it, the exact "JSON reporter
+          // must never fall through to prose on stdout" bug class the
+          // no-handlers-found branches above already guard against.
+          console.error(formatFileDiff(result, baseDir));
+        } else {
+          writeFileSync(result.file, result.after);
+          console.error(
+            `nestjs-swagger-drift: fixed ${result.applied.length} finding(s) in ` +
+              `${relative(baseDir, result.file).split('\\').join('/')}`,
+          );
+        }
+      }
+      console.error(
+        `nestjs-swagger-drift: ${options.fix ? 'wrote' : 'would write'} ${insertionsApplied} ` +
+          `@Api*Response insertion(s) across ${filesChanged} file(s)` +
+          (notApplied.length > 0 ? `, ${notApplied.length} insertion(s) not applied` : '') +
+          (skippedFiles.length > 0
+            ? `; ${skippedFiles.length} file(s) skipped due to errors: ${skippedFiles.join(', ')}.`
+            : '.'),
+      );
+      // One line per skipped insertion, matching the existing findings
+      // report's own `location: reason` style — without this, "N fixable /
+      // 0 written" gave no way to tell why (issue 7).
+      for (const { entry, reason } of notApplied) {
+        console.error(
+          `nestjs-swagger-drift:   not applied: ${entry.decoratorName} (status ${entry.status}) on ` +
+            `${entry.handlerClassName}.${entry.handlerMethodName} at ${formatLocation(entry.location)} — ${reason}`,
+        );
+      }
+    }
   }
 
   return failingFindings.length > 0 ? EXIT_FOUND_DRIFT : EXIT_OK;

@@ -43,6 +43,7 @@ import {
   HTTP_STATUS_ENUM_VALUES,
   SHORTHAND_RESPONSE_DECORATORS,
   shorthandResponseDecoratorName,
+  UNEXPORTED_SHORTHAND_STATUSES,
 } from '../../src/core/nest-exceptions.js';
 
 const require = createRequire(import.meta.url);
@@ -115,6 +116,40 @@ describe('SHORTHAND_RESPONSE_DECORATORS against the real @nestjs/swagger export 
 
     for (const name of realNames) {
       expect(SHORTHAND_RESPONSE_DECORATORS).toHaveProperty(name);
+    }
+  });
+
+  it('UNEXPORTED_SHORTHAND_STATUSES is exactly the set of statuses the real package does NOT export a shorthand for', () => {
+    // The REVERSE direction of the previous test — that one only asserts
+    // "every real export is in our table" (a superset is fine there, see
+    // `SHORTHAND_RESPONSE_DECORATORS`'s doc comment), so it could never have
+    // caught `UNEXPORTED_SHORTHAND_STATUSES` going stale in EITHER
+    // direction: a status added here that the real package actually DOES
+    // export (Tier 1 autofix wrongly forced to the generic `ApiResponse`
+    // fallback for no reason) or a status @nestjs/swagger stops exporting
+    // that ISN'T listed here (Tier 1 autofix generates a call to a name that
+    // no longer exists — the exact class of bug this constant exists to
+    // prevent, found via `test/integration/fix-decorator-runtime.test.ts`
+    // actually executing the generated calls against the real package).
+    const swaggerPackageJson = require.resolve('nest-swagger-snapshot/package.json');
+    const decoratorFile = join(dirname(swaggerPackageJson), 'dist/decorators/api-response.decorator.js');
+    const source = readFileSync(decoratorFile, 'utf8');
+    const realNames = new Set(
+      [...source.matchAll(/exports\.(Api\w*Response) = /g)]
+        .map((m) => m[1])
+        .filter((name): name is string => name !== undefined),
+    );
+    realNames.delete('ApiResponse');
+    realNames.delete('ApiDefaultResponse');
+
+    for (const [name, status] of Object.entries(SHORTHAND_RESPONSE_DECORATORS)) {
+      const reallyExported = realNames.has(name);
+      const claimedUnexported = UNEXPORTED_SHORTHAND_STATUSES.has(status);
+      expect(
+        reallyExported,
+        `status ${status} (${name}): really exported=${reallyExported}, ` +
+          `claimed unexported=${claimedUnexported} — these must disagree`,
+      ).toBe(!claimedUnexported);
     }
   });
 });
