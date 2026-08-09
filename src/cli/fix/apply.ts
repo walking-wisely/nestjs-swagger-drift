@@ -315,6 +315,7 @@ function ensureDtoImport(
   for (const declaration of dtoImports) {
     if (declaration.isTypeOnly()) continue;
     for (const named of declaration.getNamedImports()) {
+      if (named.isTypeOnly()) continue;
       if (named.getName() === className) return named.getAliasNode()?.getText() ?? named.getName();
     }
   }
@@ -388,6 +389,7 @@ function ensureSwaggerImport(sourceFile: SourceFile, decoratorNames: ReadonlySet
   for (const declaration of swaggerImports) {
     if (declaration.isTypeOnly()) continue;
     for (const named of declaration.getNamedImports()) {
+      if (named.isTypeOnly()) continue;
       needed.delete(named.getAliasNode()?.getText() ?? named.getName());
     }
   }

@@ -32,7 +32,7 @@ function sanitizeForTerminal(text: string): string {
 
 /** Renders `result` as a standard unified diff, headers relative to `baseDir` for readability. */
 export function formatFileDiff(result: FileFixResult, baseDir: string): string {
-  const relPath = relative(baseDir, result.file).split('\\').join('/');
+  const relPath = sanitizeForTerminal(relative(baseDir, result.file).split('\\').join('/'));
   const before = sanitizeForTerminal(result.before);
   const after = sanitizeForTerminal(result.after);
   return createTwoFilesPatch(relPath, relPath, before, after, undefined, undefined, {
