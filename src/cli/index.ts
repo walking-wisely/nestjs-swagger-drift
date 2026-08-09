@@ -32,7 +32,12 @@
  *   was well-formed and `ts.createProgram` succeeded, but zero handlers were
  *   found *and* `@nestjs/common` itself couldn't be resolved — "I don't
  *   know," not "there's nothing here." See the check below for the full
- *   reasoning (unchanged from Phase 1/2).
+ *   reasoning (unchanged from Phase 1/2). Also reused (post-Tier-2-review
+ *   fix) when `--fix`/`--fix-dry-run` skips one or more files because
+ *   `applyFixesToFile` threw for them — the analysis itself succeeded, but
+ *   the fix pass couldn't reliably finish, so "I don't know [if what's on
+ *   disk matches what was reported]" fits better than silently reporting
+ *   `EXIT_OK`/`EXIT_FOUND_DRIFT` based on `failingFindings` alone.
  * - `EXIT_FOUND_DRIFT` (`3`, new in Phase 4) — the checker ran to
  *   completion and found at least one finding matched by `--fail-on`
  *   (default: all rules). This is the only code a CI gate should actually
@@ -110,7 +115,7 @@ function printUsage(): void {
       '                               Check @Param()/@Query()/@Body() for a built-in',
       '                               Parse*Pipe implicit 400 (default: off).',
       '      --base-dir <path>       Base directory for reported file paths',
-      '                               (default: the tsconfig\'s own directory).',
+      "                               (default: the tsconfig's own directory).",
       '      --config <path>         Explicit swagger-drift.config.{json,js,mjs,ts} path.',
       '      --no-config             Skip loading/auto-discovering a config file entirely.',
       '      --audit                 Ignore swagger-drift-disable-next-line directives, so',
@@ -136,7 +141,11 @@ export const EXIT_FOUND_DRIFT = 3;
 /** `main()` itself threw — a bug in this tool, not a bad invocation. See the policy comment above. */
 export const EXIT_UNEXPECTED_ERROR = 4;
 
-const ALL_RULE_NAMES = ['undocumented-status', 'documented-but-unreachable', 'unresolvable-status'] as const;
+const ALL_RULE_NAMES = [
+  'undocumented-status',
+  'documented-but-unreachable',
+  'unresolvable-status',
+] as const;
 type RuleName = (typeof ALL_RULE_NAMES)[number];
 
 function isRuleName(value: string): value is RuleName {
@@ -218,7 +227,11 @@ function sortFindings(findings: Finding[]): Finding[] {
  * whatever the finding's own location line would show, not some other path
  * shape.
  */
-function isHandlerIgnored(handler: HandlerInfo, baseDir: string, patterns: readonly string[]): boolean {
+function isHandlerIgnored(
+  handler: HandlerInfo,
+  baseDir: string,
+  patterns: readonly string[],
+): boolean {
   if (patterns.length === 0) return false;
   return isIgnored(locationOf(handler.node, baseDir).file, patterns);
 }
@@ -276,10 +289,17 @@ type MergeResult = { ok: true; options: ResolvedOptions } | { ok: false; error: 
  * at all, which a black-box `main()` test that never inspects that field
  * can't observe.
  */
-export function mergeOptions(flags: CliFlags, config: CliConfigFile, configPath: string | undefined): MergeResult {
+export function mergeOptions(
+  flags: CliFlags,
+  config: CliConfigFile,
+  configPath: string | undefined,
+): MergeResult {
   const reporter = flags.reporter ?? (config.reporter as 'pretty' | 'json' | undefined) ?? 'pretty';
   if (reporter !== 'pretty' && reporter !== 'json') {
-    return { ok: false, error: `config "reporter" must be "pretty" or "json", got "${config.reporter}"` };
+    return {
+      ok: false,
+      error: `config "reporter" must be "pretty" or "json", got "${config.reporter}"`,
+    };
   }
 
   const failOnRaw = flags.failOn ?? config.failOn ?? 'all';
@@ -315,7 +335,8 @@ export function mergeOptions(flags: CliFlags, config: CliConfigFile, configPath:
       ignoreStatuses:
         flags.ignoreStatuses.length > 0 ? flags.ignoreStatuses : (config.ignoreStatuses ?? []),
       rules,
-      treatDefaultAsWildcard: flags.treatDefaultAsWildcard ?? config.treatDefaultAsWildcard ?? false,
+      treatDefaultAsWildcard:
+        flags.treatDefaultAsWildcard ?? config.treatDefaultAsWildcard ?? false,
       // §4.1c / §9: success-checking is the one implicit-codes check that's
       // on by default; the other two stay off unless explicitly requested,
       // matching `AnalysisOptions`'s own field-level defaults in `types.ts`.
@@ -355,7 +376,9 @@ export async function main(argv: string[]): Promise<number> {
     return EXIT_USAGE_ERROR;
   }
   if (flags.routes && (flags.fix || flags.fixDryRun)) {
-    console.error('nestjs-swagger-drift: --routes and --fix/--fix-dry-run cannot be used together.');
+    console.error(
+      'nestjs-swagger-drift: --routes and --fix/--fix-dry-run cannot be used together.',
+    );
     return EXIT_USAGE_ERROR;
   }
 
@@ -442,9 +465,8 @@ export async function main(argv: string[]): Promise<number> {
   // not about where the shell happened to be sitting. `--base-dir`
   // overrides it for callers who want something else (e.g. reporting paths
   // relative to a monorepo root instead of the package's own tsconfig).
-  const baseDir = options.baseDir !== undefined
-    ? resolve(process.cwd(), options.baseDir)
-    : dirname(configPath);
+  const baseDir =
+    options.baseDir !== undefined ? resolve(process.cwd(), options.baseDir) : dirname(configPath);
 
   const allHandlers = sortHandlers(discoverHandlers(program));
   if (allHandlers.length === 0) {
@@ -471,7 +493,9 @@ export async function main(argv: string[]): Promise<number> {
     // `console.error`, so it doesn't corrupt stdout's JSON — either way.
     if (options.reporter === 'json') {
       console.error('nestjs-swagger-drift: no @Controller handlers found.');
-      console.log(flags.routes ? reportRoutesJson([], baseDir) : reportFindingsJson([], baseDir, []));
+      console.log(
+        flags.routes ? reportRoutesJson([], baseDir) : reportFindingsJson([], baseDir, []),
+      );
     } else {
       console.log('No @Controller handlers found.');
     }
@@ -490,7 +514,9 @@ export async function main(argv: string[]): Promise<number> {
       console.error(
         `nestjs-swagger-drift: all ${allHandlers.length} @Controller handler(s) were excluded by --ignore.`,
       );
-      console.log(flags.routes ? reportRoutesJson([], baseDir) : reportFindingsJson([], baseDir, []));
+      console.log(
+        flags.routes ? reportRoutesJson([], baseDir) : reportFindingsJson([], baseDir, []),
+      );
     } else {
       console.log(`All ${allHandlers.length} @Controller handler(s) were excluded by --ignore.`);
     }
@@ -499,7 +525,9 @@ export async function main(argv: string[]): Promise<number> {
 
   if (flags.routes) {
     console.log(
-      options.reporter === 'json' ? reportRoutesJson(handlers, baseDir) : reportRoutesPretty(handlers),
+      options.reporter === 'json'
+        ? reportRoutesJson(handlers, baseDir)
+        : reportRoutesPretty(handlers),
     );
     return EXIT_OK;
   }
@@ -608,11 +636,16 @@ export async function main(argv: string[]): Promise<number> {
 
   // Tier 1 autofix (PLAN §10.2). Runs against the SAME `findings` this run
   // already computed and reported above — `--fix`/`--fix-dry-run` never
-  // change what counts as drift or this run's exit code (see the doc
-  // comment on `EXIT_FOUND_DRIFT` above); they're strictly additive: "and
-  // also, here's what autofix would do about it."
+  // change what counts as DRIFT or this run's exit code based on
+  // `failingFindings` (see the doc comment on `EXIT_FOUND_DRIFT` above);
+  // they're strictly additive: "and also, here's what autofix would do
+  // about it." A per-file WRITE FAILURE below is a different thing — that's
+  // not a drift-classification result, it's "the tool couldn't reliably
+  // finish the operation you asked for" — see `fixHadErrors` below and
+  // `EXIT_COULD_NOT_ANALYSE`'s doc comment.
+  let fixHadErrors = false;
   if (options.fixDryRun || options.fix) {
-    const plan = buildFixPlan(findings, baseDir);
+    const plan = buildFixPlan(findings, baseDir, program.getTypeChecker());
     if (plan.entries.length === 0 && plan.skipped.length === 0) {
       console.error('nestjs-swagger-drift: nothing to fix.');
     } else {
@@ -620,6 +653,19 @@ export async function main(argv: string[]): Promise<number> {
         `nestjs-swagger-drift: fix plan: ${plan.entries.length} insertion(s) fixable, ` +
           `${plan.skipped.length} finding(s) skipped (inferred sources only).`,
       );
+      // Tier 2 (PLAN §10.3): surfaces how many success-status entries got a
+      // resolved `type:`/`isArray:` vs. fell back to the untyped Tier 1
+      // stub, and why — the "tell the user 'you'll need to type this one by
+      // hand'" signal PLAN §10.3 asks for, short of the full opt-in
+      // `documented-status-untyped` rule it names as a candidate follow-up.
+      const typedCount = plan.entries.filter((e) => e.responseType !== undefined).length;
+      const untypedCount = plan.entries.filter((e) => e.typeSkippedReason !== undefined).length;
+      if (typedCount > 0 || untypedCount > 0) {
+        console.error(
+          `nestjs-swagger-drift: response type resolution: ${typedCount} typed, ` +
+            `${untypedCount} fell back to an untyped stub.`,
+        );
+      }
       let filesChanged = 0;
       let insertionsApplied = 0;
       const skippedFiles: string[] = [];
@@ -677,6 +723,11 @@ export async function main(argv: string[]): Promise<number> {
             ? `; ${skippedFiles.length} file(s) skipped due to errors: ${skippedFiles.join(', ')}.`
             : '.'),
       );
+      // A skipped file means a requested fix was NOT written — that must be
+      // visible in the exit code (not just stderr prose), or CI reads a
+      // partial/failed `--fix` run as a clean success (issue found in
+      // adversarial review).
+      if (skippedFiles.length > 0) fixHadErrors = true;
       // One line per skipped insertion, matching the existing findings
       // report's own `location: reason` style — without this, "N fixable /
       // 0 written" gave no way to tell why (issue 7).
@@ -689,6 +740,7 @@ export async function main(argv: string[]): Promise<number> {
     }
   }
 
+  if (fixHadErrors) return EXIT_COULD_NOT_ANALYSE;
   return failingFindings.length > 0 ? EXIT_FOUND_DRIFT : EXIT_OK;
 }
 

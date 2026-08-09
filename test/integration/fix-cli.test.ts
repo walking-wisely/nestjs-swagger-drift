@@ -40,7 +40,10 @@ describe('--fix per-file failure isolation', () => {
       const actual = await importOriginal<typeof import('../../src/cli/fix/apply.js')>();
       return {
         ...actual,
-        applyFixesToFile: (filePath: string, entries: Parameters<typeof actual.applyFixesToFile>[1]) => {
+        applyFixesToFile: (
+          filePath: string,
+          entries: Parameters<typeof actual.applyFixesToFile>[1],
+        ) => {
           if (filePath.endsWith('fresh-import.controller.ts')) {
             throw new Error('boom: synthetic pathological-file failure');
           }
@@ -49,7 +52,8 @@ describe('--fix per-file failure isolation', () => {
       };
     });
 
-    const { main, EXIT_UNEXPECTED_ERROR } = await import('../../src/cli/index.js');
+    const { main, EXIT_UNEXPECTED_ERROR, EXIT_COULD_NOT_ANALYSE } =
+      await import('../../src/cli/index.js');
 
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'swagger-drift-fix-cli-'));
     tempDirs.push(tmp);
@@ -73,18 +77,28 @@ describe('--fix per-file failure isolation', () => {
     // `EXIT_UNEXPECTED_ERROR` (and definitely didn't throw/reject).
     expect(code).not.toBe(EXIT_UNEXPECTED_ERROR);
 
+    // ...but it is NOT reported as success either: a requested fix was never
+    // written, so the exit code has to say so (a plain `--fail-on`-based
+    // 0/3 here would let CI read a partially-applied `--fix` as clean).
+    expect(code).toBe(EXIT_COULD_NOT_ANALYSE);
+
     // The failing file is named in a warning, not silently swallowed.
     expect(
       errors.some((e) => e.includes('fresh-import.controller.ts') && e.includes('boom: synthetic')),
     ).toBe(true);
     // The final summary reports it as skipped.
-    expect(errors.some((e) => e.includes('skipped due to errors') && e.includes('fresh-import.controller.ts'))).toBe(
-      true,
-    );
+    expect(
+      errors.some(
+        (e) => e.includes('skipped due to errors') && e.includes('fresh-import.controller.ts'),
+      ),
+    ).toBe(true);
 
     // A DIFFERENT file in the same batch — processed either before or after
     // the failing one — still got its fix written to disk.
-    const existingImportAfter = fs.readFileSync(join(tmp, 'src/existing-import.controller.ts'), 'utf8');
+    const existingImportAfter = fs.readFileSync(
+      join(tmp, 'src/existing-import.controller.ts'),
+      'utf8',
+    );
     expect(existingImportAfter).toContain('ApiConflictResponse');
 
     // The failing file itself was never written (still its original text).

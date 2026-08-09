@@ -637,7 +637,7 @@ time is a no-op (idempotency).
 **Estimate:** ~3–4 days (insertion mechanics, dry-run, write mode, idempotency
 tests).
 
-### 10.3 Tier 2 — type-aware fix (research spike before implementation)
+### 10.3 Tier 2 — type-aware fix (implemented — see §10.5.4)
 
 **What's added over Tier 1:** for *success*-status findings, attach
 `type: SomeDto` (and `isArray: true` where applicable) to the inserted
@@ -649,15 +649,18 @@ codes only.
 TypeChecker at the overriding/concrete call site — not the generic
 declaration. This is cheap given the existing ts-morph/checker setup already
 used for exception resolution: ask for the resolved signature's return type,
-unwrap `Promise<T>`, resolve `T` to a class declaration if one exists.
+unwrap `Promise<T>`, resolve `T` to a class declaration if one exists. If `T`
+is `SomeClass[]` or `Array<SomeClass>`, unwrap the array, apply the gate to
+the element type, and set `isArray: true` on the emitted decorator.
 
 **Gate — only emit `type:` when:**
 1. The resolved type is a **class**, not an interface or type alias. Swagger's
    `@ApiProperty()` reflection needs a runtime constructor; interfaces don't
    exist at runtime.
-2. That class already carries **at least one `@ApiProperty()`**. Otherwise
-   the emitted schema is syntactically valid but empty or misleading — worse
-   than the untyped Tier 1 stub, not better.
+2. That class already carries **at least one `@ApiProperty()` or
+   `@ApiPropertyOptional()`**. Otherwise the emitted schema is syntactically
+   valid but empty or misleading — worse than the untyped Tier 1 stub, not
+   better.
 
 If the gate fails, fall back silently to the Tier 1 stub and surface the case
 in a follow-up signal (candidate new opt-in rule,
@@ -688,10 +691,12 @@ positive and negative case):**
    Ship this as a regression fixture alongside the positive case so the gate
    can't silently regress.
 
-**Estimate:** ~1 week research spike (validate resolution + gate against Ever
-Gauzy plus 1–2 structurally different real repos — different generic/DTO
-conventions matter here, one repo's pattern will not generalize) *before*
-committing to implementation; ~1 week to implement if the spike says go.
+**Estimate:** *(Original plan, superseded — see §10.5.4 for what actually shipped:)*
+~1 week research spike (validate resolution + gate against Ever Gauzy plus 1–2
+structurally different real repos — different generic/DTO conventions matter
+here, one repo's pattern will not generalize) *before* committing to
+implementation; ~1 week to implement if the spike says go. (Collapsed into single
+pass, implemented 2026-08-08.)
 
 ### 10.4 Tier 3 — long tail (deferred, not scoped yet)
 
@@ -705,7 +710,6 @@ whether it's worth chasing further:
   above). Correct Swagger representation needs `@ApiExtraModels` +
   `getSchemaPath` boilerplate, and every codebase invents its own envelope
   shape — likely config-driven per-repo rather than inferable.
-- Array-vs-single-object detection / `isArray` flag automation.
 - Cross-file import ergonomics at scale: barrel files, path aliases,
   circular-import risk when pulling a DTO into a controller file.
 
@@ -758,9 +762,72 @@ whether it's worth chasing further:
    correctly accumulate `Reflect` metadata rather than clobbering — the two
    shapes Tier 1 actually produces in practice, as opposed to one decorator
    applied to an isolated dummy class per call.
-3. Tier 2 spike runs (research only, nothing shipped) against Ever Gauzy plus
-   2–3 structurally different repos.
-4. Tier 2 ships only if the spike shows the "already has `@ApiProperty`" gate
-   fires usefully often in practice — if most real handlers fail the gate and
-   fall back to Tier 1 anyway, the added complexity isn't earning its keep,
-   and that's a legitimate outcome of the spike, not a failure of it.
+3. [x] Tier 2 implemented directly (2026-08-08), collapsing the planned
+   "spike against 2–3 external repos, then decide" into one pass: the two
+   fixtures §10.3 already specified (a class resolving cleanly through
+   `Promise<T>`, and an interface-typed union that must fall back) are the
+   validation evidence, built locally rather than re-derived from a fresh
+   Ever Gauzy clone. Implementation: `core/resolve-response-type.ts`
+   (`resolveSuccessResponseType` — the two gates, pure, no `fs`/`checker`
+   mutation) plus `cli/fix/plan.ts` (`resolveTier2`, gated on `finding`
+   being success-sourced AND a `ts.TypeChecker` being supplied —
+   `buildFixPlan`'s `checker` param is optional, so every existing Tier 1
+   call site/test is unaffected) and `cli/fix/apply.ts` (`ensureDtoImport`:
+   reuses an existing same-module import of the exact class, merges into a
+   mergeable declaration, otherwise adds a fresh one; same-file DTOs need no
+   import at all; a colliding local name gets a numbered alias). One
+   difference from the written design: gate-failed cases are NOT wired to a
+   new `documented-status-untyped` opt-in rule (never built) — instead
+   `FixEntry.typeSkippedReason` carries the reason and the CLI's `--fix`/
+   `--fix-dry-run` summary prints a `typed N / untyped M` count, satisfying
+   §10.3's "tell the user, don't just drop it" without standing up a whole
+   new rule surface for a first cut.
+4. [x] Tier 2 validated end-to-end against a fresh `ever-co/ever-gauzy`
+   clone (2026-08-08, `packages/core`, `tsconfig.lib.json`): 554 findings
+   (matching the §10.0 baseline exactly), `--fix-dry-run` then `--fix`
+   wrote 554/554 insertions (of which 18 typed, 289 untyped-fallback per the
+   `typed N / untyped M` summary — this breakdown counts only success-status
+   Tier 2 findings, not the full 554), re-running the detector afterward hit 0
+   findings, a second `--fix` run was a clean no-op (idempotent), and
+   `tsc --noEmit` on the fixed tree passed with zero diagnostics. Two real
+   bugs found and fixed in this pass, both in `cli/fix/apply.ts` and both
+   regression-tested under `test/fixtures/fix-tier2-classic-resolution/`
+   (a project shaped like Ever Gauzy's own `"moduleResolution": "node"`,
+   `"module": "commonjs"` config — `fix-tier2`'s own fixture project uses
+   `nodenext` throughout and so exercises neither):
+   - `computeRelativeImportSpecifier` appended `.js` to every cross-file DTO
+     import unconditionally, on the assumption every consumer uses
+     `nodenext`/`node16` resolution. Ever Gauzy (`moduleResolution: node`,
+     zero `.js`-suffixed relative imports anywhere in the repo) does not:
+     the appended `.js` both failed to match the DTO's actual,
+     already-present extensionless import (so `ensureDtoImport` added a
+     redundant SECOND import under a colliding `Widget2`-style alias
+     instead of reusing the first) and named a module specifier that
+     doesn't resolve under classic Node resolution — a real `TS2307` had
+     the output been compiled, not merely a cosmetic duplicate. 12 of the
+     18 Tier 2 typed insertions in the real run hit this. Fixed by sniffing
+     the target file's own import-extension convention
+     (`relativeImportsUseExtension`, same pattern as the existing
+     indentation/newline sniffing) instead of assuming one, and by matching
+     existing imports for reuse extension-agnostically
+     (`stripKnownExtension`) so `'./x'` and `'./x.js'` are recognized as
+     the same import regardless of which style is generated.
+   - `applyFixesToFile` resolved each method's `pos` interleaved with
+     mutating the file, relying on descending-position processing order to
+     keep not-yet-resolved `pos`s ahead of every insertion. That invariant
+     covered decorator inserts (which only shift positions after the
+     insertion point) but not Tier 2's `ensureDtoImport`, which lands its
+     new import near the TOP of the file regardless of which method
+     triggered it — so fixing a later (higher-pos) method's typed response
+     could shift an earlier (lower-pos) method's still-unresolved `pos` out
+     from under it, reported as `'method not found (handler moved or
+     removed since analysis)'` for a handler that had, in fact, not moved.
+     Silently dropped 3 real, still-valid findings across 2 files in the
+     Ever Gauzy run. Fixed by resolving every `MethodDeclaration` reference
+     in one pass over the pristine, unmutated tree before any insertion or
+     import runs, removing the ordering dependency instead of re-deriving a
+     new ranking that would hold.
+4. [x] Shipped unconditionally rather than gated on spike results (see 3) —
+   the gate-fires-usefully-often question stays open pending real usage;
+   worth revisiting once the tool has run against more than the two local
+   fixtures.

@@ -452,9 +452,8 @@ describe('--fix write mode + idempotency', () => {
     const secondPlan = buildFixPlan(second.findings, second.baseDir);
     expect(secondPlan.entries).toHaveLength(0);
 
-    // Applying the (now-empty) plan again touches nothing.
-    for (const [file, entries] of groupEntriesByFile(secondPlan.entries)) {
-      expect(applyFixesToFile(file, entries)).toBeUndefined();
-    }
+    // Applying an empty entry list touches nothing.
+    const [firstFile] = [...groupEntriesByFile(firstPlan.entries)][0]!;
+    expect(applyFixesToFile(firstFile, [])).toBeUndefined();
   });
 });
