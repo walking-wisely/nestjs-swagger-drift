@@ -32,7 +32,12 @@
  *   was well-formed and `ts.createProgram` succeeded, but zero handlers were
  *   found *and* `@nestjs/common` itself couldn't be resolved — "I don't
  *   know," not "there's nothing here." See the check below for the full
- *   reasoning (unchanged from Phase 1/2).
+ *   reasoning (unchanged from Phase 1/2). Also reused (post-Tier-2-review
+ *   fix) when `--fix`/`--fix-dry-run` skips one or more files because
+ *   `applyFixesToFile` threw for them — the analysis itself succeeded, but
+ *   the fix pass couldn't reliably finish, so "I don't know [if what's on
+ *   disk matches what was reported]" fits better than silently reporting
+ *   `EXIT_OK`/`EXIT_FOUND_DRIFT` based on `failingFindings` alone.
  * - `EXIT_FOUND_DRIFT` (`3`, new in Phase 4) — the checker ran to
  *   completion and found at least one finding matched by `--fail-on`
  *   (default: all rules). This is the only code a CI gate should actually
@@ -631,9 +636,14 @@ export async function main(argv: string[]): Promise<number> {
 
   // Tier 1 autofix (PLAN §10.2). Runs against the SAME `findings` this run
   // already computed and reported above — `--fix`/`--fix-dry-run` never
-  // change what counts as drift or this run's exit code (see the doc
-  // comment on `EXIT_FOUND_DRIFT` above); they're strictly additive: "and
-  // also, here's what autofix would do about it."
+  // change what counts as DRIFT or this run's exit code based on
+  // `failingFindings` (see the doc comment on `EXIT_FOUND_DRIFT` above);
+  // they're strictly additive: "and also, here's what autofix would do
+  // about it." A per-file WRITE FAILURE below is a different thing — that's
+  // not a drift-classification result, it's "the tool couldn't reliably
+  // finish the operation you asked for" — see `fixHadErrors` below and
+  // `EXIT_COULD_NOT_ANALYSE`'s doc comment.
+  let fixHadErrors = false;
   if (options.fixDryRun || options.fix) {
     const plan = buildFixPlan(findings, baseDir, program.getTypeChecker());
     if (plan.entries.length === 0 && plan.skipped.length === 0) {
@@ -713,6 +723,11 @@ export async function main(argv: string[]): Promise<number> {
             ? `; ${skippedFiles.length} file(s) skipped due to errors: ${skippedFiles.join(', ')}.`
             : '.'),
       );
+      // A skipped file means a requested fix was NOT written — that must be
+      // visible in the exit code (not just stderr prose), or CI reads a
+      // partial/failed `--fix` run as a clean success (issue found in
+      // adversarial review).
+      if (skippedFiles.length > 0) fixHadErrors = true;
       // One line per skipped insertion, matching the existing findings
       // report's own `location: reason` style — without this, "N fixable /
       // 0 written" gave no way to tell why (issue 7).
@@ -725,6 +740,7 @@ export async function main(argv: string[]): Promise<number> {
     }
   }
 
+  if (fixHadErrors) return EXIT_COULD_NOT_ANALYSE;
   return failingFindings.length > 0 ? EXIT_FOUND_DRIFT : EXIT_OK;
 }
 
