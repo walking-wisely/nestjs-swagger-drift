@@ -17,8 +17,8 @@
  * `documented-but-unreachable` findings are out of scope entirely — neither
  * is an `undocumented-status` finding, so nothing to insert a decorator for.
  *
- * Tier 2 (PLAN §10.3): for a fixable finding whose ONLY reason it's fixable
- * is the implicit success source (i.e. it's a success-status finding —
+ * Tier 2 (PLAN §10.3): for a fixable finding carrying the implicit success
+ * source among its sources (i.e. it's a success-status finding —
  * `200`/`201`/whatever `@HttpCode` says), also attempt
  * `resolveSuccessResponseType` against the handler's concrete return type.
  * When both of that function's gates pass, the resulting `FixEntry` carries

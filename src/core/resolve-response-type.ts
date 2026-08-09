@@ -7,7 +7,7 @@
  * Scope (§10.3): success statuses only — error-status findings don't
  * generally carry a documented payload, so this module is never consulted
  * for those. `cli/fix/plan.ts` is the only caller, and only for a finding
- * whose sole deterministic source is `{ kind: 'implicit', reason: 'success' }`.
+ * carrying at least one `{ kind: 'implicit', reason: 'success' }` source among its sources.
  *
  * Pure (PLAN §3's hard rule for `core/`): reads `handlerNode` and `checker`
  * only, never touches `fs`/`process`/`console`. The two gate conditions below
@@ -68,21 +68,52 @@ function isTypeReference(type: ts.Type): type is ts.TypeReference {
   );
 }
 
-/** `true` if `classDecl` carries at least one accepted `@ApiProperty`/`@ApiPropertyOptional` member decorator (§10.3 gate 2). Name-based acceptance mirrors `decorators.ts`'s non-strict default (accept `'verified'`/`'unverified'` provenance, reject a confirmed `'mismatch'`) — a false NEGATIVE here only costs a Tier 1 fallback, so this stays conservative rather than requiring full provenance verification. */
+/** `true` if `classDecl` carries at least one accepted `@ApiProperty`/`@ApiPropertyOptional` member decorator (§10.3 gate 2). Name-based acceptance mirrors `decorators.ts`'s non-strict default (accept `'verified'`/`'unverified'` provenance, reject a confirmed `'mismatch'`) — a false NEGATIVE here only costs a Tier 1 fallback, so this stays conservative rather than requiring full provenance verification. Checks own members (properties and accessors) and one level of base class members. */
 function hasApiProperty(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): boolean {
-  for (const member of classDecl.members) {
-    if (!ts.isPropertyDeclaration(member) || !ts.canHaveDecorators(member)) continue;
-    const decorators = ts.getDecorators(member);
-    if (!decorators) continue;
-    for (const decorator of decorators) {
-      const nameNode = getDecoratorNameNode(decorator);
-      const name = getDecoratorName(nameNode);
-      if (name === undefined) continue;
-      const { provenance, resolvedName } = checkProvenance(nameNode, checker, SWAGGER_MODULE);
-      if (provenance === 'mismatch') continue;
-      if (API_PROPERTY_DECORATOR_NAMES.has(resolvedName ?? name)) return true;
+  // Helper to check members (own or inherited) for @ApiProperty decorators
+  function checkMembers(decl: ts.ClassDeclaration): boolean {
+    for (const member of decl.members) {
+      // Accept property declarations or get/set accessors
+      if (
+        !((ts.isPropertyDeclaration(member) || ts.isGetAccessorDeclaration(member) || ts.isSetAccessorDeclaration(member)) &&
+          ts.canHaveDecorators(member))
+      ) {
+        continue;
+      }
+      const decorators = ts.getDecorators(member);
+      if (!decorators) continue;
+      for (const decorator of decorators) {
+        const nameNode = getDecoratorNameNode(decorator);
+        const name = getDecoratorName(nameNode);
+        if (name === undefined) continue;
+        const { provenance, resolvedName } = checkProvenance(nameNode, checker, SWAGGER_MODULE);
+        if (provenance === 'mismatch') continue;
+        if (API_PROPERTY_DECORATOR_NAMES.has(resolvedName ?? name)) return true;
+      }
+    }
+    return false;
+  }
+
+  // Check own members first
+  if (checkMembers(classDecl)) return true;
+
+  // Check one level of base class (if it exists)
+  for (const heritage of classDecl.heritageClauses ?? []) {
+    if (heritage.token === ts.SyntaxKind.ExtendsKeyword) {
+      for (const type of heritage.types) {
+        try {
+          const typeSymbol = checker.getTypeAtLocation(type).getSymbol();
+          if (!typeSymbol) continue;
+          const baseDeclaration = typeSymbol.getDeclarations()?.find(ts.isClassDeclaration);
+          if (baseDeclaration && checkMembers(baseDeclaration)) return true;
+        } catch {
+          // If resolving the base class fails for any reason, just skip it
+          continue;
+        }
+      }
     }
   }
+
   return false;
 }
 
@@ -141,6 +172,15 @@ export function resolveSuccessResponseType(
   }
   const className = declaration.name?.text;
   if (className === undefined) return { kind: 'skipped', reason: 'class declaration has no name' };
+
+  // Reject non-exported classes from cross-file DTOs: if the declaration lives in
+  // a different file than the handler, ensure it's exported (otherwise import will fail)
+  if (declaration.getSourceFile() !== handlerNode.getSourceFile()) {
+    const isExported = (ts.getCombinedModifierFlags(declaration) & ts.ModifierFlags.Export) !== 0;
+    if (!isExported) {
+      return { kind: 'skipped', reason: `${className} is not exported from its declaration file` };
+    }
+  }
 
   if (!hasApiProperty(declaration, checker)) {
     return { kind: 'skipped', reason: `${className} has no @ApiProperty()-decorated members` };
