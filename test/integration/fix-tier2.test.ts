@@ -150,6 +150,67 @@ describe('Tier 2 autofix (PLAN §10.3) — response type resolution', () => {
     expect(result.after.match(/from '\.\/dto\.js'/g)?.length).toBe(1);
   });
 
+  // Cross-file export-shape gate (`isExportedUnderOwnName`) plus gate 2's
+  // accessor/heritage walk — `export-shapes.ts` + its controller.
+  describe('cross-file export shapes', () => {
+    const entryFor = (methodName: string) => {
+      const { findings, baseDir, checker } = analyzeFixture();
+      const plan = buildFixPlan(findings, baseDir, checker);
+      return plan.entries.find(
+        (e) =>
+          e.handlerClassName === 'ExportShapesController' && e.handlerMethodName === methodName,
+      )!;
+    };
+
+    it('an `export default class` is NOT emitted as `type:` — no named export to import', () => {
+      const entry = entryFor('defaultExported');
+      expect(entry.responseType).toBeUndefined();
+      expect(entry.typeSkippedReason).toContain('not exported under its own name');
+    });
+
+    it('a detached `export { Dto }` still resolves — it IS a named export', () => {
+      expect(entryFor('detachedExport').responseType).toEqual({
+        className: 'DetachedDto',
+        isArray: false,
+        declarationFile: fixturePath('src/export-shapes.ts'),
+      });
+    });
+
+    it('a cross-file class that is not exported at all falls back to the untyped stub', () => {
+      const entry = entryFor('notExported');
+      expect(entry.responseType).toBeUndefined();
+      expect(entry.typeSkippedReason).toContain('not exported under its own name');
+    });
+
+    it('gate 2 accepts an @ApiProperty() inherited from the immediate base class', () => {
+      expect(entryFor('inherited').responseType?.className).toBe('InheritedDto');
+    });
+
+    it('gate 2 accepts an @ApiProperty() on a get accessor', () => {
+      expect(entryFor('accessor').responseType?.className).toBe('AccessorDto');
+    });
+
+    // Regression: emitting `type:` for a default-exported class made
+    // `ensureDtoImport` write `import { DefaultDto } from './export-shapes.js'`
+    // — TS2614, a non-compiling fix. Nothing named DefaultDto may be added.
+    it('the applied file never gains a named import of the default-exported class', () => {
+      const { findings, baseDir, checker } = analyzeFixture();
+      const plan = buildFixPlan(findings, baseDir, checker);
+      const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) =>
+        f.endsWith('export-shapes.controller.ts'),
+      )!;
+      const result = applyFixesToFile(file, entries)!;
+      expect(result.after).not.toContain('DefaultDto as');
+      expect(result.after).not.toContain('type: DefaultDto');
+      expect(result.after.match(/DefaultDto/g)?.length).toBe(
+        result.before.match(/DefaultDto/g)?.length,
+      );
+      // The importable ones still got typed.
+      expect(result.after).toContain("@ApiOkResponse({ description: 'Ok', type: DetachedDto })");
+      expect(result.after).toContain("@ApiOkResponse({ description: 'Ok', type: InheritedDto })");
+    });
+  });
+
   it('omitting the checker falls back to Tier 1 behavior for every entry (no responseType, no typeSkippedReason)', () => {
     const { findings, baseDir } = analyzeFixture();
     const plan = buildFixPlan(findings, baseDir);
