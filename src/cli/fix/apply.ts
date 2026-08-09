@@ -198,18 +198,50 @@ function decoratorArgumentText(entry: FixEntry, typeLocalName?: string): string 
   return `{ ${properties.join(', ')} }`;
 }
 
+/** Strips a trailing `.js`/`.jsx`/`.mjs`/`.cjs`/`.ts`/`.tsx` extension, so two
+ * specifiers for the same file that differ only in extension style —
+ * `'./widget.dto'` vs `'./widget.dto.js'` — compare equal. */
+function stripKnownExtension(specifier: string): string {
+  return specifier.replace(/\.(js|jsx|mjs|cjs|ts|tsx)$/, '');
+}
+
+/**
+ * `true` if `sourceFile` itself already has at least one *relative* import
+ * specifier ending in a JS/TS extension (`'./foo.js'`) — the convention
+ * `"moduleResolution": "nodenext"`/`"node16"` requires, where a relative
+ * specifier's extension names the emitted JS file, not the TS source.
+ * Plain `"moduleResolution": "node"` (still the common case in real NestJS
+ * repos — CommonJS output, no import-extension requirement) has zero such
+ * imports, and appending `.js` there is worse than doing nothing: TypeScript
+ * cannot resolve a relative specifier that names a file that doesn't exist
+ * on disk (`TS2307`), so a wrongly-extensioned import doesn't just look odd,
+ * it fails to compile. Sniffed from the file's own imports (like
+ * `detectIndentationText`/`detectNewLineKind`) rather than assumed, because
+ * the two conventions coexist across real codebases and even across files
+ * within one repo (a `nodenext`-built package next to a `commonjs` one).
+ */
+function relativeImportsUseExtension(sourceFile: SourceFile): boolean {
+  return sourceFile.getImportDeclarations().some((declaration) => {
+    const specifier = declaration.getModuleSpecifierValue();
+    return specifier.startsWith('.') && specifier !== stripKnownExtension(specifier);
+  });
+}
+
 /**
  * Converts an absolute DTO source-file path into the relative module
- * specifier `filePath`'s own import would use, e.g. `'./dto/widget.dto.js'`.
- * The trailing `.js` (not `.ts`) mirrors this project's own fixtures/import
- * style under `"moduleResolution": "nodenext"`, where a relative specifier's
- * extension names the emitted JS file, not the TS source.
+ * specifier `filePath`'s own import would use — e.g. `'./dto/widget.dto'` or
+ * `'./dto/widget.dto.js'`, depending on `useExtension`
+ * (`relativeImportsUseExtension`'s verdict on `filePath`'s own file).
  */
-function computeRelativeImportSpecifier(filePath: string, declarationFile: string): string {
+function computeRelativeImportSpecifier(
+  filePath: string,
+  declarationFile: string,
+  useExtension: boolean,
+): string {
   const relPath = relative(dirname(filePath), declarationFile).split('\\').join('/');
   const withoutExt = relPath.slice(0, relPath.length - extname(relPath).length);
-  const jsPath = `${withoutExt}.js`;
-  return jsPath.startsWith('.') ? jsPath : `./${jsPath}`;
+  const path = useExtension ? `${withoutExt}.js` : withoutExt;
+  return path.startsWith('.') ? path : `./${path}`;
 }
 
 /** `true` if `name` is already bound in `sourceFile`'s top-level scope — an import (default/namespace/named, aliased or not) or a top-level declaration — so a Tier 2 DTO import can pick a non-colliding local alias instead. */
@@ -267,12 +299,20 @@ function ensureDtoImport(
 ): string {
   if (declarationFile === filePath) return className;
 
-  const moduleSpecifier = computeRelativeImportSpecifier(filePath, declarationFile);
-  const swaggerImports = sourceFile
+  // Matched extension-agnostically ('./widget.dto' and './widget.dto.js'
+  // are the same file under different import-extension conventions) so an
+  // existing import is recognized regardless of which style the file
+  // happens to use — see `relativeImportsUseExtension`'s doc comment.
+  const targetSpecifierBase = stripKnownExtension(
+    computeRelativeImportSpecifier(filePath, declarationFile, false),
+  );
+  const dtoImports = sourceFile
     .getImportDeclarations()
-    .filter((declaration) => declaration.getModuleSpecifierValue() === moduleSpecifier);
+    .filter(
+      (declaration) => stripKnownExtension(declaration.getModuleSpecifierValue()) === targetSpecifierBase,
+    );
 
-  for (const declaration of swaggerImports) {
+  for (const declaration of dtoImports) {
     if (declaration.isTypeOnly()) continue;
     for (const named of declaration.getNamedImports()) {
       if (named.getName() === className) return named.getAliasNode()?.getText() ?? named.getName();
@@ -282,12 +322,17 @@ function ensureDtoImport(
   const localName = uniqueLocalName(sourceFile, className);
   const namedImport = localName === className ? className : { name: className, alias: localName };
 
-  const mergeable = swaggerImports.find(
+  const mergeable = dtoImports.find(
     (declaration) => !declaration.isTypeOnly() && declaration.getNamespaceImport() === undefined,
   );
   if (mergeable) {
     mergeable.addNamedImport(namedImport);
   } else {
+    const moduleSpecifier = computeRelativeImportSpecifier(
+      filePath,
+      declarationFile,
+      relativeImportsUseExtension(sourceFile),
+    );
     sourceFile.addImportDeclaration({ moduleSpecifier, namedImports: [namedImport] });
   }
   return localName;
@@ -384,16 +429,26 @@ function groupByMethodPos(entries: readonly FixEntry[]): Map<number, FixEntry[]>
  * so the caller can report `notApplied`'s reasons instead of that silently
  * looking identical to "this file had nothing to fix."
  *
- * Methods are processed in DESCENDING original-position order: inserting a
- * decorator above a method shifts every position AFTER the insertion point
- * forward, so handling the last method in the file first means every
- * `methodStartPos` still to be resolved is guaranteed to be BEFORE the
- * current edit and therefore still accurate — the ts-morph-native
- * alternative to `plan.ts`'s comment about avoiding "position drift when a
- * single file gets multiple insertions" (PLAN §10.2). All of one method's
- * own entries are applied together, via the SAME `MethodDeclaration`
- * reference, before moving to the next — ts-morph keeps that reference
- * valid across its own mutations.
+ * Every `methodStartPos` is resolved to its `MethodDeclaration` in ONE pass
+ * over the pristine, not-yet-mutated tree, before any insertion or import
+ * runs — not interleaved with mutation. Interleaving is tempting (resolve
+ * this method, mutate it, resolve the next) and was the original design —
+ * processing methods in descending original-position order so a decorator
+ * insertion, which only shifts positions AFTER it, could never invalidate
+ * an as-yet-unresolved earlier `pos`. That held for decorator insertions
+ * alone, but Tier 2's DTO import (`ensureDtoImport`, PLAN §10.3) lands near
+ * the TOP of the file regardless of which method triggered it — so an
+ * import added while resolving a LATER (higher-pos) method shifts every
+ * position after it, including still-unresolved EARLIER (lower-pos)
+ * methods' stale offsets, no matter the processing order. Found running
+ * this against a real Ever Gauzy checkout: a Tier 2 fix on one method
+ * dropped an unrelated, still-valid finding on an earlier method in the
+ * same file as `'method not found (handler moved or removed since
+ * analysis)'` — the method hadn't moved; the stale offset had. Resolving
+ * every position up front against the untouched tree removes the ordering
+ * dependency instead of re-deriving a ranking that would hold; ts-morph
+ * keeps a `MethodDeclaration` reference valid across mutations elsewhere in
+ * the tree, so each one is safe to reuse for its own inserts afterward.
  */
 export function applyFixesToFile(
   filePath: string,
@@ -421,11 +476,15 @@ export function applyFixesToFile(
   const sourceFile = project.addSourceFileAtPath(filePath);
   const before = sourceFile.getFullText();
 
-  const byMethod = [...groupByMethodPos(entries)].sort(([a], [b]) => b - a);
+  const byMethod = [...groupByMethodPos(entries)];
   const decoratorNamesNeeded = new Set<string>();
   const applied: FixEntry[] = [];
   const notApplied: FixNotApplied[] = [];
 
+  // Pass 1: resolve every method reference against the pristine tree,
+  // before any insertion or import mutates it — see this function's doc
+  // comment for why this can't be interleaved with pass 2's mutations.
+  const resolved: { method: MethodDeclaration; entries: FixEntry[] }[] = [];
   for (const [pos, methodEntries] of byMethod) {
     const method = findMethodAtPos(sourceFile, pos);
     if (!method) {
@@ -437,6 +496,11 @@ export function applyFixesToFile(
       );
       continue;
     }
+    resolved.push({ method, entries: methodEntries });
+  }
+
+  // Pass 2: mutate, using the references pass 1 already resolved.
+  for (const { method, entries: methodEntries } of resolved) {
     for (const entry of methodEntries) {
       if (decoratorAlreadyPresent(method, entry)) {
         notApplied.push({ entry, reason: 'decorator already present' });
