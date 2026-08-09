@@ -778,6 +778,50 @@ whether it's worth chasing further:
    `--fix-dry-run` summary prints a `typed N / untyped M` count, satisfying
    §10.3's "tell the user, don't just drop it" without standing up a whole
    new rule surface for a first cut.
+4. [x] Tier 2 validated end-to-end against a fresh `ever-co/ever-gauzy`
+   clone (2026-08-08, `packages/core`, `tsconfig.lib.json`): 554 findings
+   (matching the §10.0 baseline exactly), `--fix-dry-run` then `--fix`
+   wrote 554/554 insertions (18 typed, 289 untyped-fallback per the
+   `typed N / untyped M` summary), re-running the detector afterward hit 0
+   findings, a second `--fix` run was a clean no-op (idempotent), and
+   `tsc --noEmit` on the fixed tree passed with zero diagnostics. Two real
+   bugs found and fixed in this pass, both in `cli/fix/apply.ts` and both
+   regression-tested under `test/fixtures/fix-tier2-classic-resolution/`
+   (a project shaped like Ever Gauzy's own `"moduleResolution": "node"`,
+   `"module": "commonjs"` config — `fix-tier2`'s own fixture project uses
+   `nodenext` throughout and so exercises neither):
+   - `computeRelativeImportSpecifier` appended `.js` to every cross-file DTO
+     import unconditionally, on the assumption every consumer uses
+     `nodenext`/`node16` resolution. Ever Gauzy (`moduleResolution: node`,
+     zero `.js`-suffixed relative imports anywhere in the repo) does not:
+     the appended `.js` both failed to match the DTO's actual,
+     already-present extensionless import (so `ensureDtoImport` added a
+     redundant SECOND import under a colliding `Widget2`-style alias
+     instead of reusing the first) and named a module specifier that
+     doesn't resolve under classic Node resolution — a real `TS2307` had
+     the output been compiled, not merely a cosmetic duplicate. 12 of the
+     18 Tier 2 typed insertions in the real run hit this. Fixed by sniffing
+     the target file's own import-extension convention
+     (`relativeImportsUseExtension`, same pattern as the existing
+     indentation/newline sniffing) instead of assuming one, and by matching
+     existing imports for reuse extension-agnostically
+     (`stripKnownExtension`) so `'./x'` and `'./x.js'` are recognized as
+     the same import regardless of which style is generated.
+   - `applyFixesToFile` resolved each method's `pos` interleaved with
+     mutating the file, relying on descending-position processing order to
+     keep not-yet-resolved `pos`s ahead of every insertion. That invariant
+     covered decorator inserts (which only shift positions after the
+     insertion point) but not Tier 2's `ensureDtoImport`, which lands its
+     new import near the TOP of the file regardless of which method
+     triggered it — so fixing a later (higher-pos) method's typed response
+     could shift an earlier (lower-pos) method's still-unresolved `pos` out
+     from under it, reported as `'method not found (handler moved or
+     removed since analysis)'` for a handler that had, in fact, not moved.
+     Silently dropped 3 real, still-valid findings across 2 files in the
+     Ever Gauzy run. Fixed by resolving every `MethodDeclaration` reference
+     in one pass over the pristine, unmutated tree before any insertion or
+     import runs, removing the ordering dependency instead of re-deriving a
+     new ranking that would hold.
 4. [x] Shipped unconditionally rather than gated on spike results (see 3) —
    the gate-fires-usefully-often question stays open pending real usage;
    worth revisiting once the tool has run against more than the two local
