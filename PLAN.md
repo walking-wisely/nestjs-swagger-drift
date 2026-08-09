@@ -637,7 +637,7 @@ time is a no-op (idempotency).
 **Estimate:** ~3–4 days (insertion mechanics, dry-run, write mode, idempotency
 tests).
 
-### 10.3 Tier 2 — type-aware fix (research spike before implementation)
+### 10.3 Tier 2 — type-aware fix (implemented — see §10.5.4)
 
 **What's added over Tier 1:** for *success*-status findings, attach
 `type: SomeDto` (and `isArray: true` where applicable) to the inserted
@@ -649,15 +649,18 @@ codes only.
 TypeChecker at the overriding/concrete call site — not the generic
 declaration. This is cheap given the existing ts-morph/checker setup already
 used for exception resolution: ask for the resolved signature's return type,
-unwrap `Promise<T>`, resolve `T` to a class declaration if one exists.
+unwrap `Promise<T>`, resolve `T` to a class declaration if one exists. If `T`
+is `SomeClass[]` or `Array<SomeClass>`, unwrap the array, apply the gate to
+the element type, and set `isArray: true` on the emitted decorator.
 
 **Gate — only emit `type:` when:**
 1. The resolved type is a **class**, not an interface or type alias. Swagger's
    `@ApiProperty()` reflection needs a runtime constructor; interfaces don't
    exist at runtime.
-2. That class already carries **at least one `@ApiProperty()`**. Otherwise
-   the emitted schema is syntactically valid but empty or misleading — worse
-   than the untyped Tier 1 stub, not better.
+2. That class already carries **at least one `@ApiProperty()` or
+   `@ApiPropertyOptional()`**. Otherwise the emitted schema is syntactically
+   valid but empty or misleading — worse than the untyped Tier 1 stub, not
+   better.
 
 If the gate fails, fall back silently to the Tier 1 stub and surface the case
 in a follow-up signal (candidate new opt-in rule,
@@ -688,10 +691,12 @@ positive and negative case):**
    Ship this as a regression fixture alongside the positive case so the gate
    can't silently regress.
 
-**Estimate:** ~1 week research spike (validate resolution + gate against Ever
-Gauzy plus 1–2 structurally different real repos — different generic/DTO
-conventions matter here, one repo's pattern will not generalize) *before*
-committing to implementation; ~1 week to implement if the spike says go.
+**Estimate:** *(Original plan, superseded — see §10.5.4 for what actually shipped:)*
+~1 week research spike (validate resolution + gate against Ever Gauzy plus 1–2
+structurally different real repos — different generic/DTO conventions matter
+here, one repo's pattern will not generalize) *before* committing to
+implementation; ~1 week to implement if the spike says go. (Collapsed into single
+pass, implemented 2026-08-08.)
 
 ### 10.4 Tier 3 — long tail (deferred, not scoped yet)
 
@@ -705,7 +710,6 @@ whether it's worth chasing further:
   above). Correct Swagger representation needs `@ApiExtraModels` +
   `getSchemaPath` boilerplate, and every codebase invents its own envelope
   shape — likely config-driven per-repo rather than inferable.
-- Array-vs-single-object detection / `isArray` flag automation.
 - Cross-file import ergonomics at scale: barrel files, path aliases,
   circular-import risk when pulling a DTO into a controller file.
 
@@ -781,8 +785,9 @@ whether it's worth chasing further:
 4. [x] Tier 2 validated end-to-end against a fresh `ever-co/ever-gauzy`
    clone (2026-08-08, `packages/core`, `tsconfig.lib.json`): 554 findings
    (matching the §10.0 baseline exactly), `--fix-dry-run` then `--fix`
-   wrote 554/554 insertions (18 typed, 289 untyped-fallback per the
-   `typed N / untyped M` summary), re-running the detector afterward hit 0
+   wrote 554/554 insertions (of which 18 typed, 289 untyped-fallback per the
+   `typed N / untyped M` summary — this breakdown counts only success-status
+   Tier 2 findings, not the full 554), re-running the detector afterward hit 0
    findings, a second `--fix` run was a clean no-op (idempotent), and
    `tsc --noEmit` on the fixed tree passed with zero diagnostics. Two real
    bugs found and fixed in this pass, both in `cli/fix/apply.ts` and both
