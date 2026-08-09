@@ -74,12 +74,11 @@ function hasApiProperty(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker)
   function checkMembers(decl: ts.ClassDeclaration): boolean {
     for (const member of decl.members) {
       // Accept property declarations or get/set accessors
-      if (
-        !((ts.isPropertyDeclaration(member) || ts.isGetAccessorDeclaration(member) || ts.isSetAccessorDeclaration(member)) &&
-          ts.canHaveDecorators(member))
-      ) {
-        continue;
-      }
+      const isDecoratableMember =
+        ts.isPropertyDeclaration(member) ||
+        ts.isGetAccessorDeclaration(member) ||
+        ts.isSetAccessorDeclaration(member);
+      if (!isDecoratableMember || !ts.canHaveDecorators(member)) continue;
       const decorators = ts.getDecorators(member);
       if (!decorators) continue;
       for (const decorator of decorators) {
@@ -114,6 +113,42 @@ function hasApiProperty(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker)
     }
   }
 
+  return false;
+}
+
+/**
+ * `true` when `declaration`'s own file exports it as a NAMED export called
+ * `className` — the only shape `cli/fix/apply.ts`'s `ensureDtoImport` can
+ * actually import, since it only ever emits `import { className } from
+ * '...'`.
+ *
+ * Deliberately NOT a `ts.getCombinedModifierFlags(...) & Export` check: that
+ * flag is also set for `export default class Foo {}`, whose module has NO
+ * named export `Foo` at all, so accepting it made the fixer emit a
+ * non-compiling `import { Foo } from './foo'` (TS2614) — the exact failure
+ * mode this gate exists to prevent. Going through the module's own export
+ * table instead gets `export default` right AND keeps the detached
+ * `class Foo {} export { Foo }` form working (which a modifier check would
+ * have wrongly rejected, silently downgrading it to the untyped Tier 1
+ * stub). `export { Foo as Bar }` stays rejected: `{ Foo }` isn't importable
+ * from it either, and emitting `Bar` is beyond this gate's remit.
+ *
+ * A file with no module symbol (a global script, no imports/exports) also
+ * returns `false` — nothing there is importable by specifier.
+ */
+function isExportedUnderOwnName(
+  declaration: ts.ClassDeclaration,
+  className: string,
+  checker: ts.TypeChecker,
+): boolean {
+  const moduleSymbol = checker.getSymbolAtLocation(declaration.getSourceFile());
+  if (!moduleSymbol) return false;
+  for (const exported of checker.getExportsOfModule(moduleSymbol)) {
+    if (exported.getName() !== className) continue;
+    const target =
+      (exported.flags & ts.SymbolFlags.Alias) !== 0 ? checker.getAliasedSymbol(exported) : exported;
+    if (target.getDeclarations()?.includes(declaration) === true) return true;
+  }
   return false;
 }
 
@@ -173,13 +208,18 @@ export function resolveSuccessResponseType(
   const className = declaration.name?.text;
   if (className === undefined) return { kind: 'skipped', reason: 'class declaration has no name' };
 
-  // Reject non-exported classes from cross-file DTOs: if the declaration lives in
-  // a different file than the handler, ensure it's exported (otherwise import will fail)
-  if (declaration.getSourceFile() !== handlerNode.getSourceFile()) {
-    const isExported = (ts.getCombinedModifierFlags(declaration) & ts.ModifierFlags.Export) !== 0;
-    if (!isExported) {
-      return { kind: 'skipped', reason: `${className} is not exported from its declaration file` };
-    }
+  // Cross-file DTO: the caller (`cli/fix/apply.ts`'s `ensureDtoImport`) will
+  // emit `import { className } from '...'`, so the class must actually be
+  // exported from its file UNDER ITS OWN NAME — see
+  // `isExportedUnderOwnName` for why a modifier check alone isn't enough.
+  if (
+    declaration.getSourceFile() !== handlerNode.getSourceFile() &&
+    !isExportedUnderOwnName(declaration, className, checker)
+  ) {
+    return {
+      kind: 'skipped',
+      reason: `${className} is not exported under its own name from its declaration file`,
+    };
   }
 
   if (!hasApiProperty(declaration, checker)) {
