@@ -57,7 +57,7 @@
 import 'reflect-metadata';
 import { createRequire } from 'node:module';
 import Module from 'node:module';
-import { dirname, join } from 'node:path';
+import { dirname, join, sep } from 'node:path';
 
 const require = createRequire(import.meta.url);
 
@@ -106,7 +106,7 @@ export function loadRealSwaggerResponseDecorators(): RealSwaggerResponseDecorato
   ModuleInternals._resolveFilename = function (request, parent, isMain, options) {
     if (
       (request === '@nestjs/common' || request.startsWith('@nestjs/common/')) &&
-      parent?.filename?.startsWith(swaggerRoot)
+      parent?.filename?.startsWith(swaggerRoot + sep)
     ) {
       const redirected =
         request === '@nestjs/common'

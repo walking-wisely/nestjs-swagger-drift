@@ -16,6 +16,11 @@ import { applyFixesToFile } from '../../src/cli/fix/apply.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_DIR = join(__dirname, '../fixtures/fix-tier2');
 
+// `declarationFile` is always `ts.SourceFile.fileName`, which uses forward
+// slashes regardless of OS — `join(FIXTURE_DIR, ...)` alone would produce
+// backslashes on Windows and fail these assertions there.
+const fixturePath = (rel: string): string => join(FIXTURE_DIR, rel).split('\\').join('/');
+
 function analyzeFixture(): { findings: Finding[]; baseDir: string; checker: ts.TypeChecker } {
   const outcome = createProgramFromTsConfig(join(FIXTURE_DIR, 'tsconfig.json'));
   if (!outcome.ok) throw new Error('fixture failed to build a Program');
@@ -44,7 +49,7 @@ describe('Tier 2 autofix (PLAN §10.3) — response type resolution', () => {
     expect(entry?.responseType).toEqual({
       className: 'WidgetDto',
       isArray: false,
-      declarationFile: join(FIXTURE_DIR, 'src/dto.ts'),
+      declarationFile: fixturePath('src/dto.ts'),
     });
     expect(entry?.typeSkippedReason).toBeUndefined();
 
@@ -65,7 +70,7 @@ describe('Tier 2 autofix (PLAN §10.3) — response type resolution', () => {
     expect(entry?.responseType).toEqual({
       className: 'WidgetDto',
       isArray: true,
-      declarationFile: join(FIXTURE_DIR, 'src/dto.ts'),
+      declarationFile: fixturePath('src/dto.ts'),
     });
 
     const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) =>
@@ -84,7 +89,7 @@ describe('Tier 2 autofix (PLAN §10.3) — response type resolution', () => {
     expect(entry.responseType).toEqual({
       className: 'LocalDto',
       isArray: false,
-      declarationFile: join(FIXTURE_DIR, 'src/same-file-dto.controller.ts'),
+      declarationFile: fixturePath('src/same-file-dto.controller.ts'),
     });
 
     const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) =>

@@ -11,11 +11,15 @@
 // analysis" and silently dropped its fix.
 //
 // `findFirst` needs no import at all (its finding is a plain error-status
-// throw); `findGadget` needs a brand-new import of `GadgetDto` (not
-// otherwise referenced in this file, forcing `ensureDtoImport` down its
-// "add a fresh import declaration" path). Both must end up in `applied`.
+// throw); `findGadget` needs a brand-new import of `GadgetDto` — resolved
+// purely through return-type INFERENCE off `makeGadget()` (see
+// `gadget-factory.ts`, which is the only thing this file imports; it never
+// imports anything from `./dto` directly), so `GadgetDto`/`./dto` have no
+// binding of any kind here to begin with, forcing `ensureDtoImport` down
+// its "add a fresh import declaration" path — not a merge into an existing
+// one. Both must end up in `applied`.
 import { Controller, Get, NotFoundException } from '@nestjs/common';
-import { GadgetDto } from './dto';
+import { makeGadget } from './gadget-factory';
 
 @Controller('items')
 export class PositionDriftController {
@@ -25,7 +29,7 @@ export class PositionDriftController {
   }
 
   @Get('gadget')
-  async findGadget(): Promise<GadgetDto> {
-    return new GadgetDto();
+  async findGadget() {
+    return makeGadget();
   }
 }
