@@ -518,7 +518,7 @@ No undocumented status codes found.
   class (method- and class-level), finds its `canActivate`, and recurses into
   it with the same bounded call-graph traversal used for services, collecting
   whatever it throws (typically `UnauthorizedException`/`ForbiddenException`).
-- **`guardGuarantees`** (config file only) — maps a guard class name to the
+- **`guardGuarantees`** (config file and ESLint rule option) — maps a guard class name to the
   calls it guarantees to return a truthy value, for example
   `{ "TenantGuard": ["RequestContext.currentTenantId"] }`. On a handler that
   carries the guard through `@UseGuards` (class- or method-level, including

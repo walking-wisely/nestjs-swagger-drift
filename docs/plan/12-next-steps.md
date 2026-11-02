@@ -63,8 +63,7 @@ variable)`, throws inside callbacks, `throw new X(this.helper())`.
 - `corpus-check` skill on top of the script.
 - Novu baseline (pinned, never run), then Immich and Amplication (not pinned).
 - `--fix-report <path>` (§11.10) if gate 4 parsing proves brittle.
-- Fingerprint stability under an unrelated whitespace edit to a target file was
-  specified (§11.11 step 2) but not tested.
+- ~~Fingerprint stability under an unrelated edit~~ — tested in `corpus-lib.test.ts`.
 - Migration step for verdicts when a pin is refreshed (carry by `Class.method`).
 
 ### 12.5 Analyser gaps found by the corpus
@@ -74,8 +73,8 @@ variable)`, throws inside callbacks, `throw new X(this.helper())`.
   site stays "possibly true" (§6).
 - The remaining Gauzy 401 sites (`hasPermissions` family with non-constant flags)
   need their own review before deciding whether anything more is wrong.
-- Regression test that spawns the built binary with a report over 64KB (the
-  stdout truncation bug had no test).
+- ~~Regression test that spawns the built binary with a report over 64KB~~ — done
+  (`test/integration/large-report.test.ts`).
 
 ### 12.6 Open decisions still unmade (§9)
 

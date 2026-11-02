@@ -25,6 +25,49 @@ function finding(overrides: Partial<RunFinding> = {}): RunFinding {
 }
 
 describe('corpus fingerprint', () => {
+  it('survives an unrelated edit that shifts every line number', () => {
+    const before = finding({
+      handler: {
+        className: 'UsersController',
+        methodName: 'findOne',
+        location: { file: 'src/users.controller.ts', line: 20 },
+      },
+      location: { file: 'src/users.controller.ts', line: 22 },
+      sources: [
+        {
+          kind: 'service-throw',
+          exception: 'NotFoundException',
+          via: ['UsersService.find'],
+          location: { file: 'src/users.service.ts', line: 40 },
+        },
+      ],
+    });
+    const after = finding({
+      handler: {
+        className: 'UsersController',
+        methodName: 'findOne',
+        location: { file: 'src/users.controller.ts', line: 27 },
+      },
+      location: { file: 'src/users.controller.ts', line: 29 },
+      sources: [
+        {
+          kind: 'service-throw',
+          exception: 'NotFoundException',
+          via: ['UsersService.find'],
+          location: { file: 'src/users.service.ts', line: 52 },
+        },
+      ],
+    });
+    expect(fingerprint(after)).toBe(fingerprint(before));
+    expect(
+      computeDelta({ [fingerprint(before)]: { verdict: 'TP', key: 'k' } }, [after]),
+    ).toMatchObject({
+      added: [],
+      disappeared: [],
+      changed: [],
+    });
+  });
+
   it('ignores source ordering', () => {
     const a = finding({
       sources: [

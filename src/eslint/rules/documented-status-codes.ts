@@ -116,6 +116,8 @@ interface Options {
   checkGuards?: boolean;
   /** See `AnalysisOptions.checkParsePipes`. Default: `false`, matching the CLI. */
   checkParsePipes?: boolean;
+  /** See `AnalysisOptions.guardGuarantees`. Default: none. */
+  guardGuarantees?: Record<string, string[]>;
 }
 
 type RuleOptionsTuple = [Options];
@@ -186,6 +188,10 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
           checkValidationPipe: { type: 'boolean' },
           checkGuards: { type: 'boolean' },
           checkParsePipes: { type: 'boolean' },
+          guardGuarantees: {
+            type: 'object',
+            additionalProperties: { type: 'array', items: { type: 'string' } },
+          },
         },
       },
     ],
@@ -230,6 +236,7 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
       checkValidationPipe: options.checkValidationPipe ?? DEFAULT_OPTIONS.checkValidationPipe,
       checkGuards: options.checkGuards ?? DEFAULT_OPTIONS.checkGuards,
       checkParsePipes: options.checkParsePipes ?? DEFAULT_OPTIONS.checkParsePipes,
+      ...(options.guardGuarantees ? { guardGuarantees: options.guardGuarantees } : {}),
     };
     // `createAnalysisContext` resolves (or creates) the program-keyed shared
     // cache — see module doc's "no second cache" note. Cheap to call once

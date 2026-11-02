@@ -241,7 +241,15 @@ const ALL_RULES_OPTIONS: AnalysisOptions = {
   checkParsePipes: true,
 };
 
+const GUARANTEE_OPTIONS: AnalysisOptions = {
+  ...DEFAULT_OPTIONS,
+  maxDepth: 3,
+  checkSuccessResponse: false,
+  guardGuarantees: { TenantGuard: ['RequestContext.currentTenantId'] },
+};
+
 describe.each([
+  ['guard-guarantees', GUARANTEE_OPTIONS],
   ['basic', DEFAULT_OPTIONS],
   ['basic', ALL_RULES_OPTIONS],
   ['status-diff', DEFAULT_OPTIONS],
