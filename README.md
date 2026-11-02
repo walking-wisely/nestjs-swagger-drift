@@ -130,6 +130,8 @@ Options:
       --no-config             Skip loading/auto-discovering a config file entirely.
       --audit                 Ignore swagger-drift-disable-next-line directives, so
                                every finding they would otherwise hide is reported.
+      --explain               Show, per finding, the call hops and enclosing conditions
+                               that made each throw count as reachable.
   -h, --help                  Print this message.
 ```
 

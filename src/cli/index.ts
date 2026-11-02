@@ -120,6 +120,8 @@ function printUsage(): void {
       '      --no-config             Skip loading/auto-discovering a config file entirely.',
       '      --audit                 Ignore swagger-drift-disable-next-line directives, so',
       '                               every finding they would otherwise hide is reported.',
+      '      --explain               Show, per finding, the call hops and enclosing conditions',
+      '                               that made each throw count as reachable.',
       '      --fix-dry-run           Print a unified diff of the @Api*Response decorators',
       '                               autofix would insert for undocumented-status findings',
       '                               with a deterministic source, without writing anything.',
@@ -259,6 +261,7 @@ interface ResolvedOptions {
   checkParsePipes: boolean;
   baseDir: string | undefined;
   audit: boolean;
+  explain: boolean;
   fixDryRun: boolean;
   fix: boolean;
 }
@@ -346,6 +349,7 @@ export function mergeOptions(
       checkParsePipes: flags.checkParsePipes ?? config.checkParsePipes ?? false,
       baseDir: flags.baseDir ?? resolveFromConfig(config.baseDir),
       audit: flags.audit,
+      explain: flags.explain,
       fixDryRun: flags.fixDryRun,
       fix: flags.fix,
     },
@@ -620,11 +624,13 @@ export async function main(argv: string[]): Promise<number> {
   }
 
   if (options.reporter === 'json') {
-    console.log(reportFindingsJson(findings, baseDir, failingFindings, suppressedCount));
+    console.log(
+      reportFindingsJson(findings, baseDir, failingFindings, suppressedCount, options.explain),
+    );
   } else if (findings.length === 0) {
     console.log('No undocumented status codes found.');
   } else {
-    console.log(reportFindingsPretty(findings, baseDir));
+    console.log(reportFindingsPretty(findings, baseDir, options.explain));
   }
 
   if (findings.length > 0 || suppressedCount > 0) {
@@ -748,10 +754,12 @@ export async function main(argv: string[]): Promise<number> {
 const entryUrl = process.argv[1] === undefined ? undefined : pathToFileURL(process.argv[1]).href;
 if (import.meta.url === entryUrl) {
   main(process.argv.slice(2)).then(
-    (code) => process.exit(code),
+    (code) => {
+      process.exitCode = code;
+    },
     (err: unknown) => {
       console.error('nestjs-swagger-drift: unexpected error:', err);
-      process.exit(EXIT_UNEXPECTED_ERROR);
+      process.exitCode = EXIT_UNEXPECTED_ERROR;
     },
   );
 }

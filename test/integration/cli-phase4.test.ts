@@ -117,7 +117,7 @@ describe('--reporter json', () => {
 });
 
 describe('base directory (the Phase 4 bug fix)', () => {
-  it('defaults to the tsconfig\'s own directory, not process.cwd()', async () => {
+  it("defaults to the tsconfig's own directory, not process.cwd()", async () => {
     // Regression coverage for `src/cli/index.ts:262`'s pre-Phase-4 bug: this
     // test's own cwd (wherever `vitest` happens to run from — the repo
     // root) is NOT the fixture's tsconfig directory, so if `baseDir` were
@@ -303,7 +303,7 @@ describe('--ignore-status', () => {
 });
 
 describe('unknown/malformed flags', () => {
-  it('a typo\'d flag is a usage error, not a silent no-op', async () => {
+  it("a typo'd flag is a usage error, not a silent no-op", async () => {
     const console_ = captureConsole();
     try {
       const code = await main(['--porject', join(STATUS_DIFF, 'tsconfig.json')]);
@@ -425,10 +425,7 @@ describe('--config and swagger-drift.config.json', () => {
     // repo root, not `dir`).
     const relativeProject = path.relative(dir, join(NO_FALSE_POSITIVES, 'tsconfig.json'));
     expect(process.cwd()).not.toBe(dir);
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify({ project: relativeProject }),
-    );
+    fs.writeFileSync(configPath, JSON.stringify({ project: relativeProject }));
     const console_ = captureConsole();
     try {
       const code = await main(['--config', configPath]);
@@ -679,9 +676,13 @@ describe('--enable-rule / --disable-rule', () => {
     // A config file can enable a rule; an explicit `--disable-rule` on the
     // command line must still win (flag > config, same precedence as every
     // other option).
-    const disabledMerge = mergeOptions(disabled.flags, {
-      rules: { 'unresolvable-status': true },
-    }, undefined);
+    const disabledMerge = mergeOptions(
+      disabled.flags,
+      {
+        rules: { 'unresolvable-status': true },
+      },
+      undefined,
+    );
     expect(disabledMerge.ok && disabledMerge.options.rules).toEqual({
       'documented-but-unreachable': false,
       'unresolvable-status': false,
@@ -710,7 +711,12 @@ describe('--check-success-response / --check-validation-pipe / --check-guards / 
     if (!flags.ok) throw new Error('unexpected parse failure');
     const merged = mergeOptions(
       flags.flags,
-      { checkSuccessResponse: true, checkValidationPipe: false, checkGuards: false, checkParsePipes: false },
+      {
+        checkSuccessResponse: true,
+        checkValidationPipe: false,
+        checkGuards: false,
+        checkParsePipes: false,
+      },
       undefined,
     );
     expect(merged.ok && merged.options.checkSuccessResponse).toBe(false);
@@ -724,7 +730,12 @@ describe('--check-success-response / --check-validation-pipe / --check-guards / 
     if (!base.ok) throw new Error('parseArgs([]) unexpectedly failed');
     const merged = mergeOptions(
       base.flags,
-      { checkSuccessResponse: false, checkValidationPipe: true, checkGuards: true, checkParsePipes: true },
+      {
+        checkSuccessResponse: false,
+        checkValidationPipe: true,
+        checkGuards: true,
+        checkParsePipes: true,
+      },
       undefined,
     );
     expect(merged.ok && merged.options.checkSuccessResponse).toBe(false);
@@ -756,6 +767,49 @@ describe('--help', () => {
       const code = await main(['--help']);
       expect(code).toBe(EXIT_OK);
       expect(console_.logs.some((l) => l.includes('Usage:'))).toBe(true);
+    } finally {
+      console_.restore();
+    }
+  });
+});
+
+describe('--explain', () => {
+  it('adds a trace to each throw-derived source in the JSON report and omits it without the flag', async () => {
+    const run = async (extra: string[]) => {
+      const console_ = captureConsole();
+      try {
+        await main(['--project', STATUS_DIFF, '--reporter', 'json', ...extra]);
+        return JSON.parse(console_.logs[0] ?? '{}') as {
+          findings: {
+            sources: { kind: string; trace?: { hops: unknown[]; guards: unknown[] } }[];
+          }[];
+        };
+      } finally {
+        console_.restore();
+      }
+    };
+
+    const explained = await run(['--explain']);
+    const throwSources = explained.findings
+      .flatMap((f) => f.sources)
+      .filter((s) => s.kind !== 'implicit');
+    expect(throwSources.length).toBeGreaterThan(0);
+    for (const source of throwSources) {
+      expect(source.trace).toBeDefined();
+      expect(Array.isArray(source.trace?.hops)).toBe(true);
+      expect(Array.isArray(source.trace?.guards)).toBe(true);
+    }
+
+    const plain = await run([]);
+    expect(plain.findings.flatMap((f) => f.sources).every((s) => s.trace === undefined)).toBe(true);
+  });
+
+  it('prints hop and guard lines in the pretty report', async () => {
+    const console_ = captureConsole();
+    try {
+      await main(['--project', STATUS_DIFF, '--explain']);
+      const output = console_.logs.join('\n');
+      expect(output).toContain('call  ');
     } finally {
       console_.restore();
     }

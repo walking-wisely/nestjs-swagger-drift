@@ -5,7 +5,12 @@
  * results rather than parse text.
  */
 
-import type { Finding, HandlerInfo, StatusSource } from '../../core/index.js';
+import {
+  traceSource,
+  type Finding,
+  type HandlerInfo,
+  type StatusSource,
+} from '../../core/index.js';
 import { formatLocation, locationOf } from './location.js';
 
 export function formatHandlerPretty(handler: HandlerInfo): string {
@@ -32,12 +37,33 @@ function describeSourcePretty(source: StatusSource, baseDir: string): string {
   }
 }
 
+function describeTracePretty(source: StatusSource, baseDir: string): string[] {
+  const trace = traceSource(source);
+  if (!trace) return [];
+  const lines: string[] = [];
+  for (const hop of trace.hops) {
+    lines.push(`            call  ${hop.call}  ${formatLocation(locationOf(hop.node, baseDir))}`);
+  }
+  for (const arg of trace.finalArguments) {
+    lines.push(`            arg   ${arg.parameter} = ${arg.argument}`);
+  }
+  for (const guard of trace.guards) {
+    const condition =
+      guard.condition === undefined ? guard.kind : `${guard.kind}  (${guard.condition})`;
+    lines.push(
+      `            guard ${condition}  ${formatLocation(locationOf(guard.node, baseDir))}`,
+    );
+    lines.push(`                  ${guard.assessment}`);
+  }
+  return lines;
+}
+
 /**
  * PLAN §4.4's report shape, extended in Phase 5 for the two opt-in rules
  * `undocumented-status` was previously the only one this function rendered
  * meaningfully.
  */
-export function formatFindingPretty(finding: Finding, baseDir: string): string {
+export function formatFindingPretty(finding: Finding, baseDir: string, explain = false): string {
   if (finding.rule === 'undocumented-status') {
     const { handler, status, sources } = finding;
     const exceptionNames = [
@@ -47,7 +73,10 @@ export function formatFindingPretty(finding: Finding, baseDir: string): string {
       `${formatLocation(locationOf(handler.node, baseDir))}  error`,
       `  ${handler.httpMethod} ${handler.path} (${handler.className}.${handler.methodName}) is missing @ApiResponse for:`,
       `    ${status} ${exceptionNames.join(', ')}`,
-      ...sources.map((s) => `       └ ${describeSourcePretty(s, baseDir)}`),
+      ...sources.flatMap((s) => [
+        `       └ ${describeSourcePretty(s, baseDir)}`,
+        ...(explain ? describeTracePretty(s, baseDir) : []),
+      ]),
     ];
     return lines.join('\n');
   }
@@ -81,6 +110,10 @@ export function reportRoutesPretty(handlers: readonly HandlerInfo[]): string {
   return handlers.map(formatHandlerPretty).join('\n');
 }
 
-export function reportFindingsPretty(findings: readonly Finding[], baseDir: string): string {
-  return findings.map((f) => formatFindingPretty(f, baseDir)).join('\n\n');
+export function reportFindingsPretty(
+  findings: readonly Finding[],
+  baseDir: string,
+  explain = false,
+): string {
+  return findings.map((f) => formatFindingPretty(f, baseDir, explain)).join('\n\n');
 }

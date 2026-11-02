@@ -12,7 +12,12 @@
  * findings) is reporter-controlled.
  */
 
-import type { Finding, HandlerInfo, StatusSource } from '../../core/index.js';
+import {
+  traceSource,
+  type Finding,
+  type HandlerInfo,
+  type StatusSource,
+} from '../../core/index.js';
 import { locationOf, type Location } from './location.js';
 
 interface JsonSource {
@@ -22,9 +27,48 @@ interface JsonSource {
   via?: string[];
   detail?: string;
   location: Location;
+  trace?: JsonTrace;
 }
 
-function sourceToJson(source: StatusSource, baseDir: string): JsonSource {
+interface JsonTrace {
+  finalArguments: { parameter: string; argument: string }[];
+  hops: { name: string; call: string; location: Location }[];
+  guards: {
+    kind: string;
+    condition: string | undefined;
+    parameters: string[];
+    assessment: string;
+    location: Location;
+  }[];
+}
+
+function traceToJson(source: StatusSource, baseDir: string): JsonTrace | undefined {
+  const trace = traceSource(source);
+  if (!trace) return undefined;
+  return {
+    finalArguments: trace.finalArguments,
+    hops: trace.hops.map((h) => ({
+      name: h.name,
+      call: h.call,
+      location: locationOf(h.node, baseDir),
+    })),
+    guards: trace.guards.map((g) => ({
+      kind: g.kind,
+      condition: g.condition,
+      parameters: g.parameters,
+      assessment: g.assessment,
+      location: locationOf(g.node, baseDir),
+    })),
+  };
+}
+
+function sourceToJson(source: StatusSource, baseDir: string, explain: boolean): JsonSource {
+  const json = sourceToJsonBase(source, baseDir);
+  const trace = explain ? traceToJson(source, baseDir) : undefined;
+  return trace ? { ...json, trace } : json;
+}
+
+function sourceToJsonBase(source: StatusSource, baseDir: string): JsonSource {
   const location = locationOf(source.node, baseDir);
   if (source.kind === 'throw') {
     return { kind: source.kind, exception: source.exception, location };
@@ -63,11 +107,7 @@ function handlerToJson(handler: HandlerInfo, baseDir: string): JsonHandler {
 }
 
 export function reportRoutesJson(handlers: readonly HandlerInfo[], baseDir: string): string {
-  return JSON.stringify(
-    { handlers: handlers.map((h) => handlerToJson(h, baseDir)) },
-    undefined,
-    2,
-  );
+  return JSON.stringify({ handlers: handlers.map((h) => handlerToJson(h, baseDir)) }, undefined, 2);
 }
 
 interface JsonFinding {
@@ -89,13 +129,16 @@ interface JsonFinding {
   unresolvableKind: 'throw' | 'success' | undefined;
 }
 
-function findingToJson(finding: Finding, baseDir: string): JsonFinding {
+function findingToJson(finding: Finding, baseDir: string, explain: boolean): JsonFinding {
   return {
     rule: finding.rule,
     status: finding.rule === 'unresolvable-status' ? undefined : finding.status,
     handler: handlerToJson(finding.handler, baseDir),
     location: locationOf(finding.node, baseDir),
-    sources: finding.rule === 'undocumented-status' ? finding.sources.map((s) => sourceToJson(s, baseDir)) : [],
+    sources:
+      finding.rule === 'undocumented-status'
+        ? finding.sources.map((s) => sourceToJson(s, baseDir, explain))
+        : [],
     detail: finding.rule === 'unresolvable-status' ? finding.detail : undefined,
     unresolvableKind: finding.rule === 'unresolvable-status' ? finding.unresolvableKind : undefined,
   };
@@ -106,10 +149,11 @@ export function reportFindingsJson(
   baseDir: string,
   failing: readonly Finding[],
   suppressed = 0,
+  explain = false,
 ): string {
   return JSON.stringify(
     {
-      findings: findings.map((f) => findingToJson(f, baseDir)),
+      findings: findings.map((f) => findingToJson(f, baseDir, explain)),
       summary: { total: findings.length, failing: failing.length, suppressed },
     },
     undefined,
