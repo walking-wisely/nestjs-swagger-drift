@@ -22,8 +22,9 @@ jobs:
     timeout-minutes: 90
     env:
       CORPUS_REPO: ${{ inputs.repo || 'ever-gauzy' }}
-      CORPUS_CACHE_DIR: ${{ runner.temp }}/corpus-cache
     steps:
+      - run: echo "CORPUS_CACHE_DIR=$RUNNER_TEMP/corpus-cache" >> "$GITHUB_ENV"
+
       - name: Free disk space
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
