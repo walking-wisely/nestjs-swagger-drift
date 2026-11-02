@@ -31,3 +31,15 @@ Implicit-success findings (357) were all true positives apart from the excluded 
 ## Confidence marker
 
 On the 698 current findings, 205 are marked `confidence: low` (every source is a throw inside a catch block). Against the recorded verdicts: 35 of the 41 FPs and all 3 UNCLEAR are low; 65 TPs are low too (catch-all repository-error remaps), so low means "check before acting", not "wrong".
+
+## High-confidence triage (125 findings)
+
+Result: 111 TP, 11 FP, 3 UNCLEAR. New FP classes, none modelled by the tool:
+
+- Service-level "no tenant" / "no user" check behind `TenantPermissionGuard` or `TenantBaseGuard`, which already reject a null tenant (8 of the 11).
+- Guard excluded by a class-validator DTO (`@IsNotEmpty @IsUUID`, `@IsIn`, `@ArrayNotEmpty`) on a handler running under `UseValidationPipe`.
+- Defense-in-depth re-check of a value an upstream verifier guarantees (`verify-oauth-tokens.ts`).
+- Internal-only parameter that no route passes (`DailyPlanService.delete` options).
+- Dead `if (!x) throw NotFoundException` after a finder that already throws on a miss. These stay TP: the handler still returns the status through the callee (`crud.service.ts:563`, `:641`), and the tool attributes it to the wrong throw site. Worth investigating why the callee's own throw is not listed as a source.
+
+Reachability caveats recorded as TP: demo-only (`account-deletion.service.ts:448`), MikroORM-only (`organization-project.service.ts:841`), null `organizationId` rows (official holidays), self-hosted installs without a Stripe key (billing `requireBillingEnabled`).

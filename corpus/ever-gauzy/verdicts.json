@@ -19,8 +19,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "0cbdaa5f69657f850e2cda0ebe427470404261ad": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.previewMe undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.previewMe undocumented-status 403",
+      "basis": "ai-triage:AccountDeletionController.previewMe#account-deletion.service.ts:448: demo-mode protected user, service:447"
     },
     "4a5b37bbf3d69a526df68983913df17cfc81dce5": {
       "verdict": "TP",
@@ -28,12 +29,14 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "a5578fe272eb9f3f74e1e3e0faddd3a10c08111e": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.deleteMe undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.deleteMe undocumented-status 403",
+      "basis": "ai-triage:AccountDeletionController.deleteMe#account-deletion.service.ts:448: throws when environment.demo and caller email is a default protected user (service:447); real in demo deployments"
     },
     "2a6aa9007c0ef595c2d186658ce053da34d20238": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.deleteMe undocumented-status 409"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.deleteMe undocumented-status 409",
+      "basis": "ai-triage:AccountDeletionController.deleteMe#account-deletion.service.ts:393: planHash is a free client string; mismatch with planHashOf(planned) throws (service:392)"
     },
     "39150691bdd52546e12d7290aecd3002b6b1a6ba": {
       "verdict": "TP",
@@ -92,24 +95,28 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "465f5453b012922a945d1a1ef3fb83662d0a9522": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/address-role/address-role.controller.ts::AddressRoleController.create undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/address-role/address-role.controller.ts::AddressRoleController.create undocumented-status 400",
+      "basis": "ai-triage:AddressRoleController.create#address-role.service.ts:193: CreateAddressRoleDTO allows any AddressRoleEnum with isDefault=true; REGISTERED/PAYOUT/RETURN/REMIT_TO are not in ADDRESS_ROLES_WITH_BOOLEAN_MIRROR (address-role.enums.ts:42), address-role.service.ts:189"
     },
     "42cc1d11f3a7aedd44a76327cc2c2bfccba3d6f1": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/address-role/address-role.controller.ts::AddressRoleController.delete undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/address-role/address-role.controller.ts::AddressRoleController.delete undocumented-status 404",
+      "basis": "ai-triage:AddressRoleController.delete#derived from judged sites crud.service.ts:1029,crud.service.ts:534,crud.service.ts:563"
     },
     "97721f61494ea6755d69da9b880be15b47628987": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/address-role/address-role.controller.ts::AddressRoleController.update undocumented-status 400"
     },
     "d063bbfc280ede924ca62edee2d7fd9eb8d0630a": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/address-role/address-role.controller.ts::AddressRoleController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/address-role/address-role.controller.ts::AddressRoleController.update undocumented-status 404",
+      "basis": "ai-triage:AddressRoleController.update#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "2e7457f60949bd19e50f969bfcacefa674b99ef6": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/address/address.controller.ts::AddressController.create undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/address/address.controller.ts::AddressController.create undocumented-status 404",
+      "basis": "ai-triage:AddressController.create#address.service.ts:720: optional IsUUID customerId (address.dto.ts:230) with ownerId equal to it but not an OrganizationContact in scope -> findOne null -> throw (address.service.ts:711-720)"
     },
     "4b111ee616543d13b1baf2ddec4244a259d522bf": {
       "verdict": "FP",
@@ -152,8 +159,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "004afad888d543c09d66eb1a164df4596b27c158": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/email-verification.controller.ts::EmailVerificationController.confirmEmail undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/auth/email-verification.controller.ts::EmailVerificationController.confirmEmail undocumented-status 400",
+      "basis": "ai-triage:EmailVerificationController.confirmEmail#email-confirmation.service.ts:225: expired JWT -> TokenExpiredError caught (email-confirmation.service.ts:224-226)"
     },
     "ea74b2056c6891d7ee2cd74ec0603de8429449e7": {
       "verdict": "TP",
@@ -161,8 +169,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "cc6f98853523786c4a9374a163a2739452b0a267": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/email-verification.controller.ts::EmailVerificationController.confirmEmailByCode undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/auth/email-verification.controller.ts::EmailVerificationController.confirmEmailByCode undocumented-status 400",
+      "basis": "ai-triage:EmailVerificationController.confirmEmailByCode#email-confirmation.service.ts:274: wrong/expired code -> findOneByOptions throws -> catch throws BadRequest (email-confirmation.service.ts:273-275)"
     },
     "242681019498b8dd42bb41c779e931fe1dc77601": {
       "verdict": "TP",
@@ -242,12 +251,14 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "f04a0d9f54ca058a58cdc3bbd4a6ceda63244cc1": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByPassword undocumented-status 401"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByPassword undocumented-status 401",
+      "basis": "ai-triage:AuthController.signinWorkspacesByPassword#auth.service.ts:885: wrong password gives validatedUsers empty -> 401 (auth.service.ts:882-886)"
     },
     "2098773d3a543f631afca74516249d183ba7ac6c": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByPassword undocumented-status 429"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByPassword undocumented-status 429",
+      "basis": "ai-triage:AuthController.signinWorkspacesByPassword#login-attempt.service.ts:492: begin() rejects when blockedMs>0 or inFlight>maxFailures (default 10) after repeated failures (login-attempt.service.ts:450-452, :366)"
     },
     "bf4a23bc13225c56f6c4a30c90a8c7f34286dc79": {
       "verdict": "TP",
@@ -255,8 +266,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "5a53b7e513c88b6de446da3fb43a5f1efd5a31d4": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesBySocial undocumented-status 401"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesBySocial undocumented-status 401",
+      "basis": "ai-triage:AuthController.signinWorkspacesBySocial#auth.service.ts:1043: valid provider token whose email matches no active (or no verified) user -> users.length===0 (auth.service.ts:1040-1046)"
     },
     "9e6b14570fa5c95d23f38ab76964eaa54863e001": {
       "verdict": "TP",
@@ -268,8 +280,9 @@
       "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByMagicCode undocumented-status 401"
     },
     "b7c62e35b6649ba9a118f86e4e892e3b43a653d3": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByMagicCode undocumented-status 429"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByMagicCode undocumented-status 429",
+      "basis": "ai-triage:AuthController.signinWorkspacesByMagicCode#login-attempt.service.ts:492: begin(MAGIC_CODE, email) blocks after repeated failures (auth.service.ts:2451, login-attempt.service.ts:450)"
     },
     "f02e248df84e7a787af67d3f9d9a4ab2248fd460": {
       "verdict": "TP",
@@ -286,8 +299,9 @@
       "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.linkUserToSocialAccount undocumented-status 400"
     },
     "fd02106611360754215f4fdfb7b91b107c326d74": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.linkUserToSocialAccount undocumented-status 401"
+      "verdict": "FP",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.linkUserToSocialAccount undocumented-status 401",
+      "basis": "ai-triage:AuthController.linkUserToSocialAccount#auth.service.ts:1109: identity email/id are guaranteed non-empty by verifySocialAccessToken (verify-oauth-tokens.ts:69-79), so auth.service.ts:1108 guard cannot be true; note the real 401 for a bad token is thrown at verify-oauth-tokens.ts:~247, a dif"
     },
     "e450c0169a2cdf34a5aa2fbef3252b8040fc7618": {
       "verdict": "TP",
@@ -314,8 +328,9 @@
       "basis": "site:packages/core/src/lib/shared/billing/billing.service.ts:583#guard correlated with an earlier frame"
     },
     "4891039ce3fc9fccf22701fc1ed767d13d316a37": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.invoices undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.invoices undocumented-status 404",
+      "basis": "ai-triage:BillingController.invoices#billing.controller.ts:242: controller.ts:241 stored stripeCustomerId not a customer of this product (DB state)"
     },
     "09d87424f6ae3379cad74256f999d827cb6ef009": {
       "verdict": "TP",
@@ -328,8 +343,9 @@
       "basis": "site:packages/core/src/lib/shared/billing/billing.service.ts:583#guard correlated with an earlier frame"
     },
     "b3f1712db93893ffff3c228de94df844e967544d": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.paymentMethod undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.paymentMethod undocumented-status 404",
+      "basis": "ai-triage:BillingController.paymentMethod#billing.controller.ts:242: controller.ts:241 stored stripeCustomerId not a customer of this product (DB state)"
     },
     "a094af79a5b2171ebac6bc86d22ca49e3438b2a9": {
       "verdict": "TP",
@@ -342,8 +358,9 @@
       "basis": "site:packages/core/src/lib/shared/billing/billing.service.ts:583#guard correlated with an earlier frame"
     },
     "e21b396624dac09f3599a5188707904a1da8c183": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.plans undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.plans undocumented-status 404",
+      "basis": "ai-triage:BillingController.plans#billing.controller.ts:214: controller.ts:212 billing not configured (default self-hosted)"
     },
     "555dddf5b1a4f93c24b2945066aa5c65b7aa395f": {
       "verdict": "TP",
@@ -351,12 +368,14 @@
       "basis": "site:packages/core/src/lib/shared/billing/billing.service.ts:622#reachable gateway timeout"
     },
     "2cbbf0ffab266b30f2f80c260d1910c5508ab2f1": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.portal undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.portal undocumented-status 400",
+      "basis": "ai-triage:BillingController.portal#billing.controller.ts:265: controller.ts:262 CLIENT_BASE_URL env unset -> 400; deployment-config dependent but reachable"
     },
     "7f6d08f1d01547c101bcac75020054206c75c2c4": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.portal undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.portal undocumented-status 404",
+      "basis": "ai-triage:BillingController.portal#billing.controller.ts:242: controller.ts:241 stored stripeCustomerId not a customer of this product (DB state)"
     },
     "7c8adeb127c892f6b73de301e4a45db2f3a47c06": {
       "verdict": "TP",
@@ -369,8 +388,9 @@
       "basis": "site:packages/core/src/lib/shared/billing/billing.service.ts:583#guard correlated with an earlier frame"
     },
     "2c2ecd44e070ed85d3d54681346e5d35c9a1f073": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.subscription undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.subscription undocumented-status 404",
+      "basis": "ai-triage:BillingController.subscription#billing.controller.ts:242: controller.ts:241 stored stripeCustomerId not a customer of this product (DB state)"
     },
     "274b676a8a41c25b00a5302ccc6f1f36893d2af7": {
       "verdict": "TP",
@@ -388,8 +408,9 @@
       "basis": "site:packages/core/src/lib/shared/billing/billing.service.ts:583#guard correlated with an earlier frame"
     },
     "d0b3489c7fe1f8858becee2201d9741223dd63c1": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.cancel undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.cancel undocumented-status 404",
+      "basis": "ai-triage:BillingController.cancel#billing.controller.ts:242: controller.ts:241 stored stripeCustomerId not a customer of this product (DB state)"
     },
     "e36f1295521392b6ba7b82861b8a77e36cfb0815": {
       "verdict": "TP",
@@ -402,12 +423,14 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "8f9c18f9be10d2925dc93d69d4c1544c272a20fd": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.changePlan undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.changePlan undocumented-status 400",
+      "basis": "ai-triage:BillingController.changePlan#billing.controller.ts:100: controller.ts:98 empty/missing body.lookupKey; body is an inline type, no validation"
     },
     "d270b011adf678c6acf0e14ee4c1fbc3a391574a": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.changePlan undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.changePlan undocumented-status 404",
+      "basis": "ai-triage:BillingController.changePlan#billing.controller.ts:242: controller.ts:241 stored stripeCustomerId not a customer of this product (DB state)"
     },
     "a5ddf9ff071634d9132de93be6fad8a36d38cacd": {
       "verdict": "TP",
@@ -420,8 +443,9 @@
       "basis": "site:packages/core/src/lib/shared/billing/billing.service.ts:583#guard correlated with an earlier frame"
     },
     "8458a398be7037e8a683c7c38838ed45bd0b0ca7": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.resume undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.resume undocumented-status 404",
+      "basis": "ai-triage:BillingController.resume#billing.controller.ts:242: controller.ts:241 stored stripeCustomerId not a customer of this product (DB state)"
     },
     "679dc95a5920e763ee00799a15afb988dd54815e": {
       "verdict": "TP",
@@ -469,8 +493,9 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
     "07ca347155dba876948f287cb7b6981d5b44e040": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.update undocumented-status 404",
+      "basis": "ai-triage:CandidateEducationController.update#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "6e9f4b7dd6aba10b2c6c559000789ea58923decc": {
       "verdict": "TP",
@@ -503,8 +528,9 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
     "79f6f736302957d0d21c3462ba45b4457b7794e2": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.update undocumented-status 404",
+      "basis": "ai-triage:CandidateExperienceController.update#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "5aa1e260565a43e7609207f515ac04c2b0cc85fa": {
       "verdict": "TP",
@@ -562,8 +588,9 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
     "af50feade5dcc47f6f4f26dc6e50451f634f907a": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/candidate-interview/candidate-interview.controller.ts::CandidateInterviewController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/candidate-interview/candidate-interview.controller.ts::CandidateInterviewController.update undocumented-status 404",
+      "basis": "ai-triage:CandidateInterviewController.update#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "48d50058a4db3662445c9f0d2e5e4545b1e09d2f": {
       "verdict": "TP",
@@ -641,8 +668,9 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
     "594eba640040ee175fd687b6ef00397ddc166c3c": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.update undocumented-status 404",
+      "basis": "ai-triage:CandidateSkillController.update#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "32e2bc066223dbb95c802ccdef6f75e08c05559c": {
       "verdict": "TP",
@@ -675,8 +703,9 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
     "118926a4509c61cdf0f06eb7dd58a952cd569988": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.update undocumented-status 404",
+      "basis": "ai-triage:CandidateSourceController.update#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "801a7ddf02f8b15432e1f973ac829f4daed22f57": {
       "verdict": "TP",
@@ -753,8 +782,9 @@
       "key": "packages/core/src/lib/candidate/candidate.controller.ts::CandidateController.pagination undocumented-status 400"
     },
     "f81d38d7e7117ecaeffd9d568a619255ce5273e7": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/comment/comment.controller.ts::CommentController.findAll undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/comment/comment.controller.ts::CommentController.findAll undocumented-status 400",
+      "basis": "ai-triage:CommentController.findAll#comment.service.ts:546: BaseQueryDTO accepts where/withDeleted; OrganizationContactCommentAccessPolicy registers a governed type, so withDeleted + mixed governed/ungoverned where alternatives by a caller without write perm hits comment.service.ts:545"
     },
     "8d8c66599f049ccb61b899b80d9fcffaf8485df5": {
       "verdict": "TP",
@@ -767,8 +797,9 @@
       "basis": "site:packages/core/src/lib/core/crud/tenant-aware-crud.service.ts:1440#delete() where always carries id before assertCriteriaHasPredicate"
     },
     "80e53657282d271b956051ee3679c40b5cddbc04": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/comment/comment.controller.ts::CommentController.findById undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/comment/comment.controller.ts::CommentController.findById undocumented-status 400",
+      "basis": "ai-triage:CommentController.findById#comment.service.ts:928: findById has no validation pipe on @Query where; ?where=abc or array makes criteriaPinnedTo throw (comment.service.ts:925-929)"
     },
     "52b512d87100dc1390446ada7908a27be8faafaa": {
       "verdict": "TP",
@@ -805,8 +836,9 @@
       "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.get undocumented-status 400"
     },
     "1e5ad060a639cb723deee28e4db2302f40509194": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.delete undocumented-status 400"
+      "verdict": "FP",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.delete undocumented-status 400",
+      "basis": "ai-triage:DailyPlanController.delete#daily-plan.service.ts:676: daily-plan.service.ts:674 needs options?.where; controller.ts:326-328 calls delete(planId) with no options and it is the only caller on this route"
     },
     "939a1fd097004c9e9bf5ee951d4d6b32647431e6": {
       "verdict": "UNTRIAGED",
@@ -866,8 +898,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "d622550c689196c78ba18f5b807331d6ce491b22": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/email-reset/email-reset.controller.ts::EmailResetController.findAll undocumented-status 401"
+      "verdict": "FP",
+      "key": "packages/core/src/lib/email-reset/email-reset.controller.ts::EmailResetController.findAll undocumented-status 401",
+      "basis": "ai-triage:EmailResetController.findAll#email-reset.service.ts:75: controller has @UseGuards(TenantPermissionGuard) which returns false when currentTenantId() is falsy (tenant-permission.guard.ts:~52-55) and global AuthGuard requires a user, so email-reset.service.ts:74 cannot be true"
     },
     "bb18c58d79bf7d53a7a5b4e1924d4aa0cc188f00": {
       "verdict": "TP",
@@ -962,8 +995,9 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:364#catch-all repository error remap"
     },
     "837e8c22c4c736954de4942323f87b1db2d1a964": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/employee-availability/employee-availability.controller.ts::EmployeeAvailabilityController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/employee-availability/employee-availability.controller.ts::EmployeeAvailabilityController.update undocumented-status 404",
+      "basis": "ai-triage:EmployeeAvailabilityController.update#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "1b0566c9483c121c7281ec39383342746d8e9c5f": {
       "verdict": "TP",
@@ -1000,8 +1034,9 @@
       "key": "packages/core/src/lib/employee-level/employee-level.controller.ts::EmployeeLevelController.update undocumented-status 400"
     },
     "25a4ee5ad0fea3820ecc298029a2ad2c46e1f1c0": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/employee-notification/employee-notification.controller.ts::EmployeeNotificationController.create undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/employee-notification/employee-notification.controller.ts::EmployeeNotificationController.create undocumented-status 400",
+      "basis": "ai-triage:EmployeeNotificationController.create#employee-notification.service.ts:218: body is an interface with no validation; non-string receiverEmployeeId/organizationId (e.g. number/array) -> 400 (service:214-218)"
     },
     "8ce7ed8d678746e0be9dbe2851ea14a19fb5dee8": {
       "verdict": "FP",
@@ -1170,8 +1205,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "a88ea2071e0376f822e3c66619bf501cc09d3bd3": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/expense/expense.controller.ts::ExpenseController.findById undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/expense/expense.controller.ts::ExpenseController.findById undocumented-status 404",
+      "basis": "ai-triage:ExpenseController.findById#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "1a6756316649870c52025ce71ab092e3d6e376af": {
       "verdict": "TP",
@@ -1422,12 +1458,14 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "eca4ffbd51c2e797da02ea38500318e117869122": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.delete undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.delete undocumented-status 400",
+      "basis": "ai-triage:ImageAssetController.delete#image-asset.service.ts:48: image-asset.service.ts:47 `if (result.productGallery?.length || result.productFeaturedImage?.length)` is true for any asset attached to a product; DELETE /:id with such an id reaches it"
     },
     "c91c618b82c08c863b12527768ae1b503d5c3a44": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.delete undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.delete undocumented-status 404",
+      "basis": "ai-triage:ImageAssetController.delete#tenant-aware-crud.service.ts:1443: alreadyJudged reachable (delete race/failure only)"
     },
     "cc52e1870d346237e03b9354cbdf8cb6fab38fba": {
       "verdict": "TP",
@@ -1435,8 +1473,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "191fc8079136f3ab62010d5e42fb1b7d807a1fe3": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.findById undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.findById undocumented-status 404",
+      "basis": "ai-triage:ImageAssetController.findById#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "9e3154465046c36b03e6a54a13a1750ab327f73f": {
       "verdict": "TP",
@@ -1458,8 +1497,9 @@
       "key": "packages/core/src/lib/export-import/import-history/import-history.controller.ts::ImportHistoryController.findAll undocumented-status 400"
     },
     "c2ec91510a8b72663a998e37e89b163dcd3511c8": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/export-import/import-history/import-history.controller.ts::ImportHistoryController.download undocumented-status 403"
+      "verdict": "FP",
+      "key": "packages/core/src/lib/export-import/import-history/import-history.controller.ts::ImportHistoryController.download undocumented-status 403",
+      "basis": "ai-triage:ImportHistoryController.download#import-history.service.ts:57: import-history.service.ts:55 throws only when currentTenantId() is empty, but TenantPermissionGuard (import-history.controller.ts:17) returns false at tenant-permission.guard.ts:`if (!tenantId) return isAuthorized(false)` befor"
     },
     "ee47f434c0156d084a346c0988797737db8ea228": {
       "verdict": "TP",
@@ -1472,8 +1512,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "3055da742de905e74a75e12fe64659637f06652d": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/income/income.controller.ts::IncomeController.findById undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/income/income.controller.ts::IncomeController.findById undocumented-status 404",
+      "basis": "ai-triage:IncomeController.findById#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "78573f53d68225739870e3b1c01129af1fd5d2cd": {
       "verdict": "TP",
@@ -1528,8 +1569,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "f723f2381e01f02d18d55c6de32fdd23e4978161": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.authorize undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.authorize undocumented-status 400",
+      "basis": "ai-triage:OAuthAppController.authorize#oauth-app.controller.ts:45: omitting client_id/redirect_uri/response_type on unvalidated query (controller:44)"
     },
     "d79e48ddb59b02d6ace6501b3ed53aa005d8e197": {
       "verdict": "TP",
@@ -1537,16 +1579,19 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "0e2e5af39085fb08b20fefa90407177552d7c2e2": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.approveAuthorize undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.approveAuthorize undocumented-status 400",
+      "basis": "ai-triage:OAuthAppController.approveAuthorize#oauth-app.controller.ts:150: body is a plain interface with no validation, so omitting request_id hits `if (!body.request_id)` at controller:149"
     },
     "532f1d31979705d09022dc8a5417b6f448444e9b": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.approveAuthorize undocumented-status 401"
+      "verdict": "UNCLEAR",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.approveAuthorize undocumented-status 401",
+      "basis": "ai-triage:OAuthAppController.approveAuthorize#oauth-app.controller.ts:164: `!user?.id || !user?.tenantId` (controller:163) only fires for an authenticated user with null tenantId; TenantBaseEntity.tenantId is nullable and no tenant guard on this route, cannot decide"
     },
     "fba7a165d9d969a7685e4db6eea5a56d58a97671": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.approveAuthorize undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.approveAuthorize undocumented-status 404",
+      "basis": "ai-triage:OAuthAppController.approveAuthorize#oauth-app.controller.ts:155: any unknown/expired request_id gives null pending (controller:153-156)"
     },
     "ab935751105b4a34ea93fcfeac87b60192fbfe0a": {
       "verdict": "UNTRIAGED",
@@ -1558,8 +1603,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "7993679bfd1d0ccb8ae8c0012573df11823dd4dd": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.getAuthorizeRequest undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.getAuthorizeRequest undocumented-status 404",
+      "basis": "ai-triage:OAuthAppController.getAuthorizeRequest#oauth-app.controller.ts:111: getOAuthAppPendingRequest returns null for any unknown/expired request_id path param (controller:109-112)"
     },
     "358aec41e9d93c5298414c65a07e822b71a68b36": {
       "verdict": "TP",
@@ -1567,8 +1613,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "13803c4277b334147fa1522a497130513b224f68": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.token undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.token undocumented-status 400",
+      "basis": "ai-triage:OAuthAppController.token#oauth-app.controller.ts:214: unvalidated interface body; omitting code/client_id/etc hits controller:213"
     },
     "d56d34e6dcf38be10d7ba7962451a9c9e8b9ad69": {
       "verdict": "UNTRIAGED",
@@ -1589,8 +1636,9 @@
       "basis": "site:packages/core/src/lib/core/crud/tenant-aware-crud.service.ts:1440#delete() where always carries id before assertCriteriaHasPredicate"
     },
     "5153e91834def670a087e650a372111a100ba379": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/invite/invite.controller.ts::InviteController.delete undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/invite/invite.controller.ts::InviteController.delete undocumented-status 403",
+      "basis": "ai-triage:InviteController.delete#invite.service.ts:1249: invite.service.ts:1156 delete(string id) with isConfinedToManagedTeams() (any ORG_INVITE_EDIT holder without org-wide grants) on an invite of a team they do not manage -> assertManagesEveryTeam throws; controller passes the uuid string (invit"
     },
     "af16080ada190569578e7732734daf131e843f9b": {
       "verdict": "UNTRIAGED",
@@ -1650,8 +1698,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "d23315fcd0f8e88f9158f656762c0bdc2d9b82c7": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.findById undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.findById undocumented-status 404",
+      "basis": "ai-triage:InvoiceController.findById#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "417abf6155446433db9008b8cd7a4e83115c96cf": {
       "verdict": "TP",
@@ -1698,8 +1747,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "172d8e064071baede7fd904df32994894a5c6957": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.pagination undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.pagination undocumented-status 400",
+      "basis": "ai-triage:InvoiceController.pagination#invoice.service.ts:491: invoice.service.ts:490 `min > max`; GET /invoice/pagination?where[totalValue][min]=10&where[totalValue][max]=5 passes BaseQueryDTO (no whitelist, nested object kept) and hits it"
     },
     "338dcbc067c5ddcefd46d725fc023bfd9a24d460": {
       "verdict": "UNTRIAGED",
@@ -1776,8 +1826,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "3f58c8f0599713acb7bc2c650da76b2f4bd4f4fc": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/language/language.controller.ts::LanguageController.findByName undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/language/language.controller.ts::LanguageController.findByName undocumented-status 404",
+      "basis": "ai-triage:LanguageController.findByName#crud.service.ts:608: language.controller.ts:30 GET getByName/:name is public with unvalidated name; findOneByOptions throws NotFoundException (crud.service.ts:607) for any unknown name"
     },
     "4c481cc5da39482bcfa1be3307194ff3d3a5b4e7": {
       "verdict": "UNTRIAGED",
@@ -1799,8 +1850,9 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:364#catch-all repository error remap"
     },
     "7c32ef753f407c07577315a990e1c246af5c3b8f": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.findAll undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.findAll undocumented-status 400",
+      "basis": "ai-triage:OAuthClientController.findAll#oauth-client.controller.ts:103: skip=abc or skip=-1 on unvalidated string query (controller:102-104)"
     },
     "f82bdec985109360324a49d52960ab0683dbd58c": {
       "verdict": "FP",
@@ -1808,20 +1860,24 @@
       "basis": "site:tenant-aware-crud.service.ts:assertNotForeignRow#payload has no id"
     },
     "426c45aef04413c6157e76095ded413eb3a16914": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.remove undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.remove undocumented-status 404",
+      "basis": "ai-triage:OAuthClientController.remove#oauth-client.service.ts:355: unknown client id (service:352-356)"
     },
     "001408dbc363bded8ac0f2ea2e7c4f853f42838a": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.update undocumented-status 404",
+      "basis": "ai-triage:OAuthClientController.update#oauth-client.service.ts:279: unknown id passes UUIDValidationPipe then findScopedById null (oauth-client.service.ts:277-280)"
     },
     "11eee6d008ee5fb4cb8c898ca5bf78819371b5be": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.rotateSecret undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.rotateSecret undocumented-status 400",
+      "basis": "ai-triage:OAuthClientController.rotateSecret#oauth-client.service.ts:319: public (PKCE) client has clientType != CONFIDENTIAL (oauth-client.service.ts:316-320)"
     },
     "55ab97ec235a4b972041b80ebd2b5bc2df1133ac": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.rotateSecret undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.rotateSecret undocumented-status 404",
+      "basis": "ai-triage:OAuthClientController.rotateSecret#oauth-client.service.ts:312: unknown client id (service:310-313)"
     },
     "fb94e6fba2de286bcd0e397b8129315091dbbef9": {
       "verdict": "FP",
@@ -1834,16 +1890,19 @@
       "basis": "site:packages/core/src/lib/core/crud/tenant-aware-crud.service.ts:1440#delete() where always carries id before assertCriteriaHasPredicate"
     },
     "3547b6a7f28f0d47a43e406ef2dd51fe3224ac0a": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/official-holiday/official-holiday.controller.ts::OfficialHolidayController.delete undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/official-holiday/official-holiday.controller.ts::OfficialHolidayController.delete undocumented-status 403",
+      "basis": "ai-triage:OfficialHolidayController.delete#official-holiday.service.ts:104: official-holiday.service.ts:103 `!organizationId` is true for a holiday row with null organizationId: POST with `sentTo` and no organizationId passes TenantOrganizationBaseDTO (tenant-organization-base.dto.ts:56-69) and crea"
     },
     "f4bd788e2a18985ecef99d682c72ebae1242ea92": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/official-holiday/official-holiday.controller.ts::OfficialHolidayController.findById undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/official-holiday/official-holiday.controller.ts::OfficialHolidayController.findById undocumented-status 403",
+      "basis": "ai-triage:OfficialHolidayController.findById#official-holiday.service.ts:104: official-holiday.service.ts:103 `!organizationId` is true for a holiday row with null organizationId: POST with `sentTo` and no organizationId passes TenantOrganizationBaseDTO (tenant-organization-base.dto.ts:56-69) and cr"
     },
     "b9148133e2cde8fca2e64c7452bc2a94d6a206ae": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/official-holiday/official-holiday.controller.ts::OfficialHolidayController.update undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/official-holiday/official-holiday.controller.ts::OfficialHolidayController.update undocumented-status 403",
+      "basis": "ai-triage:OfficialHolidayController.update#official-holiday.service.ts:104: official-holiday.service.ts:103 `!organizationId` is true for a holiday row with null organizationId: POST with `sentTo` and no organizationId passes TenantOrganizationBaseDTO (tenant-organization-base.dto.ts:56-69) and crea"
     },
     "64235e74addf2cb5e985fdc04a2b451012203bd4": {
       "verdict": "TP",
@@ -1984,8 +2043,9 @@
       "key": "packages/core/src/lib/organization-project/organization-project.controller.ts::OrganizationProjectController.findById undocumented-status 400"
     },
     "adfbde9f2a8a2eb4cf40d95963e95da9ec9c451d": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/organization-project/organization-project.controller.ts::OrganizationProjectController.findSyncedProjects undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/organization-project/organization-project.controller.ts::OrganizationProjectController.findSyncedProjects undocumented-status 400",
+      "basis": "ai-triage:OrganizationProjectController.findSyncedProjects#organization-project.service.ts:841: organization-project.service.ts:840 object-valued where.<key> throws, but only in the MikroORM branch (case MikroORM at :818); GET /synced?where[a][b]=1 hits it when DB_ORM=mikro-orm; TypeORM deployments "
     },
     "c1162a5210fbaa4a18c3e6810fcb4bf6a4b2ca94": {
       "verdict": "TP",
@@ -2018,8 +2078,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "89c002d8af6f2f1dba9a2981be302c95cc364fbb": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/organization-sprint/organization-sprint.controller.ts::OrganizationSprintController.findById undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/organization-sprint/organization-sprint.controller.ts::OrganizationSprintController.findById undocumented-status 404",
+      "basis": "ai-triage:OrganizationSprintController.findById#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "e0548e8cf4ca791220bc1a1c6e604209f5457afb": {
       "verdict": "TP",
@@ -2041,8 +2102,9 @@
       "key": "packages/core/src/lib/organization-task-setting/organization-task-setting.controller.ts::OrganizationTaskSettingController.findByOrganizationId undocumented-status 400"
     },
     "d2b54ea2fc86f82a28489a8d8cb2215abe25865d": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.findAll undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.findAll undocumented-status 400",
+      "basis": "ai-triage:OrganizationTeamController.findAll#organization-team.service.ts:594: organization-team.service.ts:593 Array.isArray(options.where): the REST list route uses a bare @UseValidationPipe() (no transform) so GET /?where[0][organizationId]=<own org> arrives as an array after qs parsing and passe"
     },
     "c1b3c5987248748e668fc7850f508bd53514be86": {
       "verdict": "TP",
@@ -2087,16 +2149,19 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "d8d8dd8691cc6ec00351f87133d8e05be020763d": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.acceptRequestToJoin undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.acceptRequestToJoin undocumented-status 403",
+      "basis": "ai-triage:OrganizationTeamJoinRequestController.acceptRequestToJoin#organization-team-join-request.service.ts:610: service.ts:609 caller with only ORG_TEAM_JOIN_REQUEST_VIEW/EDIT who is not a team manager/creator gets findOneOrFailByWhereOptions success=false -> throws (PUT /:id/:action)"
     },
     "149841765107b7349fbb2f6d9548054439888465": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.acceptRequestToJoin undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.acceptRequestToJoin undocumented-status 404",
+      "basis": "ai-triage:OrganizationTeamJoinRequestController.acceptRequestToJoin#wrapper null-check dead; callee still throws the status"
     },
     "f631e8156812f5f7256f0b132d5e787112850f28": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.acceptRequestToJoin undocumented-status 409"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.acceptRequestToJoin undocumented-status 409",
+      "basis": "ai-triage:OrganizationTeamJoinRequestController.acceptRequestToJoin#organization-team-join-request.service.ts:562: service.ts:561 `!request.status` true for an unconfirmed request; PUT /:id/ACCEPTED on it reaches it (assertAwaitsApproval at :425)"
     },
     "1324c27fbf58eaa70f379816d2d83bcc0a1d97c9": {
       "verdict": "TP",
@@ -2113,8 +2178,9 @@
       "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.validateJoinRequest undocumented-status 400"
     },
     "a3fe44d27d902887f88c1de1f84501f7611141b9": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.validateJoinRequest undocumented-status 429"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.validateJoinRequest undocumented-status 429",
+      "basis": "ai-triage:OrganizationTeamJoinRequestController.validateJoinRequest#login-attempt.service.ts:492: login-attempt.service.ts:447 `blockedMs > 0 || inFlight > maxFailures` -> reject(); public POST /validate with repeated wrong codes for one email (team-join-code scope) gets locked out; requires maxFail"
     },
     "941b716d17717f26625004db5fe3f2e2d32787f2": {
       "verdict": "TP",
@@ -2132,8 +2198,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "eb88ce0f2d785a611baaabe334c6819b6803c8ae": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.addMember undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.addMember undocumented-status 400",
+      "basis": "ai-triage:OrganizationTeamController.addMember#organization-team.service.ts:509: service.ts:507 `!organizationId`: AddOrganizationTeamMemberDTO extends TenantOrganizationBaseDTO, where organizationId is not required when `sentTo` (whitelisted) is sent, so POST /:id/members {employeeId,sentTo:'x'} re"
     },
     "6dde42501125bc4b72371ce0386ce3d6af91065d": {
       "verdict": "TP",
@@ -2146,8 +2213,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "77ca417e0a6d2e19ede951afebef9cb571058157": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.pagination undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.pagination undocumented-status 400",
+      "basis": "ai-triage:OrganizationTeamController.pagination#organization-team.service.ts:594: same array-where check; pagination uses transform:true but escapeQueryWithParameters/convertNativeParameters (base-query.dto.ts:134-139) map arrays element-wise, so an array where survives to findAll (organization-team"
     },
     "9a2c3516f677bb3b3fd77df4ce7d98ebbe240743": {
       "verdict": "TP",
@@ -2190,24 +2258,29 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:364#catch-all repository error remap"
     },
     "7009036279627d9a79664e2259aeffd5ccbb5152": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.create undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.create undocumented-status 404",
+      "basis": "ai-triage:PaymentTermController.create#wrapper null-check dead; callee still throws the status"
     },
     "32db826b5ab3aadeacf12e068e49bd1bc72cc338": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.delete undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.delete undocumented-status 404",
+      "basis": "ai-triage:PaymentTermController.delete#wrapper null-check dead; callee still throws the status"
     },
     "e6a290649c43a67bbc87424050df55bea6bfcec8": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.update undocumented-status 404",
+      "basis": "ai-triage:PaymentTermController.update#payment-term.service.ts:120: payment-term.service.ts:119 `if (!term) throw` after findOneByWhereOptions; id is a route UUID (controller:73) so any well-formed unknown id yields it"
     },
     "1b5b404efd12f1f67868f1cccba53f4f73dd462f": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.updateLines undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.updateLines undocumented-status 404",
+      "basis": "ai-triage:PaymentTermController.updateLines#payment-term.service.ts:120: payment-term.service.ts:119 `if (!term) throw` after findOneByWhereOptions; id is a route UUID (controller:73) so any well-formed unknown id yields it"
     },
     "0d181374e12b87e4ddd735e6d5033a3982eb9502": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.schedule undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.schedule undocumented-status 404",
+      "basis": "ai-triage:PaymentTermController.schedule#wrapper null-check dead; callee still throws the status"
     },
     "25e5c2f33c5e8294560eccbf9f0354277a69c3ba": {
       "verdict": "TP",
@@ -2249,12 +2322,14 @@
       "basis": "site:tenant-aware-crud.service.ts:assertNotForeignRow#payload has no id"
     },
     "bef672d0b3d60af46946db0f6953c4c9fbd54788": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.update undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.update undocumented-status 400",
+      "basis": "ai-triage:PayrollRunController.update#payroll-run.service.ts:172: payroll-run.service.ts:171 run.status not in OPEN_STATUSES; a PAID/CANCELLED run can be PUT"
     },
     "a5af00adab42845821c36dd86485a74f070e68b1": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.approve undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.approve undocumented-status 400",
+      "basis": "ai-triage:PayrollRunController.approve#payroll-run.service.ts:651: service.ts:649 `!from.includes(run.status)`; run in wrong state is a normal request"
     },
     "d7ef8b1b75b6b8d38005610dcbe3319d860ff2f2": {
       "verdict": "TP",
@@ -2262,8 +2337,9 @@
       "basis": "site:packages/core/src/lib/payroll-run/payroll-run.service.ts:154#reachable not-found"
     },
     "dbcfd8800b5445bf9f861fde4fea6b6fff991df4": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.cancel undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.cancel undocumented-status 400",
+      "basis": "ai-triage:PayrollRunController.cancel#payroll-run.service.ts:276: service.ts:275 `run.status === PAID`"
     },
     "62f7ab8755fc6d393176f425b4468d37dbf2632a": {
       "verdict": "TP",
@@ -2271,20 +2347,24 @@
       "basis": "site:packages/core/src/lib/payroll-run/payroll-run.service.ts:154#reachable not-found"
     },
     "03a5638a5272c63ec8d82cf8869e4efe709b31f0": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.addItem undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.addItem undocumented-status 400",
+      "basis": "ai-triage:PayrollRunController.addItem#payroll-run.service.ts:322: service.ts:320 run.status !== DRAFT"
     },
     "3f50010ec08fc03bb4215a9f99dfca1264bd0851": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.addItem undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.addItem undocumented-status 404",
+      "basis": "ai-triage:PayrollRunController.addItem#payroll-run.service.ts:154: alreadyJudged reachable"
     },
     "4ced9f0bd32d0d20734eb8164ae01165fa4e51bd": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.removeItem undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.removeItem undocumented-status 400",
+      "basis": "ai-triage:PayrollRunController.removeItem#payroll-run.service.ts:461: service.ts:459 run.status !== DRAFT"
     },
     "609ee6a92f3447004841b7aaea553c7ca9e0dfc9": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.process undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.process undocumented-status 400",
+      "basis": "ai-triage:PayrollRunController.process#payroll-run.service.ts:231: service.ts:229 status not APPROVED/PROCESSING"
     },
     "a75dcfef11793dfd6b153158de04dd631c0ac310": {
       "verdict": "TP",
@@ -2292,8 +2372,9 @@
       "basis": "site:packages/core/src/lib/payroll-run/payroll-run.service.ts:154#reachable not-found"
     },
     "3f3fafa65f40575690c7227ed389a34e4dcad3f9": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.submitForApproval undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.submitForApproval undocumented-status 400",
+      "basis": "ai-triage:PayrollRunController.submitForApproval#payroll-run.service.ts:651: service.ts:649 `!from.includes(run.status)`; run in wrong state is a normal request"
     },
     "47067f2bd946d5ec1029cbf7ee98167781a5458b": {
       "verdict": "TP",
@@ -2306,8 +2387,9 @@
       "basis": "site:packages/core/src/lib/payroll-run/payroll-run.service.ts:154#reachable not-found"
     },
     "f356f2d536b3b6e8953ba7befe13b869b7adbf3b": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.findItems undocumented-status 400"
+      "verdict": "FP",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.findItems undocumented-status 400",
+      "basis": "ai-triage:PayrollRunController.findItems#payroll-run.service.ts:417: service.ts:415 needs !tenantId||!organizationId; PayrollItemQueryDTO.organizationId is @IsNotEmpty @IsUUID under UseValidationPipe (controller:58), and TenantPermissionGuard returns false when currentTenantId() is null (tenant-perm"
     },
     "47fbe4b0cbc1f2dcb2556864f95d47bcaaa97bad": {
       "verdict": "TP",
@@ -2459,8 +2541,9 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:1029#catch remap, callers pre-check; race or ORM failure only"
     },
     "c311ca4f86951565b3a7a69a6f188eaaac028227": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/reports/report-category.controller.ts::ReportCategoryController.update undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/reports/report-category.controller.ts::ReportCategoryController.update undocumented-status 400",
+      "basis": "ai-triage:ReportCategoryController.update#report-category.service.ts:136: report-category.service.ts:134-136 requiredText: DTO @IsNotEmpty passes \"   \" (or PartialType @IsOptional passes null) but trim() yields empty -> throws"
     },
     "2cddac3c541fc12f6e17799e96568d4d21432d61": {
       "verdict": "TP",
@@ -2468,8 +2551,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "197a8a7a3c8a8b9a2e80a96875b02787c7703997": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/reports/report.controller.ts::ReportController.updateReportMenu undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/reports/report.controller.ts::ReportController.updateReportMenu undocumented-status 400",
+      "basis": "ai-triage:ReportController.updateReportMenu#report-organization.service.ts:44: report-organization.service.ts:42 `!reportId||!organizationId`; body typed by interface UpdateReportMenuInput (contracts report.model.ts:35), no ValidationPipe on handler (report.controller.ts:55-57), so omitting a key re"
     },
     "51edf979cd70d11ef34ac913e34e84640bbb79f1": {
       "verdict": "TP",
@@ -2650,8 +2734,9 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
     "d11a2e828f3e504f8e6303117be794da6cb9147b": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/tag-type/tag-type.controller.ts::TagTypeController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/tag-type/tag-type.controller.ts::TagTypeController.update undocumented-status 404",
+      "basis": "ai-triage:TagTypeController.update#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "83e29d1246632386e03538095c1877e75a779455": {
       "verdict": "TP",
@@ -2679,8 +2764,9 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
     "f89a66147194962f3741ade2fa5dc9a0c0228c49": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.update undocumented-status 404",
+      "basis": "ai-triage:TagController.update#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "38cad7845e66ba4446a8cb0a180b5d135ec47943": {
       "verdict": "TP",
@@ -2740,12 +2826,14 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "d8737dd46c68a4b1afa877406b69855c30c1c374": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/tasks/task-metadata-bootstrap/task-metadata-bootstrap.controller.ts::TaskMetadataBootstrapController.bootstrap undocumented-status 400"
+      "verdict": "FP",
+      "key": "packages/core/src/lib/tasks/task-metadata-bootstrap/task-metadata-bootstrap.controller.ts::TaskMetadataBootstrapController.bootstrap undocumented-status 400",
+      "basis": "ai-triage:TaskMetadataBootstrapController.bootstrap#task-metadata-bootstrap.service.ts:55: service.ts:53 needs a non-canonical section, but TaskMetadataBootstrapQueryDTO.include has @IsIn(TASK_METADATA_SECTIONS,{each:true}) under UseValidationPipe (controller:12)"
     },
     "d9d0c2dc1749bd5079fdbca4cfd13c7deab2a614": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/tasks/task-metadata-bootstrap/task-metadata-bootstrap.controller.ts::TaskMetadataBootstrapController.bootstrap undocumented-status 403"
+      "verdict": "FP",
+      "key": "packages/core/src/lib/tasks/task-metadata-bootstrap/task-metadata-bootstrap.controller.ts::TaskMetadataBootstrapController.bootstrap undocumented-status 403",
+      "basis": "ai-triage:TaskMetadataBootstrapController.bootstrap#task-metadata-bootstrap.service.ts:48: service.ts:45 needs !currentTenantId(); controller has @UseGuards(TenantPermissionGuard) (controller:8) which returns false when tenantId is null"
     },
     "549097050a6a720a991700c1d9662cf4ac88b07a": {
       "verdict": "UNTRIAGED",
@@ -2849,8 +2937,9 @@
       "key": "packages/core/src/lib/tenant/tenant.controller.ts::TenantController.delete undocumented-status 403"
     },
     "4a50369c5fe0c23844ddce8520ec81658c96a1da": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/tenant/tenant.controller.ts::TenantController.create undocumented-status 409"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/tenant/tenant.controller.ts::TenantController.create undocumented-status 409",
+      "basis": "ai-triage:TenantController.create#tenant.service.ts:231: In-process guard `TenantService.onboardingInProgress.has(lockId)` throws when the same user submits onboarding twice concurrently (a documented double-submit case, race-driven but intended request behaviour)."
     },
     "8cf5a03fbfab4a179413c7d45884451ba333b43c": {
       "verdict": "TP",
@@ -2862,8 +2951,9 @@
       "key": "packages/core/src/lib/tenant/tenant.controller.ts::TenantController.update undocumented-status 403"
     },
     "f14baf07acf8765d22528e2ad32dcef4d6531ba0": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.revoke undocumented-status 403"
+      "verdict": "FP",
+      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.revoke undocumented-status 403",
+      "basis": "ai-triage:TenantApiKeyController.revoke#tenant-api-key.service.ts:149: Same as 3-0: TenantPermissionGuard on the class rejects null currentTenantId before revokeApiKey runs; tenantOfCaller (service.ts:145) checks the same value."
     },
     "795c4cf899a315ed310f5b9f31ba28ca30925ef1": {
       "verdict": "UNCLEAR",
@@ -2871,12 +2961,14 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:1029#catch remap, callers pre-check; race or ORM failure only"
     },
     "80157d0090aeebfe92a8cbce3029ab4b42f3a306": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.rename undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.rename undocumented-status 400",
+      "basis": "ai-triage:TenantApiKeyController.rename#tenant-api-key.service.ts:105: tenant-api-key.service.ts:102-105 trim() of whitespace-only name; RenameApiKeyDTO @IsNotEmpty @Length(1,255) accepts \"   \""
     },
     "503def76e01bc1a30e4e2c3f160243efcf6f9398": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.rename undocumented-status 403"
+      "verdict": "FP",
+      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.rename undocumented-status 403",
+      "basis": "ai-triage:TenantApiKeyController.rename#tenant-api-key.service.ts:149: Controller has @UseGuards(TenantPermissionGuard) (controller.ts:24) which returns false when RequestContext.currentTenantId() is null (tenant-permission.guard.ts: `if (!tenantId) return isAuthorized`), and tenantOfCaller reads th"
     },
     "c831e3621675ce9013ac5a800e378e7f913926cc": {
       "verdict": "UNTRIAGED",
@@ -2888,32 +2980,39 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "87b0b30d2f216978299bd09166cdb4f55e5bb356": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/terms-acceptance/terms-acceptance.controller.ts::TermsAcceptanceController.accept undocumented-status 401"
+      "verdict": "FP",
+      "key": "packages/core/src/lib/terms-acceptance/terms-acceptance.controller.ts::TermsAcceptanceController.accept undocumented-status 401",
+      "basis": "ai-triage:TermsAcceptanceController.accept#terms-acceptance.service.ts:211: currentUserId() is null only with no user; method has TenantPermissionGuard (controller.ts:~48) which rejects null currentTenantId, and tenantId is derived from the user (request-context.ts:287-289), so a user always exists."
     },
     "e2cdee5909156e9664e236af7e89a0d8da961856": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/terms-acceptance/terms-acceptance.controller.ts::TermsAcceptanceController.acceptances undocumented-status 401"
+      "verdict": "FP",
+      "key": "packages/core/src/lib/terms-acceptance/terms-acceptance.controller.ts::TermsAcceptanceController.acceptances undocumented-status 401",
+      "basis": "ai-triage:TermsAcceptanceController.acceptances#terms-acceptance.service.ts:246: Same as 3-3: TenantPermissionGuard requires a tenant, which is derived from the current user, so currentUserId() is non-null."
     },
     "d7d161f070dd2322b13ed305d679bf444f303aeb": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.findAll undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.findAll undocumented-status 403",
+      "basis": "ai-triage:TimeOffBalanceController.findAll#time-off-balance.service.ts:276: User with TIME_OFF_VIEW but no CHANGE_SELECTED_EMPLOYEE and no employee record gets currentEmployeeId() null."
     },
     "38417fbcd389539ca91fec39bf28d916a03fd4d8": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.carryForward undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.carryForward undocumented-status 400",
+      "basis": "ai-triage:TimeOffBalanceController.carryForward#time-off-balance.service.ts:197: `toYear <= fromYear` is not excluded by CarryForwardTimeOffBalanceDTO (only @IsInt/@Min/@Max each); a body with toYear<=fromYear fires it."
     },
     "d839e67176ba381e37fb804093db82e60828646b": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.carryForward undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.carryForward undocumented-status 404",
+      "basis": "ai-triage:TimeOffBalanceController.carryForward#time-off-balance.service.ts:205: policyId is only @IsUUID validated; an unknown or other-org policy id makes findOne return null."
     },
     "0c50f41682bfd52ef53aba5db844c57e235dd9e1": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.deduct undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.deduct undocumented-status 404",
+      "basis": "ai-triage:TimeOffBalanceController.deduct#time-off-balance.service.ts:361: deduct for an employee/policy/year with no balance row: applyDelta updates 0 rows, getOrFail then findOne returns null."
     },
     "b5c207ef5a4107e1abed005053631a89010d1478": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.findMine undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.findMine undocumented-status 403",
+      "basis": "ai-triage:TimeOffBalanceController.findMine#time-off-balance.service.ts:103: currentEmployeeId() is null for a user without an employee record, or for CHANGE_SELECTED_EMPLOYEE holders by design (request-context.ts:383-385), e.g. an admin calling /me."
     },
     "545b53bdbd8d3da2aeafb4ea6aede755b9cfec67": {
       "verdict": "TP",
@@ -2940,8 +3039,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "813040e5ff67839abe3854a592da76a157c4ba06": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-off-request/time-off-request.controller.ts::TimeOffRequestController.create undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-off-request/time-off-request.controller.ts::TimeOffRequestController.create undocumented-status 400",
+      "basis": "ai-triage:TimeOffRequestController.create#time-off-request.service.ts:127: Controller binds raw ITimeOffCreateInput with no validation; a body policyId that is unknown or in another org makes policyRequiresApproval return undefined (service.ts:693-706)."
     },
     "9637dc262e408f674b91fc09099c94792b5c261c": {
       "verdict": "TP",
@@ -2977,20 +3077,24 @@
       "basis": "site:tenant-aware-crud.service.ts:assertNotForeignRow#payload has no id"
     },
     "b2a5501d4a8a04d05ddd3e92861627900b83794a": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet-project-change-request.controller.ts::TimesheetProjectChangeRequestController.requestProjectChange undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet-project-change-request.controller.ts::TimesheetProjectChangeRequestController.requestProjectChange undocumented-status 404",
+      "basis": "ai-triage:TimesheetProjectChangeRequestController.requestProjectChange#timesheet-project-change-request.service.ts:70: timesheetId from body not owned by caller or non-existent."
     },
     "72b1df1c51a879f20ae23cc08848dbaa5f32bf3e": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet-project-change-request.controller.ts::TimesheetProjectChangeRequestController.review undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet-project-change-request.controller.ts::TimesheetProjectChangeRequestController.review undocumented-status 400",
+      "basis": "ai-triage:TimesheetProjectChangeRequestController.review#timesheet-project-change-request.service.ts:144: Reviewing a request already approved/rejected (status !== PENDING) is a plain repeat call."
     },
     "ec075b08de68881dc5dcc25d5adecacd2b4ae27e": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet-project-change-request.controller.ts::TimesheetProjectChangeRequestController.findAllByTimesheet undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet-project-change-request.controller.ts::TimesheetProjectChangeRequestController.findAllByTimesheet undocumented-status 403",
+      "basis": "ai-triage:TimesheetProjectChangeRequestController.findAllByTimesheet#timesheet-project-change-request.service.ts:201: Employee without CAN_APPROVE_TIMESHEET asks for a timesheet they do not own."
     },
     "1d21ac8674f1071d71810085a8058820075d823b": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet.controller.ts::TimeSheetController.findById undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet.controller.ts::TimeSheetController.findById undocumented-status 404",
+      "basis": "ai-triage:TimeSheetController.findById#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "dc2f157750591363f4575a6d37e32b53bd97eb8c": {
       "verdict": "TP",
@@ -2998,20 +3102,24 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "d0446faa06a0841799793004b40df974b474304b": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getActiveSessions undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getActiveSessions undocumented-status 400",
+      "basis": "ai-triage:CustomTrackingController.getActiveSessions#custom-tracking.service.ts:518: Controller passes no organizationId; falls back to currentUser()?.employee?.organizationId, undefined for a user without an employee record."
     },
     "b85dc43888dc5ca7fe50fa54f866c1eb39fbfd34": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getSessionsBySessionId undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getSessionsBySessionId undocumented-status 400",
+      "basis": "ai-triage:CustomTrackingController.getSessionsBySessionId#custom-tracking.service.ts:479: Controller passes organizationId undefined so it falls back to currentUser()?.employee?.organizationId, undefined for a user without an employee record."
     },
     "c93fc197eb3734a0029fc940aa0b8616df9510b8": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getTrackingSessions undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getTrackingSessions undocumented-status 400",
+      "basis": "ai-triage:CustomTrackingController.getTrackingSessions#custom-tracking.service.ts:136: organizationId comes from DTO inherited from TenantOrganizationBaseDTO, where `organization` alone satisfies validation (ValidateIf on organizationId), so a query sending organization[id]=.. without organizationId"
     },
     "3dba5445fe283209ee12735cd19c0e29ddd3c8df": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getTimeSlotTrackingData undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getTimeSlotTrackingData undocumented-status 400",
+      "basis": "ai-triage:CustomTrackingController.getTimeSlotTrackingData#custom-tracking.service.ts:184: organizationId is currentUser()?.employee?.organizationId; an admin with CHANGE_SELECTED_EMPLOYEE (passes EmployeeTrackedDataGuard) but no employee record gets undefined."
     },
     "658ee18631169be381f79942e3be726ba4bfb5ec": {
       "verdict": "TP",
@@ -3023,8 +3131,9 @@
       "key": "packages/core/src/lib/time-tracking/screenshot/screenshot.controller.ts::ScreenshotController.create undocumented-status 413"
     },
     "ef72143871fa8642861da0ed0037f45c49bab467": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/screenshot/screenshot.controller.ts::ScreenshotController.create undocumented-status 500"
+      "verdict": "UNCLEAR",
+      "key": "packages/core/src/lib/time-tracking/screenshot/screenshot.controller.ts::ScreenshotController.create undocumented-status 500",
+      "basis": "ai-triage:ScreenshotController.create#screenshot.controller.ts:135: Fires when provider.getFile/fileContentToBuffer returns nothing for a key that was just stored (controller.ts:~128 `if (!fileContent)`), i.e. a storage read-back failure."
     },
     "bfd145400b59782f78dea4a6c65f06a8d4e5a52b": {
       "verdict": "TP",
@@ -3032,8 +3141,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "0d001214cafb97e1e098e5ce96c641657535b797": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/statistic/profile-activity.controller.ts::ProfileActivityController.getProfileActivity undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/statistic/profile-activity.controller.ts::ProfileActivityController.getProfileActivity undocumented-status 403",
+      "basis": "ai-triage:ProfileActivityController.getProfileActivity#statistic.service.ts:208: employeeId/organizationId from query: an unknown, inactive or archived employee makes existsBy false."
     },
     "0d8cc4a2ccf3fb852324330709414e79cf19caf5": {
       "verdict": "TP",
@@ -3041,8 +3151,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "83e26fe3ce522b93f487e723fe03de835fd05cbc": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.deleteTimeLog undocumented-status 406"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.deleteTimeLog undocumented-status 406",
+      "basis": "ai-triage:TimeLogController.deleteTimeLog#time-log.service.ts:1932: Valid UUID-shaped ids that match no row in the tenant/org yield an empty timeLogs."
     },
     "014f1c32cf6f43eec529ad3665c7928ea69912a9": {
       "verdict": "TP",
@@ -3055,8 +3166,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "8b2a98ecfe92ec47bca4a719cefd29f3930acaf9": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.findById undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.findById undocumented-status 404",
+      "basis": "ai-triage:TimeLogController.findById#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "8069ce6240a8d1afa5104794c5f598fbbde83a99": {
       "verdict": "TP",
@@ -3064,8 +3176,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "a1a3b9a7682c105ad901d8fcd5f0fd08edf9e0dd": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.getConflict undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.getConflict undocumented-status 403",
+      "basis": "ai-triage:TimeLogController.getConflict#time-log.service.ts:1585: Ordinary employee passes another employee's id (not own, not managed) and canManageEmployees is false."
     },
     "91d384c1f191bb78a4db6aacb5c7cf2f3436b1de": {
       "verdict": "TP",
@@ -3083,8 +3196,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "596c692635d3c46d7e55287f98560912f30a73bc": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/time-slot/time-slot.controller.ts::TimeSlotController.findById undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/time-slot/time-slot.controller.ts::TimeSlotController.findById undocumented-status 404",
+      "basis": "ai-triage:TimeSlotController.findById#derived from judged sites crud.service.ts:534,crud.service.ts:563"
     },
     "dfcf62aa35f72c145e05d369910154d6ebacaef4": {
       "verdict": "TP",
@@ -3117,20 +3231,24 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "9125abfe4664ab1ca8de5042321b44e088c05933": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.toggleTimer undocumented-status 403"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.toggleTimer undocumented-status 403",
+      "basis": "ai-triage:TimerController.toggleTimer#timer.service.ts:287: employee.isTrackingEnabled false (admin-disabled tracking) when no timer is running."
     },
     "4e4ee0a44e464dff80ae9547010ab58beb67646b": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.toggleTimer undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.toggleTimer undocumented-status 404",
+      "basis": "ai-triage:TimerController.toggleTimer#timer.service.ts:661: findEmployee throws when the caller has no employee record in the tenant; toggleTimeLog calls it first via getLastRunningLog."
     },
     "0df5d2f7af76d1b85f4434c0c035d07cbeb594bc": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.toggleTimer undocumented-status 406"
+      "verdict": "UNCLEAR",
+      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.toggleTimer undocumented-status 406",
+      "basis": "ai-triage:TimerController.toggleTimer#timer.service.ts:359: stopTimer is reached from toggleTimeLog only after getLastRunningLog() found a running log (service.ts:611-617), and the re-query (service.ts:~337) uses the same where clause, so null needs a concurrent stop between the two queries."
     },
     "13724514913861bfb450ab12ca7d1497081fec8f": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/measurement/unit-category.controller.ts::UnitCategoryController.delete undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/measurement/unit-category.controller.ts::UnitCategoryController.delete undocumented-status 404",
+      "basis": "ai-triage:UnitCategoryController.delete#wrapper null-check dead; callee still throws the status"
     },
     "a7318291f9057621edd812d33c0cfb54b00ca6a7": {
       "verdict": "TP",
@@ -3138,28 +3256,34 @@
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
     "b9ba5bb506da537758e68fc01b411ec62c20112b": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/measurement/unit-category.controller.ts::UnitCategoryController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/measurement/unit-category.controller.ts::UnitCategoryController.update undocumented-status 404",
+      "basis": "ai-triage:UnitCategoryController.update#crud.service.ts:563: alreadyJudged reachable (only a race after getCategory in practice)"
     },
     "ea47526c47db879e2d5f8df043e7c331084986c5": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.create undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.create undocumented-status 404",
+      "basis": "ai-triage:UnitController.create#wrapper null-check dead; callee still throws the status"
     },
     "ca2f0eef0363eccfb5eb50e60590df1fa91f5d12": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.delete undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.delete undocumented-status 404",
+      "basis": "ai-triage:UnitController.delete#wrapper null-check dead; callee still throws the status"
     },
     "a32da76fe859f4aac9672f45d7f9eee43ddc2627": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.update undocumented-status 400"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.update undocumented-status 400",
+      "basis": "ai-triage:UnitController.update#unit.controller.ts:98: unit.controller.ts:95 `if (unit.isReference)` with entity.factor set; UpdateUnitDTO.factor is an optional string (dto/unit.dto.ts:84-87), so PUT /:id {factor:'2'} on a reference unit throws"
     },
     "9f06d83b1c00971338786c0da50446f3b791673b": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.update undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.update undocumented-status 404",
+      "basis": "ai-triage:UnitController.update#crud.service.ts:563: alreadyJudged reachable (race only in practice)"
     },
     "ec257e772272e5ecbb324314ea46d6305f7878bf": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.convert undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.convert undocumented-status 404",
+      "basis": "ai-triage:UnitController.convert#wrapper null-check dead; callee still throws the status"
     },
     "572bb4de45c0b83e3222e6bb7eceddc5ae1b54dd": {
       "verdict": "TP",
@@ -3249,8 +3373,9 @@
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
     "c0089e8afd3b39d9f0b70c8afd832172c7edda73": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/warehouse/warehouse.controller.ts::WarehouseController.addWarehouseProducts undocumented-status 404"
+      "verdict": "TP",
+      "key": "packages/core/src/lib/warehouse/warehouse.controller.ts::WarehouseController.addWarehouseProducts undocumented-status 404",
+      "basis": "ai-triage:WarehouseController.addWarehouseProducts#warehouse-product-service.ts:78: warehouseId route param is only UUID-validated; unknown warehouse gives null."
     },
     "c3a3615304fcc7dd47caa6b2a063ed6799f63114": {
       "verdict": "TP",
