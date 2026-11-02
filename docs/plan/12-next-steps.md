@@ -9,7 +9,9 @@ State as of 2026-11-02: v0.1.2 published; Tiers 1–2 autofix implemented; corpu
 tooling, nightly job and `--explain` in place (§11.12); Ever Gauzy baselined with
 700 findings, all `UNTRIAGED`.
 
-### 12.1 Verify the nightly job (first, cheap)
+### 12.1 Verify the nightly job (done 2026-11-02)
+
+Dispatched run 41509605224 succeeded in about 17 minutes with 686 findings, all unchanged; the install fits the runner and the disk-cleanup step is enough. Fixing a `runner` context error in the job `env` was needed first.
 
 1. Trigger `Corpus nightly` via `workflow_dispatch` and watch it. Unverified:
    whether the ~16-minute Gauzy install fits the runner's disk and the 90-minute
