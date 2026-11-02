@@ -256,7 +256,7 @@ function collectProducibleStatuses(
   const unresolvedThrows: UnresolvedThrow[] = [];
   const handlerEnv = guaranteedCallsEnv(methodNode, classNode, ctx);
 
-  for (const { node, expression } of collectDirectThrows(methodNode, handlerEnv)) {
+  for (const { node, expression } of collectDirectThrows(methodNode, handlerEnv, ctx.checker)) {
     const result = resolveThrownStatus(expression, ctx.checker);
     if (result.kind !== 'resolved') {
       unresolvedThrows.push({ node, reason: result.reason, via: [] });

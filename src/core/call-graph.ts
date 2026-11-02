@@ -244,6 +244,7 @@ function getOwnerClass(decl: FunctionDeclWithBody): ts.ClassLikeDeclaration | un
 function collectProducibleCallSites(
   fn: ts.FunctionLikeDeclarationBase,
   env: ArgEnv = EMPTY_ENV,
+  checker?: ts.TypeChecker,
 ): ts.CallExpression[] {
   const results: ts.CallExpression[] = [];
   walkProducibleNodes(
@@ -252,6 +253,7 @@ function collectProducibleCallSites(
       if (producible && ts.isCallExpression(node)) results.push(node);
     },
     env,
+    checker,
   );
   return results;
 }
@@ -356,7 +358,7 @@ function computeCacheEntry(
 
   const ownThrows: CacheEntry['ownThrows'] = [];
   const ownUnresolvedThrows: CacheEntry['ownUnresolvedThrows'] = [];
-  for (const { node, expression } of collectDirectThrows(decl, env)) {
+  for (const { node, expression } of collectDirectThrows(decl, env, ctx.checker)) {
     const resolved = resolveThrownStatus(expression, ctx.checker);
     if (resolved.kind === 'resolved') {
       ownThrows.push({ node, resolved });
@@ -366,7 +368,7 @@ function computeCacheEntry(
   }
 
   const calls: ResolvedCallTarget[] = [];
-  for (const callNode of collectProducibleCallSites(decl, env)) {
+  for (const callNode of collectProducibleCallSites(decl, env, ctx.checker)) {
     const target = resolveCallTarget(callNode, ctx.checker, ctx.program);
     if (!target) continue;
     calls.push({ callNode, decl: target.decl, symbol: target.symbol });
@@ -543,7 +545,7 @@ export function collectCallGraphStatuses(
   const visited = new Set<ts.Symbol>();
   const scopeEnv = withLocalConsts(handlerBody, handlerEnv);
 
-  for (const callNode of collectProducibleCallSites(handlerBody, scopeEnv)) {
+  for (const callNode of collectProducibleCallSites(handlerBody, scopeEnv, ctx.checker)) {
     const target = resolveCallTarget(callNode, ctx.checker, ctx.program);
     if (!target) continue;
     expand(

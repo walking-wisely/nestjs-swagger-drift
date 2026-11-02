@@ -216,6 +216,53 @@ function getAwaitedPromiseRejectStatementArgument(expr: ts.Expression): ts.Expre
   return matchPromiseRejectCall(unwrapNonAwaitWrappers(unwrapped.expression));
 }
 
+function finallyAlwaysReturns(block: ts.Block): boolean {
+  return block.statements.some(ts.isReturnStatement);
+}
+
+function isAsyncDeclaration(declaration: ts.Declaration | undefined): boolean {
+  return (
+    declaration !== undefined &&
+    ts.isFunctionLike(declaration) &&
+    (ts.getCombinedModifierFlags(declaration) & ts.ModifierFlags.Async) !== 0
+  );
+}
+
+/**
+ * A `catch` is dead when nothing in its `try` block can raise synchronously:
+ * no `throw`, `await`, `yield` or `new`, and every call targets a function
+ * declared `async` (whose failures surface as a rejected promise, which a
+ * `return`ed or un-awaited call hands to the caller instead of the `catch`).
+ */
+function cannotReachCatch(tryBlock: ts.Block, checker: ts.TypeChecker | undefined): boolean {
+  if (checker === undefined) return false;
+  let safe = true;
+  const visit = (node: ts.Node): void => {
+    if (!safe) return;
+    if (isNestedFunctionLike(node) || ts.isClassLike(node)) return;
+    if (
+      ts.isThrowStatement(node) ||
+      ts.isAwaitExpression(node) ||
+      ts.isYieldExpression(node) ||
+      ts.isNewExpression(node) ||
+      (ts.isForOfStatement(node) && node.awaitModifier !== undefined)
+    ) {
+      safe = false;
+      return;
+    }
+    if (ts.isCallExpression(node)) {
+      const declaration = checker.getResolvedSignature(node)?.declaration;
+      if (!isAsyncDeclaration(declaration)) {
+        safe = false;
+        return;
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(tryBlock);
+  return safe;
+}
+
 function isNestedFunctionLike(node: ts.Node): boolean {
   return (
     ts.isFunctionExpression(node) ||
@@ -259,6 +306,7 @@ export function walkProducibleNodes(
   fn: ts.FunctionLikeDeclarationBase,
   onNode: (node: ts.Node, producible: boolean) => void,
   env: ArgEnv = EMPTY_ENV,
+  checker?: ts.TypeChecker,
 ): void {
   const body = fn.body;
   if (body === undefined || !ts.isBlock(body)) return;
@@ -278,8 +326,12 @@ export function walkProducibleNodes(
 
     if (ts.isTryStatement(node)) {
       const caught = node.catchClause !== undefined;
-      visit(node.tryBlock, producible && !caught);
-      if (node.catchClause) visit(node.catchClause.block, producible);
+      const swallowed = node.finallyBlock !== undefined && finallyAlwaysReturns(node.finallyBlock);
+      visit(node.tryBlock, producible && !caught && !swallowed);
+      if (node.catchClause) {
+        const reachable = !swallowed && !cannotReachCatch(node.tryBlock, checker);
+        visit(node.catchClause.block, producible && reachable);
+      }
       if (node.finallyBlock) visit(node.finallyBlock, producible);
       return;
     }
@@ -331,6 +383,7 @@ export function walkProducibleNodes(
 export function collectDirectThrows(
   fn: ts.FunctionLikeDeclarationBase,
   env: ArgEnv = EMPTY_ENV,
+  checker?: ts.TypeChecker,
 ): ThrownExpression[] {
   const results: ThrownExpression[] = [];
   walkProducibleNodes(
@@ -352,6 +405,7 @@ export function collectDirectThrows(
       }
     },
     env,
+    checker,
   );
   return results;
 }

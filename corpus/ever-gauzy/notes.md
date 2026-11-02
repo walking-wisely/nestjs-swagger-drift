@@ -52,7 +52,7 @@ Result: 73 TP, 21 UNCLEAR, 8 FP. Every finding now has a verdict.
 - UNCLEAR: the try body only fails on a DB outage or race (fixed or server-built inputs).
 - TP: the try body throws an HttpException the catch remaps without rethrowing, a missing row, or unvalidated `relations`/`where`/ids reaching the DB (no global ValidationPipe).
 
-Both dead-catch shapes are tool-fixable: a catch is unreachable when the try body has no `throw`, no `await`, and only returns un-awaited promises.
+The tool now treats a catch as unreachable when its try body has no `throw`, `await`, `yield` or `new` and every call targets an `async` function, and treats `finally { return ... }` as swallowing everything. That removed 5 FPs. Three stay because the try awaits or calls a synchronous helper, so the catch can run; the tool is right to keep them.
 
 ## guardGuarantees
 

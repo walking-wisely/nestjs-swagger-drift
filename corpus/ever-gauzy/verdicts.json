@@ -923,11 +923,6 @@
       "key": "packages/core/src/lib/email-reset/email-reset.controller.ts::EmailResetController.requestChangeEmail undocumented-status 200",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "2bba4288e07851823fce640ff5b07f66c9ee3afc": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/email-reset/email-reset.controller.ts::EmailResetController.requestChangeEmail undocumented-status 401",
-      "basis": "ai-triage:EmailResetController.requestChangeEmail#catch-remap auth.service.ts:2095: getJwtAccessToken's Unauthorized (auth.service.ts:2095) is only reached via requestChangeEmail, whose `finally { return ... }` (email-reset.service.ts:173-178) swallows every exception."
-    },
     "e5c08929c955c96cf8d5aef643350e2583b70440": {
       "verdict": "TP",
       "key": "packages/core/src/lib/email-reset/email-reset.controller.ts::EmailResetController.verifyChangeEmail undocumented-status 202",
@@ -1048,11 +1043,6 @@
       "key": "packages/core/src/lib/employee-level/employee-level.controller.ts::EmployeeLevelController.update undocumented-status 200",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "440b27f82846f14f4324956f2bbdd492bbce4e2f": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/employee-level/employee-level.controller.ts::EmployeeLevelController.update undocumented-status 400",
-      "basis": "ai-triage:EmployeeLevelController.update#catch-remap employee-level.controller.ts:57: `return this.employeeLevelService.create(...)` has no await (employee-level.controller.ts:55) and create is async (crud.service.ts:667), so rejections bypass the try/catch."
-    },
     "25a4ee5ad0fea3820ecc298029a2ad2c46e1f1c0": {
       "verdict": "TP",
       "key": "packages/core/src/lib/employee-notification/employee-notification.controller.ts::EmployeeNotificationController.create undocumented-status 400",
@@ -1082,11 +1072,6 @@
       "verdict": "TP",
       "key": "packages/core/src/lib/employee-recent-visit/employee-recent-visit.controller.ts::EmployeeRecentVisitController.getEmployeeRecentVisits undocumented-status 400",
       "basis": "ai-triage:EmployeeRecentVisitController.getEmployeeRecentVisits#catch-remap employee-recent-visit.service.ts:122: Client-supplied `relations` and entityId/entity filters reach findAll (employee-recent-visit.service.ts:84-117); a bad relation or sensitive relation (assertRelationsPermitted) throws an"
-    },
-    "8aaef47519fba43fcbfd9dbcde990e3da4852e80": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/employee-recurring-expense/employee-recurring-expense.controller.ts::EmployeeRecurringExpenseController.findAll undocumented-status 400",
-      "basis": "ai-triage:EmployeeRecurringExpenseController.findAll#catch-remap employee-recurring-expense.controller.ts:127: `return this.employeeRecurringExpenseService.findAll(...)` has no await (employee-recurring-expense.controller.ts:109) and findAll is async (tenant-aware-crud.service.ts:816), so the try ca"
     },
     "acfb18ca9ba76152242657fc338db4a32f03530e": {
       "verdict": "TP",
@@ -2013,11 +1998,6 @@
       "key": "packages/core/src/lib/organization-employment-type/organization-employment-type.controller.ts::OrganizationEmploymentTypeController.update undocumented-status 200",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "b8f5e871a7ed3fe0517fca24ed8693410701c6fa": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/organization-employment-type/organization-employment-type.controller.ts::OrganizationEmploymentTypeController.update undocumented-status 400",
-      "basis": "ai-triage:OrganizationEmploymentTypeController.update#catch-remap organization-employment-type.controller.ts:79: organization-employment-type.controller.ts:74-80 returns the service promise without await, so the try/catch can only see synchronous throws and the async create (tenant-aware-crud.servic"
-    },
     "4ee79c321c8d22daf6d569d72b419933fa9d00b3": {
       "verdict": "TP",
       "key": "packages/core/src/lib/organization-language/organization-language.controller.ts::OrganizationLanguageController.delete undocumented-status 202",
@@ -2037,11 +2017,6 @@
       "verdict": "TP",
       "key": "packages/core/src/lib/organization-position/organization-position.controller.ts::OrganizationPositionController.update undocumented-status 200",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
-    },
-    "ecfd5c18fb0ce0113b320c8f79c5755024d3ba30": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/organization-position/organization-position.controller.ts::OrganizationPositionController.update undocumented-status 400",
-      "basis": "ai-triage:OrganizationPositionController.update#catch-remap organization-position.controller.ts:81: organization-position.controller.ts:76-83 returns the service promise without await, so the catch is dead for the async create"
     },
     "0b2a0d3b34109efbb9ebb4edf9bee6c70b108572": {
       "verdict": "TP",

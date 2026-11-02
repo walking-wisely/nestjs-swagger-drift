@@ -34,7 +34,9 @@ decorator (shorthand where one exists: `@ApiNotFoundResponse`,
 Explicitly **excluded**: `unresolvable-status` findings and anything sourced
 only from the opt-in implicit rules (`--check-validation-pipe`,
 `--check-guards`) — those are inferences about intent, not facts the engine is
-certain of.
+certain of. Findings marked low confidence (`findingConfidence`) are skipped
+too: a throw inside a `catch` block or behind a bare parameter-emptiness check
+is a weak signal, and a wrong decorator is worse than a missing one.
 
 **Description text:** derived from the same exception-class → status table
 the engine already uses for detection (§4.2) — "Not Found", "Conflict", etc.

@@ -60,10 +60,7 @@
 import * as ts from 'typescript';
 import { ESLintUtils } from '@typescript-eslint/utils';
 import type { TSESTree } from '@typescript-eslint/utils';
-import type {
-  AnalysisOptions,
-  Finding,
-} from '../../core/index.js';
+import type { AnalysisOptions, Finding } from '../../core/index.js';
 import { analyzeHandler, createAnalysisContext } from '../../core/index.js';
 
 /**
@@ -196,7 +193,8 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
       // Wording mirrors `cli/report/pretty.ts`'s `formatFindingPretty` so a
       // team running both the CLI (e.g. in CI) and this rule (in-editor) sees
       // the same story told two ways, not two different stories.
-      undocumentedStatus: '{{handlerLabel}} is missing @ApiResponse for {{status}} ({{exceptions}}).',
+      undocumentedStatus:
+        '{{handlerLabel}} is missing @ApiResponse for {{status}} ({{exceptions}}).',
       documentedButUnreachable:
         '{{handlerLabel}} documents {{status}}, but nothing in this run produces it (documented-but-unreachable).',
       // `{{what}}` names the SOURCE of the unresolvable status — an
@@ -220,10 +218,13 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
       maxDepth: options.maxDepth ?? DEFAULT_OPTIONS.maxDepth,
       rules: {
         'documented-but-unreachable':
-          options.rules?.['documented-but-unreachable'] ?? DEFAULT_OPTIONS.rules['documented-but-unreachable'],
-        'unresolvable-status': options.rules?.['unresolvable-status'] ?? DEFAULT_OPTIONS.rules['unresolvable-status'],
+          options.rules?.['documented-but-unreachable'] ??
+          DEFAULT_OPTIONS.rules['documented-but-unreachable'],
+        'unresolvable-status':
+          options.rules?.['unresolvable-status'] ?? DEFAULT_OPTIONS.rules['unresolvable-status'],
       },
-      treatDefaultAsWildcard: options.treatDefaultAsWildcard ?? DEFAULT_OPTIONS.treatDefaultAsWildcard,
+      treatDefaultAsWildcard:
+        options.treatDefaultAsWildcard ?? DEFAULT_OPTIONS.treatDefaultAsWildcard,
       ignoreStatuses: options.ignoreStatuses ?? DEFAULT_OPTIONS.ignoreStatuses,
       checkSuccessResponse: options.checkSuccessResponse ?? DEFAULT_OPTIONS.checkSuccessResponse,
       checkValidationPipe: options.checkValidationPipe ?? DEFAULT_OPTIONS.checkValidationPipe,
@@ -262,7 +263,9 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
       methodNode: TSESTree.MethodDefinition,
     ): { node: TSESTree.Node; usedFallback: boolean } {
       const mapped = services.tsNodeToESTreeNodeMap.get(finding.node);
-      return mapped ? { node: mapped, usedFallback: false } : { node: methodNode, usedFallback: true };
+      return mapped
+        ? { node: mapped, usedFallback: false }
+        : { node: methodNode, usedFallback: true };
     }
 
     /**
@@ -309,7 +312,9 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
             data: {
               handlerLabel: handlerLabelStr,
               what: finding.unresolvableKind === 'success' ? 'an @HttpCode(...)' : 'a throw',
-              detail: usedFallback ? `${finding.detail} (at ${crossFileLocation(finding.node)})` : finding.detail,
+              detail: usedFallback
+                ? `${finding.detail} (at ${crossFileLocation(finding.node)})`
+                : finding.detail,
             },
           });
       }

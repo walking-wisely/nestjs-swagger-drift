@@ -123,7 +123,10 @@ const BUILTIN_PARSE_PIPE_NAMES: ReadonlySet<string> = new Set([
 ]);
 
 /** `true` if `param` carries an accepted parse-pipe-hosting decorator (module doc, point 1). */
-function hasParsePipeHostDecorator(param: ts.ParameterDeclaration, checker: ts.TypeChecker): boolean {
+function hasParsePipeHostDecorator(
+  param: ts.ParameterDeclaration,
+  checker: ts.TypeChecker,
+): boolean {
   if (!ts.canHaveDecorators(param)) return false;
   const decorators = ts.getDecorators(param);
   if (!decorators) return false;

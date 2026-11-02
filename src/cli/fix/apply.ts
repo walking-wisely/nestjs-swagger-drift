@@ -309,7 +309,8 @@ function ensureDtoImport(
   const dtoImports = sourceFile
     .getImportDeclarations()
     .filter(
-      (declaration) => stripKnownExtension(declaration.getModuleSpecifierValue()) === targetSpecifierBase,
+      (declaration) =>
+        stripKnownExtension(declaration.getModuleSpecifierValue()) === targetSpecifierBase,
     );
 
   for (const declaration of dtoImports) {
