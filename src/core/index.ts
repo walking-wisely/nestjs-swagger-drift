@@ -76,5 +76,5 @@ export { analyzeHandler, createAnalysisCache, createAnalysisContext } from './an
 export type { ResponseTypeResolution } from './resolve-response-type.js';
 export { resolveSuccessResponseType } from './resolve-response-type.js';
 
-export type { SourceTrace, TraceArgument, TraceGuard, TraceHop } from './explain.js';
-export { traceSource } from './explain.js';
+export type { Confidence, SourceTrace, TraceArgument, TraceGuard, TraceHop } from './explain.js';
+export { findingConfidence, traceSource } from './explain.js';

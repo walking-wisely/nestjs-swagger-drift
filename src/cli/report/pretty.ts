@@ -6,6 +6,7 @@
  */
 
 import {
+  findingConfidence,
   traceSource,
   type Finding,
   type HandlerInfo,
@@ -66,6 +67,7 @@ function describeTracePretty(source: StatusSource, baseDir: string): string[] {
 export function formatFindingPretty(finding: Finding, baseDir: string, explain = false): string {
   if (finding.rule === 'undocumented-status') {
     const { handler, status, sources } = finding;
+    const confidence = findingConfidence(finding);
     const exceptionNames = [
       ...new Set(sources.map((s) => (s.kind === 'implicit' ? s.reason : s.exception))),
     ];
@@ -73,6 +75,9 @@ export function formatFindingPretty(finding: Finding, baseDir: string, explain =
       `${formatLocation(locationOf(handler.node, baseDir))}  error`,
       `  ${handler.httpMethod} ${handler.path} (${handler.className}.${handler.methodName}) is missing @ApiResponse for:`,
       `    ${status} ${exceptionNames.join(', ')}`,
+      ...(confidence.level === 'low'
+        ? [`    low confidence: ${confidence.reasons.join('; ')}`]
+        : []),
       ...sources.flatMap((s) => [
         `       └ ${describeSourcePretty(s, baseDir)}`,
         ...(explain ? describeTracePretty(s, baseDir) : []),

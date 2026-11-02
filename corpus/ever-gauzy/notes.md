@@ -27,3 +27,7 @@ as `UNTRIAGED`.
 - `@ApiExcludeController` / `@ApiExcludeEndpoint` handlers (`StripeWebhookController`): fixed; excluded handlers are no longer analysed.
 
 Implicit-success findings (357) were all true positives apart from the excluded controller. 126 handlers send 202 but document another 2xx; 43 document 200 while Nest sends 201.
+
+## Confidence marker
+
+On the 698 current findings, 205 are marked `confidence: low` (every source is a throw inside a catch block). Against the recorded verdicts: 35 of the 41 FPs and all 3 UNCLEAR are low; 65 TPs are low too (catch-all repository-error remaps), so low means "check before acting", not "wrong".

@@ -815,3 +815,24 @@ describe('--explain', () => {
     }
   });
 });
+
+describe('--min-confidence', () => {
+  it('high output never contains a low-confidence finding and is a subset of the default output', async () => {
+    const run = async (extra: string[]) => {
+      const console_ = captureConsole();
+      try {
+        await main(['--project', STATUS_DIFF, '--reporter', 'json', ...extra]);
+        return JSON.parse(console_.logs[0] ?? '{}') as {
+          findings: { confidence?: string }[];
+        };
+      } finally {
+        console_.restore();
+      }
+    };
+    const all = await run([]);
+    const high = await run(['--min-confidence', 'high']);
+    expect(high.findings.every((f) => f.confidence === undefined)).toBe(true);
+    expect(high.findings.length).toBeLessThanOrEqual(all.findings.length);
+    expect(high.findings.length).toBe(all.findings.filter((f) => f.confidence !== 'low').length);
+  });
+});

@@ -132,6 +132,9 @@ Options:
                                every finding they would otherwise hide is reported.
       --explain               Show, per finding, the call hops and enclosing conditions
                                that made each throw count as reachable.
+      --min-confidence <level> "high" hides findings reached only through weak signals
+                               (a throw in a catch block, or a bare parameter
+                               emptiness check); default "low" shows everything.
   -h, --help                  Print this message.
 ```
 

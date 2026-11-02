@@ -61,6 +61,8 @@ export interface CliFlags {
   noConfig: boolean;
   audit: boolean;
   explain: boolean;
+  /** `high` hides findings whose only sources are low-confidence. */
+  minConfidence: 'low' | 'high';
   /** PLAN §10.2 Tier 1: print a unified diff of the `@Api*Response` insertions autofix would make, without writing. */
   fixDryRun: boolean;
   /** PLAN §10.2 Tier 1: write the `@Api*Response` insertions autofix would make. */
@@ -91,6 +93,7 @@ function emptyFlags(): CliFlags {
     noConfig: false,
     audit: false,
     explain: false,
+    minConfidence: 'low',
     fixDryRun: false,
     fix: false,
   };
@@ -288,6 +291,16 @@ export function parseArgs(argv: string[]): ParseArgsResult {
       case '--explain':
         flags.explain = true;
         break;
+
+      case '--min-confidence': {
+        const value = takeValue(arg);
+        if (typeof value !== 'string') return { ok: false, error: value.error };
+        if (value !== 'low' && value !== 'high') {
+          return { ok: false, error: `--min-confidence must be "low" or "high", got "${value}"` };
+        }
+        flags.minConfidence = value;
+        break;
+      }
 
       case '--audit':
         flags.audit = true;

@@ -12,6 +12,7 @@ describe('parseArgs', () => {
         routes: false,
         reporter: undefined,
         maxDepth: undefined,
+      minConfidence: 'low',
         failOn: undefined,
         ignore: [],
         ignoreStatuses: [],
@@ -200,5 +201,23 @@ describe('parseArgs', () => {
   it('rejects a value-taking flag whose "value" looks like another flag', () => {
     const result = parseArgs(['--project', '--routes']);
     expect(result.ok).toBe(false);
+  });
+});
+
+describe('parseArgs --min-confidence', () => {
+  it('defaults to low', () => {
+    const result = parseArgs(['--project', './tsconfig.json']);
+    expect(result.ok && result.flags.minConfidence).toBe('low');
+  });
+
+  it('accepts high', () => {
+    const result = parseArgs(['--project', './tsconfig.json', '--min-confidence', 'high']);
+    expect(result.ok && result.flags.minConfidence).toBe('high');
+  });
+
+  it('rejects other values', () => {
+    expect(parseArgs(['--project', './tsconfig.json', '--min-confidence', 'medium']).ok).toBe(
+      false,
+    );
   });
 });

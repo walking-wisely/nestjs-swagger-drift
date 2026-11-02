@@ -83,7 +83,12 @@ import {
   type FixNotApplied,
 } from './fix/index.js';
 import type { AnalysisOptions, Finding, HandlerInfo } from '../core/index.js';
-import { analyzeHandler, createAnalysisContext, listDirectiveCommentLines } from '../core/index.js';
+import {
+  analyzeHandler,
+  createAnalysisContext,
+  findingConfidence,
+  listDirectiveCommentLines,
+} from '../core/index.js';
 
 function printUsage(): void {
   console.log(
@@ -122,6 +127,9 @@ function printUsage(): void {
       '                               every finding they would otherwise hide is reported.',
       '      --explain               Show, per finding, the call hops and enclosing conditions',
       '                               that made each throw count as reachable.',
+      '      --min-confidence <level> "high" hides findings reached only through weak signals',
+      '                               (a throw in a catch block, or a bare parameter',
+      '                               emptiness check); default "low" shows everything.',
       '      --fix-dry-run           Print a unified diff of the @Api*Response decorators',
       '                               autofix would insert for undocumented-status findings',
       '                               with a deterministic source, without writing anything.',
@@ -262,6 +270,7 @@ interface ResolvedOptions {
   baseDir: string | undefined;
   audit: boolean;
   explain: boolean;
+  minConfidence: 'low' | 'high';
   fixDryRun: boolean;
   fix: boolean;
 }
@@ -350,6 +359,7 @@ export function mergeOptions(
       baseDir: flags.baseDir ?? resolveFromConfig(config.baseDir),
       audit: flags.audit,
       explain: flags.explain,
+      minConfidence: flags.minConfidence,
       fixDryRun: flags.fixDryRun,
       fix: flags.fix,
     },
@@ -583,7 +593,7 @@ export async function main(argv: string[]): Promise<number> {
   // flagged as unused — same "silence over noise" contract `--ignore`
   // gives everything else.
   const analyzedFiles = new Set<string>();
-  const findings = sortFindings(
+  const allFindings = sortFindings(
     methodNodes.flatMap((node) =>
       analyzeHandler(
         node,
@@ -596,6 +606,10 @@ export async function main(argv: string[]): Promise<number> {
       ),
     ),
   );
+  const findings =
+    options.minConfidence === 'high'
+      ? allFindings.filter((f) => findingConfidence(f).level === 'high')
+      : allFindings;
   const failingFindings = findings.filter((f) => options.failOn.has(f.rule));
 
   if (!options.audit) {

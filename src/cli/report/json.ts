@@ -13,6 +13,7 @@
  */
 
 import {
+  findingConfidence,
   traceSource,
   type Finding,
   type HandlerInfo,
@@ -127,9 +128,12 @@ interface JsonFinding {
    * surprise a machine-readable format shouldn't spring on a consumer.
    */
   unresolvableKind: 'throw' | 'success' | undefined;
+  confidence?: 'low';
+  confidenceReasons?: string[];
 }
 
 function findingToJson(finding: Finding, baseDir: string, explain: boolean): JsonFinding {
+  const confidence = findingConfidence(finding);
   return {
     rule: finding.rule,
     status: finding.rule === 'unresolvable-status' ? undefined : finding.status,
@@ -141,6 +145,9 @@ function findingToJson(finding: Finding, baseDir: string, explain: boolean): Jso
         : [],
     detail: finding.rule === 'unresolvable-status' ? finding.detail : undefined,
     unresolvableKind: finding.rule === 'unresolvable-status' ? finding.unresolvableKind : undefined,
+    ...(confidence.level === 'low'
+      ? { confidence: 'low' as const, confidenceReasons: confidence.reasons }
+      : {}),
   };
 }
 

@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import type { StatusSource } from './types.js';
+import type { Finding, StatusSource } from './types.js';
 
 export interface TraceHop {
   name: string;
@@ -175,4 +175,42 @@ export function traceSource(source: StatusSource): SourceTrace | undefined {
     });
   }
   return { hops, guards, finalArguments };
+}
+
+export type Confidence = { level: 'high' } | { level: 'low'; reasons: string[] };
+
+const BARE_TRUTHINESS = /^!?[A-Za-z_$][\w$]*$/;
+
+function lowConfidenceReason(source: StatusSource): string | undefined {
+  const trace = traceSource(source);
+  if (!trace) return undefined;
+  if (trace.guards.some((g) => g.kind === 'catch')) return 'throw inside a catch block';
+  if (
+    source.kind === 'service-throw' &&
+    trace.guards.length > 0 &&
+    trace.guards.every(
+      (g) =>
+        g.kind === 'if-then' &&
+        g.parameters.length > 0 &&
+        g.condition !== undefined &&
+        BARE_TRUTHINESS.test(g.condition),
+    )
+  ) {
+    return 'guard only checks a parameter for emptiness; callers may validate it';
+  }
+  return undefined;
+}
+
+/** Low only when every source of the finding is a throw the analyser reached through a weak signal. */
+export function findingConfidence(finding: Finding): Confidence {
+  if (finding.rule !== 'undocumented-status' || finding.sources.length === 0) {
+    return { level: 'high' };
+  }
+  const reasons: string[] = [];
+  for (const source of finding.sources) {
+    const reason = lowConfidenceReason(source);
+    if (reason === undefined) return { level: 'high' };
+    if (!reasons.includes(reason)) reasons.push(reason);
+  }
+  return { level: 'low', reasons };
 }
