@@ -216,4 +216,41 @@ describe('wrapper decorators: refusing to guess', () => {
       class C { @ApiCommon() m() {} }`;
     expect(gaps(source, { responseDecorators: { ApiCommon: [404] } })).toEqual([]);
   });
+  it('does not trust a variable after a compound assignment or increment', () => {
+    const source = `${HEADER}
+      const ApiA = () => { let s = 200; s += 204; switch (s) { case 200: return applyDecorators(ApiResponse({ status: 200 })); default: return applyDecorators(ApiResponse({ status: 404 })); } };
+      const ApiB = () => { let s = 200; s++; switch (s) { case 200: return applyDecorators(ApiResponse({ status: 200 })); default: return applyDecorators(ApiResponse({ status: 404 })); } };
+      class C { @ApiA() @ApiB() m() {} }`;
+    expect(statuses(source)).toEqual([]);
+  });
+
+  it('forwards a rest parameter of decorators to applyDecorators', () => {
+    const source = `${HEADER}
+      const Wrap = (...ds: MethodDecorator[]) => applyDecorators(...ds);
+      class C { @Wrap(ApiResponse({ status: 409 })) m() {} }`;
+    expect(statuses(source)).toEqual([409]);
+  });
+
+  it('reports a returned decorator function as a gap', () => {
+    const source = `${HEADER}
+      const ApiFactory = () => (t: object, k: string, d: PropertyDescriptor) => { ApiResponse({ status: 410 })(t, k, d); };
+      class C { @ApiFactory() m() {} }`;
+    expect(statuses(source)).toEqual([]);
+    expect(gaps(source)).toEqual([expect.objectContaining({ decorator: 'ApiFactory' })]);
+  });
+
+  it('ignores code after a throw', () => {
+    const source = `${HEADER}
+      const ApiNever = () => { throw new Error('x'); return applyDecorators(ApiResponse({ status: 411 })); };
+      class C { @ApiNever() m() {} }`;
+    expect(statuses(source)).toEqual([]);
+  });
+
+  it('does not treat a local applyDecorators as the Nest one', () => {
+    const source = `${HEADER.replace("import { applyDecorators } from '@nestjs/common';", '')}
+      const applyDecorators = (..._d: unknown[]): MethodDecorator => () => {};
+      const ApiLocal = () => applyDecorators(ApiResponse({ status: 418 }));
+      class C { @ApiLocal() m() {} }`;
+    expect(statuses(source)).toEqual([]);
+  });
 });

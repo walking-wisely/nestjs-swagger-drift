@@ -32,6 +32,7 @@ import { checkProvenance } from './provenance.js';
 import { SHORTHAND_RESPONSE_DECORATORS } from './nest-exceptions.js';
 
 const SWAGGER_MODULE = '@nestjs/swagger';
+const COMMON_MODULE = '@nestjs/common';
 const MAX_DEPTH = 8;
 const RESPONSE_NAME = /^Api\w*Responses?$/;
 const RANGE = /^[1-5]XX$/;
@@ -54,6 +55,7 @@ interface Frame {
   env: Map<string, EnvValue>;
   callables: Map<string, ts.Expression>;
   decorators: Map<string, ts.CallExpression>;
+  rest: Map<string, { args: readonly ts.Expression[]; caller: Frame }>;
 }
 
 interface Output {
@@ -190,7 +192,10 @@ class Interpreter {
       }
     }
 
-    if (name === 'applyDecorators') {
+    if (
+      name === 'applyDecorators' &&
+      checkProvenance(callee, this.ctx.checker, COMMON_MODULE).provenance !== 'mismatch'
+    ) {
       this.evalArguments(call, frame, depth, name);
       return;
     }
@@ -231,6 +236,9 @@ class Interpreter {
         const inner = unwrap(node.expression);
         if (ts.isArrayLiteralExpression(inner)) {
           for (const element of inner.elements) this.evalDecoratorExpr(element, frame, depth, via);
+        } else if (ts.isIdentifier(inner) && frame.rest.has(inner.text)) {
+          const { args, caller } = frame.rest.get(inner.text)!;
+          for (const forwarded of args) this.evalDecoratorExpr(forwarded, caller, depth, via);
         } else {
           this.gap(via, node, 'spread of a value that is not an array literal');
         }
@@ -249,6 +257,9 @@ class Interpreter {
       if (held) this.evalCall(held, frame, depth);
     } else if (ts.isArrayLiteralExpression(node)) {
       for (const element of node.elements) this.evalDecoratorExpr(element, frame, depth, via);
+    } else if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) {
+      this.out.related ||= mentionsResponseDecorator(node);
+      this.gap(via, node, 'decorator function body cannot be followed statically');
     }
   }
 
@@ -272,7 +283,16 @@ class Interpreter {
       env: new Map(env),
       callables: new Map(),
       decorators: new Map(),
+      rest: new Map(),
     };
+    const restIndex = fn.parameters.findIndex((param) => param.dotDotDotToken !== undefined);
+    const restParam = fn.parameters[restIndex];
+    if (restParam && ts.isIdentifier(restParam.name)) {
+      const args = call.arguments.slice(restIndex);
+      if (!args.some((arg) => ts.isSpreadElement(arg))) {
+        frame.rest.set(restParam.name.text, { args, caller });
+      }
+    }
     this.active.add(fn);
     try {
       if (ts.isBlock(fn.body)) this.exec(fn.body.statements, frame, depth, name);
@@ -299,6 +319,7 @@ class Interpreter {
     frame.env.delete(variable);
     frame.callables.delete(variable);
     frame.decorators.delete(variable);
+    frame.rest.delete(variable);
   }
 
   private assign(frame: Frame, variable: string, value: ts.Expression | undefined): void {
@@ -325,6 +346,7 @@ class Interpreter {
       return 'return';
     }
     if (ts.isBreakStatement(statement)) return 'break';
+    if (ts.isThrowStatement(statement)) return 'return';
     if (ts.isBlock(statement)) return this.exec(statement.statements, frame, depth, name);
 
     if (ts.isVariableStatement(statement)) {
@@ -342,6 +364,20 @@ class Interpreter {
         ts.isIdentifier(unwrap(expr.left))
       ) {
         this.assign(frame, (unwrap(expr.left) as ts.Identifier).text, expr.right);
+      } else if (
+        ts.isBinaryExpression(expr) &&
+        expr.operatorToken.kind >= ts.SyntaxKind.FirstCompoundAssignment &&
+        expr.operatorToken.kind <= ts.SyntaxKind.LastCompoundAssignment &&
+        ts.isIdentifier(unwrap(expr.left))
+      ) {
+        this.forget(frame, (unwrap(expr.left) as ts.Identifier).text);
+      } else if (
+        (ts.isPrefixUnaryExpression(expr) || ts.isPostfixUnaryExpression(expr)) &&
+        (expr.operator === ts.SyntaxKind.PlusPlusToken ||
+          expr.operator === ts.SyntaxKind.MinusMinusToken) &&
+        ts.isIdentifier(unwrap(expr.operand))
+      ) {
+        this.forget(frame, (unwrap(expr.operand) as ts.Identifier).text);
       }
       return 'normal';
     }
@@ -422,7 +458,12 @@ export function resolveWrapperDecorator(
   if (!ts.isCallExpression(expression)) return { statuses: [], gaps: [] };
 
   const out: Output = { statuses: [], gaps: [], related: RESPONSE_NAME.test(name) };
-  const frame: Frame = { env: new Map(), callables: new Map(), decorators: new Map() };
+  const frame: Frame = {
+    env: new Map(),
+    callables: new Map(),
+    decorators: new Map(),
+    rest: new Map(),
+  };
   new Interpreter(ctx, out).evalCall(expression, frame, 0);
   return { statuses: out.statuses, gaps: out.related ? dedupe(out.gaps, name) : [] };
 }
