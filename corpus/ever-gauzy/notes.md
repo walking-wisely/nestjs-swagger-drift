@@ -22,8 +22,8 @@ as `UNTRIAGED`.
 
 - Guard needs an input the caller never produces (`tenant-aware-crud.service.ts` delete empty-criteria 400, `assertNotForeignRow` 403): not fixable without object-shape data flow.
 - `!id` guard behind `UUIDValidationPipe` (`crud.service.ts:534`): pipe preconditions are not modelled. The pipe itself yields 404/406, which is not reported either.
-- `typeof` narrowing of a union-typed argument (`crud.service.ts:641`): fixable with type-based narrowing.
+- `typeof` narrowing of a union-typed argument (`crud.service.ts:641`): fixed; call-site argument types now decide `typeof` guards.
 - Correlated guards across frames (`billing.service.ts:583`).
-- `@ApiExcludeController` classes are still analysed (`StripeWebhookController`): fixable.
+- `@ApiExcludeController` / `@ApiExcludeEndpoint` handlers (`StripeWebhookController`): fixed; excluded handlers are no longer analysed.
 
 Implicit-success findings (357) were all true positives apart from the excluded controller. 126 handlers send 202 but document another 2xx; 43 document 200 while Nest sends 201.

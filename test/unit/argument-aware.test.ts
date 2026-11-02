@@ -205,3 +205,55 @@ describe('const-eval: evaluateTruthiness', () => {
     expect(evalExpr(code, bindings as Record<string, ConstValue>)).toBe(expected);
   });
 });
+
+describe('call-graph: static argument types decide typeof guards', () => {
+  const lib = `
+    ${IMPORT}
+    export class Svc {
+      update(id: string | { name: string }): void {
+        if (typeof id === 'object') {
+          throw new UnauthorizedException('object branch');
+        }
+      }
+      forward(id: string | { name: string }): void {
+        this.update(id);
+      }
+    }
+  `;
+
+  it('skips the object branch when the argument is statically a string', () => {
+    const src = `${lib}
+      export class C {
+        constructor(private svc: Svc) {}
+        handler(id: string) { this.svc.update(id); }
+      }`;
+    expect(statusesFor(src)).toEqual([]);
+  });
+
+  it('keeps the throw when the argument may be an object', () => {
+    const src = `${lib}
+      export class C {
+        constructor(private svc: Svc) {}
+        handler(id: string | { name: string }) { this.svc.update(id); }
+      }`;
+    expect(statusesFor(src)).toEqual([401]);
+  });
+
+  it('forwards the fact through an intermediate call', () => {
+    const src = `${lib}
+      export class C {
+        constructor(private svc: Svc) {}
+        handler(id: string) { this.svc.forward(id); }
+      }`;
+    expect(statusesFor(src)).toEqual([]);
+  });
+
+  it('does not decide when the type is any', () => {
+    const src = `${lib}
+      export class C {
+        constructor(private svc: Svc) {}
+        handler(id: any) { this.svc.update(id); }
+      }`;
+    expect(statusesFor(src)).toEqual([401]);
+  });
+});

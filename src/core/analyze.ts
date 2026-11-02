@@ -113,6 +113,7 @@ import type {
   StatusSource,
 } from './types.js';
 import { getHandlerInfosForMethod } from './handlers.js';
+import { isExcludedFromDocs } from './decorators.js';
 import { collectDirectThrows } from './thrown.js';
 import { resolveThrownStatus } from './resolve-status.js';
 import { getDocumentedStatuses } from './documented.js';
@@ -359,6 +360,8 @@ export function analyzeHandler(
   // already proves `methodNode.parent` is class-like (it requires exactly
   // that before doing anything else).
   const classNode = methodNode.parent as ts.ClassLikeDeclaration;
+
+  if (isExcludedFromDocs(methodNode, classNode, ctx.checker)) return [];
 
   const checkSuccessResponse = ctx.options.checkSuccessResponse ?? true;
   const unreachableRuleEnabled = ctx.options.rules['documented-but-unreachable'];

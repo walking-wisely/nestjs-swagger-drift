@@ -24,6 +24,7 @@ export {
   getDecoratorInfos,
   getControllerInfo,
   getHttpHandlerDecorators,
+  isExcludedFromDocs,
 } from './decorators.js';
 
 export { joinPath } from './routes.js';

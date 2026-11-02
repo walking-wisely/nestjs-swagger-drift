@@ -428,15 +428,6 @@
       "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.resume undocumented-status 504",
       "basis": "site:packages/core/src/lib/shared/billing/billing.service.ts:622#reachable gateway timeout"
     },
-    "947302a8480ae2fee4ea8b1bebd20620f36ea77a": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/shared/billing/stripe-webhook.controller.ts::StripeWebhookController.handle undocumented-status 200",
-      "basis": "site:stripe-webhook.controller.ts:StripeWebhookController#class-has-ApiExcludeController"
-    },
-    "892262325ef2626e6707317a8ac7c03e93f5022d": {
-      "verdict": "UNTRIAGED",
-      "key": "packages/core/src/lib/shared/billing/stripe-webhook.controller.ts::StripeWebhookController.handle undocumented-status 403"
-    },
     "ea8eaf3b2574019bdbc90e2773e94306062ffb5f": {
       "verdict": "FP",
       "key": "packages/core/src/lib/broadcast/broadcast.controller.ts::BroadcastController.delete undocumented-status 400",
@@ -472,12 +463,12 @@
       "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.update undocumented-status 200",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "000a8b1c07fce6311d1cd0e8fc678460fbff7efb": {
+    "37da4e89cdae85886b4632160d10012be13c3b6a": {
       "verdict": "TP",
       "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.update undocumented-status 400",
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
-    "003bc24cf1cb6e0a9b47152187ec401294163d09": {
+    "07ca347155dba876948f287cb7b6981d5b44e040": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.update undocumented-status 404"
     },
@@ -506,12 +497,12 @@
       "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.update undocumented-status 200",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "b0b7121a6747786b0bc43456654e5a05ce5fd062": {
+    "3ede43f9bfb947bbdb3f6960b6b9a269a8df5083": {
       "verdict": "TP",
       "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.update undocumented-status 400",
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
-    "ab06d3523be8a05a7bc4fbee27dbd7f791fa91be": {
+    "79f6f736302957d0d21c3462ba45b4457b7794e2": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.update undocumented-status 404"
     },
@@ -565,12 +556,12 @@
       "key": "packages/core/src/lib/candidate-interview/candidate-interview.controller.ts::CandidateInterviewController.update undocumented-status 200",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "9d2ab15242573688ec7a5ddde888957b1724f7af": {
+    "3641c201b449fd05dd5c7552b2431d41f3376730": {
       "verdict": "TP",
       "key": "packages/core/src/lib/candidate-interview/candidate-interview.controller.ts::CandidateInterviewController.update undocumented-status 400",
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
-    "4e53d05784abf384d75bbad8447f4194eff03cc6": {
+    "af50feade5dcc47f6f4f26dc6e50451f634f907a": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/candidate-interview/candidate-interview.controller.ts::CandidateInterviewController.update undocumented-status 404"
     },
@@ -644,12 +635,12 @@
       "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.update undocumented-status 200",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "84ab8eeea0bca9388ce5f82bdd9f581fa61d3273": {
+    "3215317b119681cc7335b78d50df783aeabe2ee2": {
       "verdict": "TP",
       "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.update undocumented-status 400",
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
-    "e049b81a7cba9ec6c137dae4110efc13fd3a1313": {
+    "594eba640040ee175fd687b6ef00397ddc166c3c": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.update undocumented-status 404"
     },
@@ -678,12 +669,12 @@
       "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.update undocumented-status 200",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "d231ed4937e572c46baab8846c60511085cdce7e": {
+    "989b8bfcc8d5c2a72f4351331158fae4a4e5349c": {
       "verdict": "TP",
       "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.update undocumented-status 400",
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
-    "4bfd07e32f5fe38212338f08b37314b382c10eb0": {
+    "118926a4509c61cdf0f06eb7dd58a952cd569988": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.update undocumented-status 404"
     },
@@ -813,7 +804,7 @@
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.get undocumented-status 400"
     },
-    "f8badce9171639a2e7d1bd2931f68fe60c1a3a1b": {
+    "1e5ad060a639cb723deee28e4db2302f40509194": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.delete undocumented-status 400"
     },
@@ -970,7 +961,7 @@
       "key": "packages/core/src/lib/employee-appointment/employee-appointment.controller.ts::EmployeeAppointmentController.pagination undocumented-status 400",
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:364#catch-all repository error remap"
     },
-    "d70f18492685da8b90fd7c0a69b6a38c4e832988": {
+    "837e8c22c4c736954de4942323f87b1db2d1a964": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/employee-availability/employee-availability.controller.ts::EmployeeAvailabilityController.update undocumented-status 404"
     },
@@ -2653,12 +2644,12 @@
       "key": "packages/core/src/lib/tag-type/tag-type.controller.ts::TagTypeController.update undocumented-status 202",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "ef0188d8a52b359832129eb8054314d0026f7efd": {
+    "71656af545435a562346680920471fa5754550c1": {
       "verdict": "TP",
       "key": "packages/core/src/lib/tag-type/tag-type.controller.ts::TagTypeController.update undocumented-status 400",
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
-    "7496c45939df1cc8604fabd75991d5a47ab7168d": {
+    "d11a2e828f3e504f8e6303117be794da6cb9147b": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/tag-type/tag-type.controller.ts::TagTypeController.update undocumented-status 404"
     },
@@ -2682,12 +2673,12 @@
       "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.update undocumented-status 202",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "a24a2a6f41bf512df4d0fc9989f265f29e45c448": {
+    "d5690a8261a1d69d63e6f94bd84469fd873fb926": {
       "verdict": "TP",
       "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.update undocumented-status 400",
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
-    "3f765b96b5470b2fc9c0f2236c642e9b30c6df7a": {
+    "f89a66147194962f3741ade2fa5dc9a0c0228c49": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.update undocumented-status 404"
     },
@@ -3141,12 +3132,12 @@
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/measurement/unit-category.controller.ts::UnitCategoryController.delete undocumented-status 404"
     },
-    "bcd84e1fed0b35751c3d59b87488ff114d95eb57": {
+    "a7318291f9057621edd812d33c0cfb54b00ca6a7": {
       "verdict": "TP",
       "key": "packages/core/src/lib/measurement/unit-category.controller.ts::UnitCategoryController.update undocumented-status 400",
       "basis": "site:packages/core/src/lib/core/crud/crud.service.ts:865#catch-all repository error remap"
     },
-    "b0e6d3a2c896406e2ba8f827a24fecd40763f1cd": {
+    "b9ba5bb506da537758e68fc01b411ec62c20112b": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/measurement/unit-category.controller.ts::UnitCategoryController.update undocumented-status 404"
     },
@@ -3158,11 +3149,11 @@
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.delete undocumented-status 404"
     },
-    "61022000ed3340f026496ea3125eee785426967a": {
+    "a32da76fe859f4aac9672f45d7f9eee43ddc2627": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.update undocumented-status 400"
     },
-    "61db6809d477026e490a709218d30668fa56a86c": {
+    "9f06d83b1c00971338786c0da50446f3b791673b": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.update undocumented-status 404"
     },

@@ -490,7 +490,7 @@ function expand(
       cacheMap,
       results,
       unresolvedResults,
-      bindArguments(nextCall.decl, nextCall.callNode, env),
+      bindArguments(nextCall.decl, nextCall.callNode, env, ctx.checker),
     );
   }
   visited.delete(target.symbol);
@@ -547,7 +547,7 @@ export function collectCallGraphStatuses(
       cacheMap,
       results,
       unresolvedResults,
-      bindArguments(target.decl, callNode, EMPTY_ENV),
+      bindArguments(target.decl, callNode, EMPTY_ENV, ctx.checker),
     );
   }
 
