@@ -51,6 +51,7 @@
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
+    "corpus": "node scripts/corpus/cli.ts",
     "test:perf": "vitest run --config vitest.perf.config.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
