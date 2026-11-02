@@ -24,15 +24,21 @@
  *   `DocumentedStatus`'s doc comment in `types.ts`: "satisfies nothing
  *   specific *by default*").
  *
- * Explicitly NOT covered in Phase 2 (PLAN §4.3's "V1 gap"): composed
- * decorators built with `applyDecorators(ApiNotFoundResponse(), ...)`. Such
- * a composed decorator is not literally named `ApiResponse`/a shorthand at
- * the use site, so it is invisible here — a handler documented only that
- * way will look undocumented. Documented, not silently worked around.
+ * Project-local decorators that compose or forward to these (`applyDecorators(...)`,
+ * `Doc(404)`) are resolved by `response-wrappers.ts`; ones it cannot read are
+ * reported as `DocumentationGap`s and can be described via
+ * `AnalysisOptions.responseDecorators`.
  */
 
 import * as ts from 'typescript';
-import type { AnalysisOptions, DocumentedStatus, StatusRange } from './types.js';
+import type {
+  AnalysisOptions,
+  DocumentationGap,
+  DocumentedStatus,
+  DocumentedStatusValue,
+  StatusRange,
+} from './types.js';
+import { type WrapperContext, resolveWrapperDecorator } from './response-wrappers.js';
 import { getDecoratorInfos } from './decorators.js';
 import { resolveStatusExpression } from './status-value.js';
 import { SHORTHAND_RESPONSE_DECORATORS } from './nest-exceptions.js';
@@ -220,105 +226,145 @@ function resolveApiResponseStatus(
   return { ambiguous: false };
 }
 
+function swaggerStatuses(
+  effectiveName: string,
+  firstArgument: ts.Expression | undefined,
+  checker: ts.TypeChecker,
+  options: AnalysisOptions,
+): DocumentedStatusValue[] {
+  if (effectiveName === 'ApiDefaultResponse') {
+    return options.treatDefaultAsWildcard ? ['default'] : [];
+  }
+
+  if (effectiveName === 'ApiResponse') {
+    const result = resolveApiResponseStatus(firstArgument, checker);
+    if (result.status !== undefined) return [result.status];
+    if (result.range !== undefined) return [result.range];
+    // No explicit `status` and nothing ambiguous (e.g. `@ApiResponse({
+    // description: '...' })` with no spread) isn't attributable to any
+    // specific code — real `@nestjs/swagger` treats that as documenting
+    // 200, but success-code checking is deferred (PLAN §4.1c / Phase 5).
+    return result.ambiguous ? ['default'] : [];
+  }
+
+  // `Object.hasOwn` guard (not a bare `!== undefined` check on the
+  // indexed value): `SHORTHAND_RESPONSE_DECORATORS` is a plain object
+  // literal built via `Object.fromEntries`, so it inherits from
+  // `Object.prototype`. A decorator import that merely SHARES A NAME with
+  // an `Object.prototype` member — `toString`, `valueOf`, `constructor`,
+  // `hasOwnProperty`, `isPrototypeOf`, `propertyIsEnumerable`,
+  // `toLocaleString` — need not exist in `@nestjs/swagger` at all; writing
+  // `import { toString } from '@nestjs/swagger'` and `@toString()` is
+  // enough to make `effectiveName === 'toString'`, and an unguarded
+  // `SHORTHAND_RESPONSE_DECORATORS['toString']` resolves to
+  // `Object.prototype.toString` (a function, so `!== undefined`), which
+  // then gets pushed into `results` as a bogus `status` and crashes far
+  // downstream code that expects `status` to be a number/string. Found via
+  // adversarial review of PR #21.
+  return Object.hasOwn(SHORTHAND_RESPONSE_DECORATORS, effectiveName)
+    ? [SHORTHAND_RESPONSE_DECORATORS[effectiveName]!]
+    : [];
+}
+
 function documentedFromNode(
   node: ts.ClassLikeDeclaration | ts.MethodDeclaration,
   checker: ts.TypeChecker,
   level: 'method' | 'class',
   options: AnalysisOptions,
-): DocumentedStatus[] {
+): Documentation {
   const decorators = getDecoratorInfos(node, checker, SWAGGER_MODULE);
-  const results: DocumentedStatus[] = [];
+  const statuses: DocumentedStatus[] = [];
+  const gaps: DocumentationGap[] = [];
+  const wrapperContext: WrapperContext = {
+    checker,
+    options,
+    swagger: (effectiveName, call) =>
+      swaggerStatuses(effectiveName, call.arguments[0], checker, options),
+  };
 
   for (const d of decorators) {
-    if (d.provenance === 'mismatch') continue;
-    const effectiveName = d.resolvedName ?? d.name;
-
-    if (effectiveName === 'ApiDefaultResponse') {
-      if (options.treatDefaultAsWildcard) {
-        results.push({ status: 'default', decorator: d.name, node: d.node, level });
+    if (d.provenance === 'mismatch') {
+      const resolved = resolveWrapperDecorator(d.node, d.name, wrapperContext);
+      for (const status of resolved.statuses) {
+        statuses.push({ status, decorator: d.name, node: d.node, level });
       }
+      gaps.push(...resolved.gaps);
       continue;
     }
 
-    if (effectiveName === 'ApiResponse') {
-      const result = resolveApiResponseStatus(getDecoratorCallArgument(d.node), checker);
-      if (result.status !== undefined) {
-        results.push({ status: result.status, decorator: d.name, node: d.node, level });
-      } else if (result.range !== undefined) {
-        results.push({ status: result.range, decorator: d.name, node: d.node, level });
-      } else if (result.ambiguous) {
-        results.push({ status: 'default', decorator: d.name, node: d.node, level });
-      }
-      // No explicit `status` and nothing ambiguous (e.g. `@ApiResponse({
-      // description: '...' })` with no spread) isn't attributable to any
-      // specific code — real `@nestjs/swagger` treats that as documenting
-      // 200, but success-code checking is deferred (PLAN §4.1c / Phase 5).
-      continue;
-    }
-
-    // `Object.hasOwn` guard (not a bare `!== undefined` check on the
-    // indexed value): `SHORTHAND_RESPONSE_DECORATORS` is a plain object
-    // literal built via `Object.fromEntries`, so it inherits from
-    // `Object.prototype`. A decorator import that merely SHARES A NAME with
-    // an `Object.prototype` member — `toString`, `valueOf`, `constructor`,
-    // `hasOwnProperty`, `isPrototypeOf`, `propertyIsEnumerable`,
-    // `toLocaleString` — need not exist in `@nestjs/swagger` at all; writing
-    // `import { toString } from '@nestjs/swagger'` and `@toString()` is
-    // enough to make `effectiveName === 'toString'`, and an unguarded
-    // `SHORTHAND_RESPONSE_DECORATORS['toString']` resolves to
-    // `Object.prototype.toString` (a function, so `!== undefined`), which
-    // then gets pushed into `results` as a bogus `status` and crashes far
-    // downstream code that expects `status` to be a number/string. Found via
-    // adversarial review of PR #21.
-    const shorthandStatus = Object.hasOwn(SHORTHAND_RESPONSE_DECORATORS, effectiveName)
-      ? SHORTHAND_RESPONSE_DECORATORS[effectiveName]
-      : undefined;
-    if (shorthandStatus !== undefined) {
-      results.push({ status: shorthandStatus, decorator: d.name, node: d.node, level });
+    const argument = getDecoratorCallArgument(d.node);
+    for (const status of swaggerStatuses(d.resolvedName ?? d.name, argument, checker, options)) {
+      statuses.push({ status, decorator: d.name, node: d.node, level });
     }
   }
 
-  return results;
+  return { statuses, gaps };
+}
+
+interface Documentation {
+  statuses: DocumentedStatus[];
+  gaps: DocumentationGap[];
 }
 
 /**
- * Class-level statuses for `classNode` AND every resolvable ancestor up its
- * `extends` chain (PLAN §4.3 review S1). `visited` guards against a cycle
+ * Class-level documentation for `classNode` AND every resolvable ancestor up
+ * its `extends` chain (PLAN §4.3 review S1). `visited` guards against a cycle
  * (never possible in valid TS, but cheap insurance against looping forever
  * on malformed input).
  */
-function collectClassChainStatuses(
+function collectClassChain(
   classNode: ts.ClassLikeDeclaration,
   checker: ts.TypeChecker,
   options: AnalysisOptions,
-): DocumentedStatus[] {
-  const results: DocumentedStatus[] = [];
+): Documentation {
+  const result: Documentation = { statuses: [], gaps: [] };
   const visited = new Set<ts.ClassLikeDeclaration>();
   let current: ts.ClassLikeDeclaration | undefined = classNode;
   while (current !== undefined && !visited.has(current)) {
     visited.add(current);
-    results.push(...documentedFromNode(current, checker, 'class', options));
+    const own = documentedFromNode(current, checker, 'class', options);
+    result.statuses.push(...own.statuses);
+    result.gaps.push(...own.gaps);
     current = getBaseClassDeclaration(current, checker);
   }
-  return results;
+  return result;
 }
 
 /**
- * Documented statuses for `methodNode`, merging its own decorators with its
+ * Documentation for `methodNode`, merging its own decorators with its
  * class's and every ancestor class's (class-level statuses first, so
- * `documented[0]` is stable-ish for callers that care, though nothing
+ * `statuses[0]` is stable-ish for callers that care, though nothing
  * relies on that order).
  */
+export function collectDocumentation(
+  methodNode: ts.MethodDeclaration,
+  checker: ts.TypeChecker,
+  options: AnalysisOptions,
+): Documentation {
+  const parent: ts.Node | undefined = methodNode.parent;
+  const classLevel =
+    parent !== undefined && ts.isClassLike(parent)
+      ? collectClassChain(parent, checker, options)
+      : { statuses: [], gaps: [] };
+  const own = documentedFromNode(methodNode, checker, 'method', options);
+  return {
+    statuses: [...classLevel.statuses, ...own.statuses],
+    gaps: [...classLevel.gaps, ...own.gaps],
+  };
+}
+
 export function getDocumentedStatuses(
   methodNode: ts.MethodDeclaration,
   checker: ts.TypeChecker,
   options: AnalysisOptions,
 ): DocumentedStatus[] {
-  const parent: ts.Node | undefined = methodNode.parent;
-  const classStatuses =
-    parent !== undefined && ts.isClassLike(parent)
-      ? collectClassChainStatuses(parent, checker, options)
-      : [];
-  const methodStatuses = documentedFromNode(methodNode, checker, 'method', options);
-  return [...classStatuses, ...methodStatuses];
+  return collectDocumentation(methodNode, checker, options).statuses;
+}
+
+export function getDocumentationGaps(
+  methodNode: ts.MethodDeclaration,
+  checker: ts.TypeChecker,
+  options: AnalysisOptions,
+): DocumentationGap[] {
+  return collectDocumentation(methodNode, checker, options).gaps;
 }

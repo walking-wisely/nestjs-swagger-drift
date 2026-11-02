@@ -124,7 +124,7 @@ function isUnboundUndefinedIdentifier(node: ts.Expression): boolean {
   return ts.isIdentifier(unwrap(node)) && (unwrap(node) as ts.Identifier).text === 'undefined';
 }
 
-function strictEquals(a: ConstValue, b: ConstValue): boolean {
+export function strictEquals(a: ConstValue, b: ConstValue): boolean {
   if (a.kind !== b.kind) return false;
   if (a.kind === 'null' || a.kind === 'undefined') return true;
   return (a as { value: unknown }).value === (b as { value: unknown }).value;

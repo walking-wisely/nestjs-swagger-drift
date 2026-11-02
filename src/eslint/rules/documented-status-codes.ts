@@ -60,7 +60,7 @@
 import * as ts from 'typescript';
 import { ESLintUtils } from '@typescript-eslint/utils';
 import type { TSESTree } from '@typescript-eslint/utils';
-import type { AnalysisOptions, Finding } from '../../core/index.js';
+import type { AnalysisOptions, Finding, StatusRange } from '../../core/index.js';
 import { analyzeHandler, createAnalysisContext } from '../../core/index.js';
 
 /**
@@ -118,11 +118,17 @@ interface Options {
   checkParsePipes?: boolean;
   /** See `AnalysisOptions.guardGuarantees`. Default: none. */
   guardGuarantees?: Record<string, string[]>;
+  /** See `AnalysisOptions.responseDecorators`. Default: none. */
+  responseDecorators?: Record<string, (number | StatusRange)[]>;
 }
 
 type RuleOptionsTuple = [Options];
 
-type MessageIds = 'undocumentedStatus' | 'documentedButUnreachable' | 'unresolvableStatus';
+type MessageIds =
+  | 'undocumentedStatus'
+  | 'undocumentedStatusWithGaps'
+  | 'documentedButUnreachable'
+  | 'unresolvableStatus';
 
 const DEFAULT_OPTIONS = {
   maxDepth: 2,
@@ -155,6 +161,11 @@ function exceptionsLabel(finding: Extract<Finding, { rule: 'undocumented-status'
     ...new Set(finding.sources.map((s) => (s.kind === 'implicit' ? s.reason : s.exception))),
   ];
   return names.join(', ');
+}
+
+function gapsLabel(finding: Extract<Finding, { rule: 'undocumented-status' }>): string {
+  const gaps = finding.documentationGaps ?? [];
+  return gaps.map((g) => `@${g.decorator} (${g.reason})`).join('; ');
 }
 
 export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds>({
@@ -192,6 +203,18 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
             type: 'object',
             additionalProperties: { type: 'array', items: { type: 'string' } },
           },
+          responseDecorators: {
+            type: 'object',
+            additionalProperties: {
+              type: 'array',
+              items: {
+                anyOf: [
+                  { type: 'integer', minimum: 100, maximum: 599 },
+                  { type: 'string', pattern: '^[1-5]XX$' },
+                ],
+              },
+            },
+          },
         },
       },
     ],
@@ -201,6 +224,8 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
       // the same story told two ways, not two different stories.
       undocumentedStatus:
         '{{handlerLabel}} is missing @ApiResponse for {{status}} ({{exceptions}}).',
+      undocumentedStatusWithGaps:
+        '{{handlerLabel}} is missing @ApiResponse for {{status}} ({{exceptions}}). Unresolved response decorators: {{gaps}}.',
       documentedButUnreachable:
         '{{handlerLabel}} documents {{status}}, but nothing in this run produces it (documented-but-unreachable).',
       // `{{what}}` names the SOURCE of the unresolvable status — an
@@ -237,6 +262,7 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
       checkGuards: options.checkGuards ?? DEFAULT_OPTIONS.checkGuards,
       checkParsePipes: options.checkParsePipes ?? DEFAULT_OPTIONS.checkParsePipes,
       ...(options.guardGuarantees ? { guardGuarantees: options.guardGuarantees } : {}),
+      ...(options.responseDecorators ? { responseDecorators: options.responseDecorators } : {}),
     };
     // `createAnalysisContext` resolves (or creates) the program-keyed shared
     // cache — see module doc's "no second cache" note. Cheap to call once
@@ -297,11 +323,14 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
         case 'undocumented-status':
           context.report({
             node,
-            messageId: 'undocumentedStatus',
+            messageId: finding.documentationGaps?.length
+              ? 'undocumentedStatusWithGaps'
+              : 'undocumentedStatus',
             data: {
               handlerLabel: handlerLabelStr,
               status: String(finding.status),
               exceptions: exceptionsLabel(finding),
+              gaps: gapsLabel(finding),
             },
           });
           return;

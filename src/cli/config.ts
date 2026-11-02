@@ -20,6 +20,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { pathToFileURL } from 'node:url';
 import * as ts from 'typescript';
+import type { StatusRange } from '../core/index.js';
 
 export interface CliConfigFile {
   project?: string;
@@ -41,6 +42,8 @@ export interface CliConfigFile {
   checkParsePipes?: boolean;
   /** Guard class name to the `Receiver.method` calls it guarantees to be truthy; see `AnalysisOptions.guardGuarantees`. */
   guardGuarantees?: Record<string, string[]>;
+  /** Local response decorator name to the statuses it documents; see `AnalysisOptions.responseDecorators`. */
+  responseDecorators?: Record<string, (number | StatusRange)[]>;
   baseDir?: string;
 }
 
@@ -66,6 +69,11 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isDocumentableStatus(item: unknown): boolean {
+  if (typeof item === 'number') return Number.isInteger(item) && item >= 100 && item <= 599;
+  return typeof item === 'string' && /^[1-5]XX$/.test(item);
+}
+
 const CONFIG_KEYS = new Set<string>([
   'project',
   'reporter',
@@ -80,6 +88,7 @@ const CONFIG_KEYS = new Set<string>([
   'checkGuards',
   'checkParsePipes',
   'guardGuarantees',
+  'responseDecorators',
   'baseDir',
 ]);
 
@@ -229,6 +238,23 @@ function validateConfig(
       );
     }
     config.guardGuarantees = value as Record<string, string[]>;
+  }
+
+  if ('responseDecorators' in raw) {
+    const value = raw['responseDecorators'];
+    const isMap =
+      typeof value === 'object' &&
+      value !== null &&
+      !Array.isArray(value) &&
+      Object.values(value).every((list) => Array.isArray(list) && list.every(isDocumentableStatus));
+    if (!isMap) {
+      return fail(
+        'responseDecorators',
+        'an object mapping decorator names to arrays of statuses (100-599 or "1XX"-"5XX")',
+        value,
+      );
+    }
+    config.responseDecorators = value as Record<string, (number | StatusRange)[]>;
   }
 
   if ('baseDir' in raw) {

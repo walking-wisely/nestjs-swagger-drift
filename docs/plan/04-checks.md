@@ -89,8 +89,10 @@ Collect from the handler method **and** its enclosing class (class-level
 - `@ApiDefaultResponse` → treat as a wildcard that satisfies nothing specific
   (configurable: `treatDefaultAsWildcard`).
 - Composed/custom decorators (`applyDecorators(ApiNotFoundResponse(), ...)`) —
-  V1 gap; document it. V2: resolve the decorator factory one level and inspect
-  what it composes.
+  resolved from the wrapper's source (`core/response-wrappers.ts`): `applyDecorators`,
+  nested wrappers, bound arguments, `switch`/`if` over them. Wrappers it cannot
+  read are listed in `responseDecorators` config; otherwise they surface as a
+  hint on the finding, never as a guessed status.
 
 ### 4.4 The diff
 

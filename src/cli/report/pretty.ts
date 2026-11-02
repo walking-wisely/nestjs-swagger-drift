@@ -78,6 +78,10 @@ export function formatFindingPretty(finding: Finding, baseDir: string, explain =
       ...(confidence.level === 'low'
         ? [`    low confidence: ${confidence.reasons.join('; ')}`]
         : []),
+      ...(finding.documentationGaps ?? []).map(
+        (g) =>
+          `    may be documented by @${g.decorator}: ${g.reason}; list it under responseDecorators`,
+      ),
       ...sources.flatMap((s) => [
         `       └ ${describeSourcePretty(s, baseDir)}`,
         ...(explain ? describeTracePretty(s, baseDir) : []),

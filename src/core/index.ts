@@ -2,6 +2,7 @@ export type {
   StatusSource,
   ResolvedStatus,
   ProducibleStatus,
+  DocumentationGap,
   DocumentedStatus,
   StatusRange,
   HttpMethod,
@@ -60,7 +61,7 @@ export { collectParsePipesSources } from './parse-pipes.js';
 
 export { resolveStatusExpression } from './status-value.js';
 
-export { getDocumentedStatuses } from './documented.js';
+export { getDocumentedStatuses, getDocumentationGaps } from './documented.js';
 
 export {
   isStatusSuppressed,
