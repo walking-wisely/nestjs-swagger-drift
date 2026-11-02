@@ -60,6 +60,7 @@ export interface CliFlags {
   config: string | undefined;
   noConfig: boolean;
   audit: boolean;
+  explain: boolean;
   /** PLAN §10.2 Tier 1: print a unified diff of the `@Api*Response` insertions autofix would make, without writing. */
   fixDryRun: boolean;
   /** PLAN §10.2 Tier 1: write the `@Api*Response` insertions autofix would make. */
@@ -89,6 +90,7 @@ function emptyFlags(): CliFlags {
     config: undefined,
     noConfig: false,
     audit: false,
+    explain: false,
     fixDryRun: false,
     fix: false,
   };
@@ -281,6 +283,10 @@ export function parseArgs(argv: string[]): ParseArgsResult {
 
       case '--no-config':
         flags.noConfig = true;
+        break;
+
+      case '--explain':
+        flags.explain = true;
         break;
 
       case '--audit':

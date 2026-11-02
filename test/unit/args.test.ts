@@ -26,6 +26,7 @@ describe('parseArgs', () => {
         config: undefined,
         noConfig: false,
         audit: false,
+        explain: false,
         fixDryRun: false,
         fix: false,
       },
@@ -164,6 +165,11 @@ describe('parseArgs', () => {
     const result = parseArgs(['--base-dir', '/repo', '--config', './my.config.json']);
     expect(result.ok && result.flags.baseDir).toBe('/repo');
     expect(result.ok && result.flags.config).toBe('./my.config.json');
+  });
+
+  it('parses --explain', () => {
+    const result = parseArgs(['--explain']);
+    expect(result.ok && result.flags.explain).toBe(true);
   });
 
   it('parses --no-config and --audit', () => {
