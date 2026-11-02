@@ -43,3 +43,17 @@ Result: 111 TP, 11 FP, 3 UNCLEAR. New FP classes, none modelled by the tool:
 - Dead `if (!x) throw NotFoundException` after a finder that already throws on a miss. These stay TP: the handler still returns the status through the callee (`crud.service.ts:563`, `:641`), and the tool attributes it to the wrong throw site. Worth investigating why the callee's own throw is not listed as a source.
 
 Reachability caveats recorded as TP: demo-only (`account-deletion.service.ts:448`), MikroORM-only (`organization-project.service.ts:841`), null `organizationId` rows (official holidays), self-hosted installs without a Stripe key (billing `requireBillingEnabled`).
+
+## Low-confidence triage (102 findings, all catch-remaps)
+
+Result: 73 TP, 21 UNCLEAR, 8 FP. Every finding now has a verdict.
+
+- FP: a `catch` that can never run. Seven handlers `return` an un-awaited promise inside `try`, so async rejections skip the catch (`OrganizationEmploymentTypeController.update`, `EmployeeLevelController.update`, `TaskService.findAll`, ...); one has `finally { return ... }`, which swallows every exception.
+- UNCLEAR: the try body only fails on a DB outage or race (fixed or server-built inputs).
+- TP: the try body throws an HttpException the catch remaps without rethrowing, a missing row, or unvalidated `relations`/`where`/ids reaching the DB (no global ValidationPipe).
+
+Both dead-catch shapes are tool-fixable: a catch is unreachable when the try body has no `throw`, no `await`, and only returns un-awaited promises.
+
+## guardGuarantees
+
+`swagger-drift.config.json` here declares `TenantBaseGuard` (and so `TenantPermissionGuard`, which extends it) as guaranteeing `RequestContext.currentTenantId` and `currentUserId`. It removed 7 FP findings and no TP or UNCLEAR ones. Caveat: `TenantPermissionGuard` skips `@Public()` handlers, which still get the guarantee.
