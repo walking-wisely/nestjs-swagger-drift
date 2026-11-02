@@ -17,3 +17,13 @@ Verified 2026-11-02 by a blind reviewer, an adversarial reviewer and a 5-chain h
 (grep-based over `packages/`, no type checker). After the fix: 824 findings became 700, none
 new, and 4 more findings lost only the dead source. Baseline rebaselined with the 700 findings
 as `UNTRIAGED`.
+
+## Triaged false-positive classes
+
+- Guard needs an input the caller never produces (`tenant-aware-crud.service.ts` delete empty-criteria 400, `assertNotForeignRow` 403): not fixable without object-shape data flow.
+- `!id` guard behind `UUIDValidationPipe` (`crud.service.ts:534`): pipe preconditions are not modelled. The pipe itself yields 404/406, which is not reported either.
+- `typeof` narrowing of a union-typed argument (`crud.service.ts:641`): fixable with type-based narrowing.
+- Correlated guards across frames (`billing.service.ts:583`).
+- `@ApiExcludeController` classes are still analysed (`StripeWebhookController`): fixable.
+
+Implicit-success findings (357) were all true positives apart from the excluded controller. 126 handlers send 202 but document another 2xx; 43 document 200 while Nest sends 201.
