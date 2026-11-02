@@ -322,6 +322,15 @@ export interface AnalysisOptions {
    * runs at request time, only that the decorator call names one.
    */
   checkParsePipes?: boolean;
+
+  /**
+   * Guard class name to the calls (`Receiver.method`, e.g.
+   * `RequestContext.currentTenantId`) whose result that guard guarantees to
+   * be truthy. For a handler carrying the guard through `@UseGuards`, a
+   * service-level check that such a result is present is treated as dead
+   * code. Config-only: the tool cannot read what a custom guard enforces.
+   */
+  guardGuarantees?: Readonly<Record<string, readonly string[]>>;
 }
 
 declare const analysisCacheBrand: unique symbol;

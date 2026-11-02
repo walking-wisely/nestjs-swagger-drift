@@ -132,7 +132,7 @@
  */
 
 import * as ts from 'typescript';
-import { EMPTY_ENV, evaluateTruthiness, type ArgEnv } from './const-eval.js';
+import { EMPTY_ENV, evaluateTruthiness, withLocalConsts, type ArgEnv } from './const-eval.js';
 
 export interface ThrownExpression {
   /**
@@ -262,6 +262,7 @@ export function walkProducibleNodes(
 ): void {
   const body = fn.body;
   if (body === undefined || !ts.isBlock(body)) return;
+  env = withLocalConsts(fn, env);
 
   function visit(node: ts.Node, producible: boolean): void {
     onNode(node, producible);

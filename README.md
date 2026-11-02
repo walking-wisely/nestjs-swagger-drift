@@ -518,6 +518,16 @@ No undocumented status codes found.
   class (method- and class-level), finds its `canActivate`, and recurses into
   it with the same bounded call-graph traversal used for services, collecting
   whatever it throws (typically `UnauthorizedException`/`ForbiddenException`).
+- **`guardGuarantees`** (config file only) — maps a guard class name to the
+  calls it guarantees to return a truthy value, for example
+  `{ "TenantGuard": ["RequestContext.currentTenantId"] }`. On a handler that
+  carries the guard through `@UseGuards` (class- or method-level, including
+  guards that extend a listed one), a service-level check such as
+  `const tenantId = RequestContext.currentTenantId(); if (!tenantId) throw ...`
+  is treated as unreachable and no longer reported. Only list guards that
+  really reject the request when the call would be falsy; a guard that is
+  skipped for `@Public()` routes still gets the guarantee.
+
 - **`checkParsePipes`** (`parse-pipes.ts`) — treats `400` (or an overridden
   status, see below) as producible when a handler parameter decorated with
   `@Body()`/`@Param()`/`@Query()`/`@Headers()`/`@UploadedFile()`/

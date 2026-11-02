@@ -897,11 +897,6 @@
       "key": "packages/core/src/lib/deal/deal.controller.ts::DealController.delete undocumented-status 202",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "d622550c689196c78ba18f5b807331d6ce491b22": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/email-reset/email-reset.controller.ts::EmailResetController.findAll undocumented-status 401",
-      "basis": "ai-triage:EmailResetController.findAll#email-reset.service.ts:75: controller has @UseGuards(TenantPermissionGuard) which returns false when currentTenantId() is falsy (tenant-permission.guard.ts:~52-55) and global AuthGuard requires a user, so email-reset.service.ts:74 cannot be true"
-    },
     "bb18c58d79bf7d53a7a5b4e1924d4aa0cc188f00": {
       "verdict": "TP",
       "key": "packages/core/src/lib/email-reset/email-reset.controller.ts::EmailResetController.requestChangeEmail undocumented-status 200",
@@ -1495,11 +1490,6 @@
     "8103230953ca024b918a642cab701b951070172d": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/export-import/import-history/import-history.controller.ts::ImportHistoryController.findAll undocumented-status 400"
-    },
-    "c2ec91510a8b72663a998e37e89b163dcd3511c8": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/export-import/import-history/import-history.controller.ts::ImportHistoryController.download undocumented-status 403",
-      "basis": "ai-triage:ImportHistoryController.download#import-history.service.ts:57: import-history.service.ts:55 throws only when currentTenantId() is empty, but TenantPermissionGuard (import-history.controller.ts:17) returns false at tenant-permission.guard.ts:`if (!tenantId) return isAuthorized(false)` befor"
     },
     "ee47f434c0156d084a346c0988797737db8ea228": {
       "verdict": "TP",
@@ -2830,11 +2820,6 @@
       "key": "packages/core/src/lib/tasks/task-metadata-bootstrap/task-metadata-bootstrap.controller.ts::TaskMetadataBootstrapController.bootstrap undocumented-status 400",
       "basis": "ai-triage:TaskMetadataBootstrapController.bootstrap#task-metadata-bootstrap.service.ts:55: service.ts:53 needs a non-canonical section, but TaskMetadataBootstrapQueryDTO.include has @IsIn(TASK_METADATA_SECTIONS,{each:true}) under UseValidationPipe (controller:12)"
     },
-    "d9d0c2dc1749bd5079fdbca4cfd13c7deab2a614": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/tasks/task-metadata-bootstrap/task-metadata-bootstrap.controller.ts::TaskMetadataBootstrapController.bootstrap undocumented-status 403",
-      "basis": "ai-triage:TaskMetadataBootstrapController.bootstrap#task-metadata-bootstrap.service.ts:48: service.ts:45 needs !currentTenantId(); controller has @UseGuards(TenantPermissionGuard) (controller:8) which returns false when tenantId is null"
-    },
     "549097050a6a720a991700c1d9662cf4ac88b07a": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/tasks/priorities/priority.controller.ts::TaskPriorityController.fetchAll undocumented-status 400"
@@ -2950,11 +2935,6 @@
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/tenant/tenant.controller.ts::TenantController.update undocumented-status 403"
     },
-    "f14baf07acf8765d22528e2ad32dcef4d6531ba0": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.revoke undocumented-status 403",
-      "basis": "ai-triage:TenantApiKeyController.revoke#tenant-api-key.service.ts:149: Same as 3-0: TenantPermissionGuard on the class rejects null currentTenantId before revokeApiKey runs; tenantOfCaller (service.ts:145) checks the same value."
-    },
     "795c4cf899a315ed310f5b9f31ba28ca30925ef1": {
       "verdict": "UNCLEAR",
       "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.revoke undocumented-status 404",
@@ -2965,11 +2945,6 @@
       "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.rename undocumented-status 400",
       "basis": "ai-triage:TenantApiKeyController.rename#tenant-api-key.service.ts:105: tenant-api-key.service.ts:102-105 trim() of whitespace-only name; RenameApiKeyDTO @IsNotEmpty @Length(1,255) accepts \"   \""
     },
-    "503def76e01bc1a30e4e2c3f160243efcf6f9398": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.rename undocumented-status 403",
-      "basis": "ai-triage:TenantApiKeyController.rename#tenant-api-key.service.ts:149: Controller has @UseGuards(TenantPermissionGuard) (controller.ts:24) which returns false when RequestContext.currentTenantId() is null (tenant-permission.guard.ts: `if (!tenantId) return isAuthorized`), and tenantOfCaller reads th"
-    },
     "c831e3621675ce9013ac5a800e378e7f913926cc": {
       "verdict": "UNTRIAGED",
       "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.generateKeyPair undocumented-status 500"
@@ -2978,16 +2953,6 @@
       "verdict": "TP",
       "key": "packages/core/src/lib/tenant/tenant-setting/tenant-setting.controller.ts::TenantSettingController.validateWasabiConfiguration undocumented-status 201",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
-    },
-    "87b0b30d2f216978299bd09166cdb4f55e5bb356": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/terms-acceptance/terms-acceptance.controller.ts::TermsAcceptanceController.accept undocumented-status 401",
-      "basis": "ai-triage:TermsAcceptanceController.accept#terms-acceptance.service.ts:211: currentUserId() is null only with no user; method has TenantPermissionGuard (controller.ts:~48) which rejects null currentTenantId, and tenantId is derived from the user (request-context.ts:287-289), so a user always exists."
-    },
-    "e2cdee5909156e9664e236af7e89a0d8da961856": {
-      "verdict": "FP",
-      "key": "packages/core/src/lib/terms-acceptance/terms-acceptance.controller.ts::TermsAcceptanceController.acceptances undocumented-status 401",
-      "basis": "ai-triage:TermsAcceptanceController.acceptances#terms-acceptance.service.ts:246: Same as 3-3: TenantPermissionGuard requires a tenant, which is derived from the current user, so currentUserId() is non-null."
     },
     "d7d161f070dd2322b13ed305d679bf444f303aeb": {
       "verdict": "TP",
@@ -3140,7 +3105,7 @@
       "key": "packages/core/src/lib/time-tracking/statistic/profile-activity.controller.ts::ProfileActivityController.getProfileActivity undocumented-status 200",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "0d001214cafb97e1e098e5ce96c641657535b797": {
+    "54512f8ed0e7af988b16abb174df2bb6e4210959": {
       "verdict": "TP",
       "key": "packages/core/src/lib/time-tracking/statistic/profile-activity.controller.ts::ProfileActivityController.getProfileActivity undocumented-status 403",
       "basis": "ai-triage:ProfileActivityController.getProfileActivity#statistic.service.ts:208: employeeId/organizationId from query: an unknown, inactive or archived employee makes existsBy false."
@@ -3175,7 +3140,7 @@
       "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.bulk undocumented-status 201",
       "basis": "implicit-success: status matches Nest default or @HttpCode, nothing documents it"
     },
-    "a1a3b9a7682c105ad901d8fcd5f0fd08edf9e0dd": {
+    "a427b02b91088b2881038f7963d5b69f326964be": {
       "verdict": "TP",
       "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.getConflict undocumented-status 403",
       "basis": "ai-triage:TimeLogController.getConflict#time-log.service.ts:1585: Ordinary employee passes another employee's id (not own, not managed) and canManageEmployees is false."

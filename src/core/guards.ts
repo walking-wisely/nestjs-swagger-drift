@@ -245,3 +245,33 @@ export function collectGuardStatuses(
 
   return results;
 }
+
+/**
+ * Names of the guard classes applied to a handler through class- or
+ * method-level `@UseGuards(...)`: the resolved class's own name and every
+ * ancestor's, or the written name when the class does not resolve.
+ */
+export function collectAppliedGuardNames(
+  methodNode: ts.MethodDeclaration,
+  classNode: ts.ClassLikeDeclaration,
+  checker: ts.TypeChecker,
+): Set<string> {
+  const names = new Set<string>();
+  const args = [
+    ...collectUseGuardsArguments(classNode, checker),
+    ...collectUseGuardsArguments(methodNode, checker),
+  ];
+  for (const arg of args) {
+    const classExpr = resolveGuardClassExpression(arg);
+    if (!classExpr) continue;
+    const written = ts.isCallExpression(classExpr) ? classExpr.expression : classExpr;
+    if (ts.isIdentifier(written)) names.add(written.text);
+    else if (ts.isPropertyAccessExpression(written)) names.add(written.name.text);
+    let current = resolveClassDeclaration(classExpr, checker);
+    for (let depth = 0; current && depth < MAX_GUARD_HERITAGE_DEPTH; depth++) {
+      if (current.name) names.add(current.name.text);
+      current = getBaseClassDeclaration(current, checker);
+    }
+  }
+  return names;
+}

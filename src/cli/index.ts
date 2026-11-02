@@ -267,6 +267,7 @@ interface ResolvedOptions {
   checkValidationPipe: boolean;
   checkGuards: boolean;
   checkParsePipes: boolean;
+  guardGuarantees: Record<string, string[]>;
   baseDir: string | undefined;
   audit: boolean;
   explain: boolean;
@@ -356,6 +357,7 @@ export function mergeOptions(
       checkValidationPipe: flags.checkValidationPipe ?? config.checkValidationPipe ?? false,
       checkGuards: flags.checkGuards ?? config.checkGuards ?? false,
       checkParsePipes: flags.checkParsePipes ?? config.checkParsePipes ?? false,
+      guardGuarantees: config.guardGuarantees ?? {},
       baseDir: flags.baseDir ?? resolveFromConfig(config.baseDir),
       audit: flags.audit,
       explain: flags.explain,
@@ -555,6 +557,7 @@ export async function main(argv: string[]): Promise<number> {
     checkValidationPipe: options.checkValidationPipe,
     checkGuards: options.checkGuards,
     checkParsePipes: options.checkParsePipes,
+    guardGuarantees: options.guardGuarantees,
     // `--audit` (post-Phase-4-review fix, finding S6): ignore inline
     // suppression directives entirely, so every finding they'd otherwise
     // hide — including a directive in a shared service silently affecting

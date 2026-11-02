@@ -5,7 +5,8 @@ export type ConstValue =
   | { kind: 'number'; value: number }
   | { kind: 'string'; value: string }
   | { kind: 'null' }
-  | { kind: 'undefined' };
+  | { kind: 'undefined' }
+  | { kind: 'truthy' };
 
 /** A parameter whose value is unknown but whose runtime `typeof` is always one of `types`. */
 export interface TypeofFact {
@@ -21,6 +22,32 @@ export type ArgEnv = ReadonlyMap<string, EnvValue>;
 export const EMPTY_ENV: ArgEnv = new Map();
 
 const UNDEFINED: ConstValue = { kind: 'undefined' };
+const TRUTHY: ConstValue = { kind: 'truthy' };
+
+const CALL_KEY_PREFIX = 'call:';
+
+/** Env key for a call whose result a guard guarantees to be truthy: `Recv.method` or a bare `fn`. */
+export function callKeyFor(callee: ts.Expression): string | undefined {
+  const node = unwrap(callee);
+  if (ts.isIdentifier(node)) return `${CALL_KEY_PREFIX}${node.text}`;
+  if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.name)) {
+    const receiver = node.expression;
+    if (ts.isIdentifier(receiver)) return `${CALL_KEY_PREFIX}${receiver.text}.${node.name.text}`;
+    if (receiver.kind === ts.SyntaxKind.ThisKeyword)
+      return `${CALL_KEY_PREFIX}this.${node.name.text}`;
+  }
+  return undefined;
+}
+
+export function guaranteeEnv(accessors: readonly string[]): ArgEnv {
+  const env = new Map<string, EnvValue>();
+  for (const accessor of accessors) env.set(`${CALL_KEY_PREFIX}${accessor}`, TRUTHY);
+  return env;
+}
+
+function guaranteesOf(env: ArgEnv): [string, EnvValue][] {
+  return [...env].filter(([key]) => key.startsWith(CALL_KEY_PREFIX));
+}
 
 function unwrap(expr: ts.Expression): ts.Expression {
   let current = expr;
@@ -57,6 +84,24 @@ export function evaluateConst(expr: ts.Expression, env: ArgEnv): ConstValue | un
     const inner = evaluateTruthiness(node.operand, env);
     return inner === undefined ? undefined : { kind: 'bool', value: !inner };
   }
+  if (ts.isCallExpression(node) && !node.questionDotToken) {
+    const key = callKeyFor(node.expression);
+    const known = key === undefined ? undefined : env.get(key);
+    return known?.kind === 'truthy' ? known : undefined;
+  }
+  if (ts.isAwaitExpression(node)) return evaluateConst(node.expression, env);
+  if (ts.isBinaryExpression(node)) {
+    const op = node.operatorToken.kind;
+    if (op === ts.SyntaxKind.BarBarToken || op === ts.SyntaxKind.QuestionQuestionToken) {
+      const left = evaluateConst(node.left, env);
+      if (left === undefined) return undefined;
+      const keepLeft =
+        op === ts.SyntaxKind.BarBarToken
+          ? truthiness(left)
+          : left.kind !== 'null' && left.kind !== 'undefined';
+      return keepLeft ? left : evaluateConst(node.right, env);
+    }
+  }
   return undefined;
 }
 
@@ -64,6 +109,8 @@ function truthiness(value: ConstValue): boolean {
   switch (value.kind) {
     case 'bool':
       return value.value;
+    case 'truthy':
+      return true;
     case 'number':
       return value.value !== 0 && !Number.isNaN(value.value);
     case 'string':
@@ -122,6 +169,11 @@ export function evaluateTruthiness(expr: ts.Expression, env: ArgEnv): boolean | 
         ? UNDEFINED
         : evaluateConst(node.right, env);
       if (left === undefined || right === undefined) return undefined;
+      if (left.kind === 'truthy' || right.kind === 'truthy') {
+        const other = left.kind === 'truthy' ? right : left;
+        if (other.kind !== 'null' && other.kind !== 'undefined') return undefined;
+        return isStrictNe || isLooseNe;
+      }
       const nullish = (v: ConstValue): boolean => v.kind === 'null' || v.kind === 'undefined';
       let equal: boolean;
       if ((isLooseEq || isLooseNe) && (nullish(left) || nullish(right))) {
@@ -234,11 +286,14 @@ export function bindArguments(
   callerEnv: ArgEnv,
   checker?: ts.TypeChecker,
 ): ArgEnv {
-  if (!ts.isCallExpression(callNode)) return EMPTY_ENV;
+  if (!ts.isCallExpression(callNode)) {
+    const carried = guaranteesOf(callerEnv);
+    return carried.length === 0 ? EMPTY_ENV : new Map(carried);
+  }
   const bindable = bindableParameters(callee);
-  if (bindable.size === 0) return EMPTY_ENV;
+  const env = new Map<string, EnvValue>(guaranteesOf(callerEnv));
+  if (bindable.size === 0) return env.size === 0 ? EMPTY_ENV : env;
 
-  const env = new Map<string, EnvValue>();
   const args = callNode.arguments;
   const spreadAt = args.findIndex((a) => ts.isSpreadElement(a));
 
@@ -317,7 +372,7 @@ export function envKeyFor(fn: ts.FunctionLikeDeclarationBase, env: ArgEnv): stri
   const used = identifiersUsedIn(fn);
   const parts: string[] = [];
   for (const [name, value] of env) {
-    if (!used.has(name)) continue;
+    if (!used.has(name) && !name.startsWith(CALL_KEY_PREFIX)) continue;
     parts.push(
       `${name}=${value.kind}:${value.kind === 'typeof' ? value.types.join('|') : 'value' in value ? String(value.value) : ''}`,
     );
@@ -329,6 +384,62 @@ export function restrictEnv(fn: ts.FunctionLikeDeclarationBase, env: ArgEnv): Ar
   if (env.size === 0) return env;
   const used = identifiersUsedIn(fn);
   const kept = new Map<string, EnvValue>();
-  for (const [name, value] of env) if (used.has(name)) kept.set(name, value);
+  for (const [name, value] of env) {
+    if (used.has(name) || name.startsWith(CALL_KEY_PREFIX)) kept.set(name, value);
+  }
   return kept;
+}
+
+const localConstCandidates = new WeakMap<ts.Node, { name: string; init: ts.Expression }[]>();
+
+function localConstsOf(
+  fn: ts.FunctionLikeDeclarationBase,
+): { name: string; init: ts.Expression }[] {
+  const cached = localConstCandidates.get(fn);
+  if (cached) return cached;
+  const declarations = new Map<string, number>();
+  const bump = (name: string): void => {
+    declarations.set(name, (declarations.get(name) ?? 0) + 1);
+  };
+  for (const param of fn.parameters) {
+    if (ts.isIdentifier(param.name)) bump(param.name.text);
+  }
+  const consts: { name: string; init: ts.Expression }[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isVariableDeclaration(node) || ts.isBindingElement(node) || ts.isParameter(node)) {
+      if (ts.isIdentifier(node.name)) {
+        bump(node.name.text);
+        if (
+          ts.isVariableDeclaration(node) &&
+          node.initializer &&
+          ts.isVariableDeclarationList(node.parent) &&
+          node.parent.flags & ts.NodeFlags.Const
+        ) {
+          consts.push({ name: node.name.text, init: node.initializer });
+        }
+      }
+    }
+    if (ts.isFunctionDeclaration(node) && node.name) bump(node.name.text);
+    ts.forEachChild(node, visit);
+  };
+  if (fn.body) ts.forEachChild(fn.body, visit);
+  const result = consts.filter((c) => declarations.get(c.name) === 1);
+  localConstCandidates.set(fn, result);
+  return result;
+}
+
+/** `env` plus every `const` local of `fn` whose initializer is decided by `env` alone. */
+export function withLocalConsts(fn: ts.FunctionLikeDeclarationBase, env: ArgEnv): ArgEnv {
+  const candidates = localConstsOf(fn);
+  if (candidates.length === 0) return env;
+  let extended: Map<string, EnvValue> | undefined;
+  for (const { name, init } of candidates) {
+    const scope = extended ?? env;
+    if (scope.has(name)) continue;
+    const value = evaluateConst(init, scope);
+    if (value === undefined) continue;
+    extended ??= new Map(env);
+    extended.set(name, value);
+  }
+  return extended ?? env;
 }

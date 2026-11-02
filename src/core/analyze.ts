@@ -115,6 +115,8 @@ import type {
 import { getHandlerInfosForMethod } from './handlers.js';
 import { isExcludedFromDocs } from './decorators.js';
 import { collectDirectThrows } from './thrown.js';
+import { collectAppliedGuardNames } from './guards.js';
+import { EMPTY_ENV, guaranteeEnv, type ArgEnv } from './const-eval.js';
 import { resolveThrownStatus } from './resolve-status.js';
 import { getDocumentedStatuses } from './documented.js';
 import { collectCallGraphStatuses } from './call-graph.js';
@@ -230,6 +232,20 @@ interface CollectedStatuses {
  * the opt-in `unresolvable-status` rule to consume (see module doc's
  * "unresolvable-status: direct handler throws AND call-graph throws").
  */
+function guaranteedCallsEnv(
+  methodNode: ts.MethodDeclaration,
+  classNode: ts.ClassLikeDeclaration,
+  ctx: AnalysisContext,
+): ArgEnv {
+  const guarantees = ctx.options.guardGuarantees;
+  if (guarantees === undefined || Object.keys(guarantees).length === 0) return EMPTY_ENV;
+  const accessors: string[] = [];
+  for (const name of collectAppliedGuardNames(methodNode, classNode, ctx.checker)) {
+    if (Object.hasOwn(guarantees, name)) accessors.push(...guarantees[name]!);
+  }
+  return accessors.length === 0 ? EMPTY_ENV : guaranteeEnv(accessors);
+}
+
 function collectProducibleStatuses(
   methodNode: ts.MethodDeclaration,
   classNode: ts.ClassLikeDeclaration,
@@ -238,8 +254,9 @@ function collectProducibleStatuses(
 ): CollectedStatuses {
   const byStatus = new Map<number, StatusSource[]>();
   const unresolvedThrows: UnresolvedThrow[] = [];
+  const handlerEnv = guaranteedCallsEnv(methodNode, classNode, ctx);
 
-  for (const { node, expression } of collectDirectThrows(methodNode)) {
+  for (const { node, expression } of collectDirectThrows(methodNode, handlerEnv)) {
     const result = resolveThrownStatus(expression, ctx.checker);
     if (result.kind !== 'resolved') {
       unresolvedThrows.push({ node, reason: result.reason, via: [] });
@@ -254,7 +271,7 @@ function collectProducibleStatuses(
     addSource(byStatus, result.status, source);
   }
 
-  const callGraph = collectCallGraphStatuses(methodNode, ctx);
+  const callGraph = collectCallGraphStatuses(methodNode, ctx, handlerEnv);
   for (const { resolved, source } of callGraph.findings) {
     addSource(byStatus, resolved.status, source);
   }
@@ -552,7 +569,12 @@ export function analyzeHandler(
           if (allSuccessStatuses.has(d.status)) continue;
           if (anySuccessUnresolvable && d.status >= 200 && d.status < 300) continue;
           if (d.status === 400 || d.status === 401 || d.status === 403) continue; // see module doc, finding #5
-          findings.push({ rule: 'documented-but-unreachable', status: d.status, handler, node: d.node });
+          findings.push({
+            rule: 'documented-but-unreachable',
+            status: d.status,
+            handler,
+            node: d.node,
+          });
         }
       }
     }
@@ -577,8 +599,15 @@ export function analyzeHandler(
     const primaryHandler = handlers[0];
     if (primaryHandler !== undefined) {
       for (const { node, reason, via } of unresolvedThrows) {
-        const detail = via.length > 0 ? `${via.map((hop) => hop.name).join(' → ')}: ${reason}` : reason;
-        findings.push({ rule: 'unresolvable-status', unresolvableKind: 'throw', handler: primaryHandler, node, detail });
+        const detail =
+          via.length > 0 ? `${via.map((hop) => hop.name).join(' → ')}: ${reason}` : reason;
+        findings.push({
+          rule: 'unresolvable-status',
+          unresolvableKind: 'throw',
+          handler: primaryHandler,
+          node,
+          detail,
+        });
       }
 
       // Issue #15: a dynamically-valued `@HttpCode(...)` argument (an

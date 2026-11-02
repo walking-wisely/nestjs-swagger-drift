@@ -65,7 +65,12 @@ function prepare(id: string, repo: RepoConfig): string {
   return dir;
 }
 
-function detect(dir: string, repo: RepoConfig): RunFinding[] {
+function configArgs(id: string): string[] {
+  const path = join(root, 'corpus', id, 'swagger-drift.config.json');
+  return existsSync(path) ? ['--config', path] : [];
+}
+
+function detect(dir: string, repo: RepoConfig, id: string): RunFinding[] {
   if (!existsSync(toolBin)) fail(`${toolBin} missing — run npm run build first`);
   const result = spawnSync(
     process.execPath,
@@ -77,6 +82,7 @@ function detect(dir: string, repo: RepoConfig): RunFinding[] {
       dir,
       '--reporter',
       'json',
+      ...configArgs(id),
       ...repo.flags,
     ],
     { cwd: dir, encoding: 'utf8', maxBuffer: 1024 * 1024 * 1024 },
@@ -113,7 +119,7 @@ if (command === 'prepare') {
 } else if (command === 'bootstrap') {
   if (existsSync(verdictsPath(id)))
     fail(`${verdictsPath(id)} already exists; refusing to overwrite`);
-  const findings = detect(prepare(id, repo), repo);
+  const findings = detect(prepare(id, repo), repo, id);
   const file = buildVerdictFile(
     repo.sha,
     toolVersion,
@@ -124,7 +130,7 @@ if (command === 'prepare') {
   writeFileSync(verdictsPath(id), JSON.stringify(file, undefined, 2) + '\n');
   console.log(`${id}: recorded ${findings.length} finding(s) as UNTRIAGED`);
 } else if (command === 'report') {
-  const findings = detect(prepare(id, repo), repo);
+  const findings = detect(prepare(id, repo), repo, id);
   const classes = groupClasses(findings);
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, `${id}.classes.json`), JSON.stringify(classes, undefined, 2) + '\n');
@@ -152,7 +158,7 @@ if (command === 'prepare') {
   const baseline = JSON.parse(readFileSync(verdictsPath(id), 'utf8')) as VerdictFile;
   if (baseline.pin !== repo.sha)
     fail(`verdicts pin ${baseline.pin} does not match manifest ${repo.sha}`);
-  const findings = detect(prepare(id, repo), repo);
+  const findings = detect(prepare(id, repo), repo, id);
   const result = rebaseline(
     baseline,
     findings,
@@ -170,7 +176,7 @@ if (command === 'prepare') {
   if (baseline.pin !== repo.sha)
     fail(`verdicts pin ${baseline.pin} does not match manifest ${repo.sha}; verdicts are stale`);
 
-  const findings = detect(prepare(id, repo), repo);
+  const findings = detect(prepare(id, repo), repo, id);
   const delta = computeDelta(baseline.entries, findings);
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, `${id}.delta.json`), JSON.stringify(delta, undefined, 2) + '\n');

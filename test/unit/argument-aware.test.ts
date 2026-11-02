@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import * as ts from 'typescript';
 import { collectCallGraphStatuses } from '../../src/core/call-graph.js';
 import { createAnalysisContext } from '../../src/core/analyze.js';
-import { evaluateTruthiness, type ArgEnv, type ConstValue } from '../../src/core/const-eval.js';
+import {
+  evaluateTruthiness,
+  guaranteeEnv,
+  type ArgEnv,
+  type ConstValue,
+} from '../../src/core/const-eval.js';
 import type { AnalysisOptions } from '../../src/core/types.js';
 import { createInMemoryProgram } from '../helpers/in-memory-program.js';
 
@@ -24,7 +29,11 @@ const OPTIONS: AnalysisOptions = {
   ignoreStatuses: [],
 };
 
-function statusesFor(source: string, handlerName = 'handler'): number[] {
+function statusesFor(
+  source: string,
+  handlerName = 'handler',
+  handlerEnv: ArgEnv = new Map(),
+): number[] {
   const program = createInMemoryProgram(
     { 'stub.d.ts': STUB, 'main.ts': source },
     ['stub.d.ts', 'main.ts'],
@@ -48,7 +57,7 @@ function statusesFor(source: string, handlerName = 'handler'): number[] {
     ts.forEachChild(node, visit);
   });
   const ctx = createAnalysisContext(program, OPTIONS);
-  return collectCallGraphStatuses(handler!, ctx).findings.map((f) => f.resolved.status);
+  return collectCallGraphStatuses(handler!, ctx, handlerEnv).findings.map((f) => f.resolved.status);
 }
 
 const IMPORT = `import { UnauthorizedException } from '@nestjs/common';`;
@@ -255,5 +264,62 @@ describe('call-graph: static argument types decide typeof guards', () => {
         handler(id: any) { this.svc.update(id); }
       }`;
     expect(statusesFor(src)).toEqual([401]);
+  });
+});
+
+describe('call-graph: calls a guard guarantees to be truthy', () => {
+  const lib = `
+    ${IMPORT}
+    export class RequestContext {
+      static currentTenantId(): string | null { return null; }
+    }
+    export class Svc {
+      direct(): void {
+        const tenantId = RequestContext.currentTenantId();
+        if (!tenantId) throw new UnauthorizedException('no tenant');
+      }
+      fallback(input: { tenantId?: string }): void {
+        const tenantId = RequestContext.currentTenantId() || input.tenantId;
+        if (!tenantId) throw new UnauthorizedException('no tenant');
+      }
+      inline(): void {
+        if (!RequestContext.currentTenantId()) throw new UnauthorizedException('no tenant');
+      }
+      forwarded(): void {
+        this.check(RequestContext.currentTenantId());
+      }
+      check(tenantId: string | null): void {
+        if (!tenantId) throw new UnauthorizedException('no tenant');
+      }
+    }
+  `;
+  const guaranteed = guaranteeEnv(['RequestContext.currentTenantId']);
+  const handlerFor = (method: string, args = '') => `${lib}
+    export class C {
+      constructor(private svc: Svc) {}
+      handler() { this.svc.${method}(${args}); }
+    }`;
+
+  it.each([
+    ['direct', ''],
+    ['fallback', '{}'],
+    ['inline', ''],
+    ['forwarded', ''],
+  ])('treats the %s tenant check as dead when the guard guarantees it', (method, args) => {
+    expect(statusesFor(handlerFor(method, args), 'handler', guaranteed)).toEqual([]);
+  });
+
+  it.each([
+    ['direct', ''],
+    ['fallback', '{}'],
+    ['inline', ''],
+    ['forwarded', ''],
+  ])('keeps the %s tenant check without the guarantee', (method, args) => {
+    expect(statusesFor(handlerFor(method, args))).toEqual([401]);
+  });
+
+  it('does not extend the guarantee to other calls', () => {
+    const other = guaranteeEnv(['RequestContext.currentUserId']);
+    expect(statusesFor(handlerFor('direct'), 'handler', other)).toEqual([401]);
   });
 });

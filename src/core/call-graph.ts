@@ -119,7 +119,14 @@
 import * as ts from 'typescript';
 import type { AnalysisContext, AnalysisCache, ResolvedStatus, StatusSource } from './types.js';
 import { collectDirectThrows, walkProducibleNodes } from './thrown.js';
-import { EMPTY_ENV, bindArguments, envKeyFor, restrictEnv, type ArgEnv } from './const-eval.js';
+import {
+  EMPTY_ENV,
+  bindArguments,
+  envKeyFor,
+  restrictEnv,
+  withLocalConsts,
+  type ArgEnv,
+} from './const-eval.js';
 import { resolveThrownStatus } from './resolve-status.js';
 
 /**
@@ -438,6 +445,7 @@ function expand(
   const hopPath = [...pathSoFar, hop];
 
   const entry = getOrComputeCacheEntry(cacheMap, target, env, ctx);
+  const scopeEnv = withLocalConsts(target.decl, env);
 
   for (const { node, resolved } of entry.ownThrows) {
     results.push({
@@ -490,7 +498,7 @@ function expand(
       cacheMap,
       results,
       unresolvedResults,
-      bindArguments(nextCall.decl, nextCall.callNode, env, ctx.checker),
+      bindArguments(nextCall.decl, nextCall.callNode, scopeEnv, ctx.checker),
     );
   }
   visited.delete(target.symbol);
@@ -525,6 +533,7 @@ export interface CallGraphResult {
 export function collectCallGraphStatuses(
   handlerBody: ts.FunctionLikeDeclarationBase,
   ctx: AnalysisContext,
+  handlerEnv: ArgEnv = EMPTY_ENV,
 ): CallGraphResult {
   const results: CallGraphFinding[] = [];
   const unresolvedResults: CallGraphUnresolvedThrow[] = [];
@@ -532,8 +541,9 @@ export function collectCallGraphStatuses(
 
   const cacheMap = getCallGraphCache(ctx.cache);
   const visited = new Set<ts.Symbol>();
+  const scopeEnv = withLocalConsts(handlerBody, handlerEnv);
 
-  for (const callNode of collectProducibleCallSites(handlerBody)) {
+  for (const callNode of collectProducibleCallSites(handlerBody, scopeEnv)) {
     const target = resolveCallTarget(callNode, ctx.checker, ctx.program);
     if (!target) continue;
     expand(
@@ -547,7 +557,7 @@ export function collectCallGraphStatuses(
       cacheMap,
       results,
       unresolvedResults,
-      bindArguments(target.decl, callNode, EMPTY_ENV, ctx.checker),
+      bindArguments(target.decl, callNode, scopeEnv, ctx.checker),
     );
   }
 

@@ -1,0 +1,5 @@
+{
+  "guardGuarantees": {
+    "TenantBaseGuard": ["RequestContext.currentTenantId", "RequestContext.currentUserId"]
+  }
+}
