@@ -61,7 +61,7 @@ variable)`, throws inside callbacks, `throw new X(this.helper())`.
 
 - Fix cycle and gates 1–5 for the `standard` tier; commit `autofix.patch`.
 - `corpus-check` skill on top of the script.
-- Novu baseline (pinned, never run), then Immich and Amplication (not pinned).
+- Novu baseline recorded (338 findings, all `UNTRIAGED`); Immich and Amplication are not pinned yet.
 - `--fix-report <path>` (§11.10) if gate 4 parsing proves brittle.
 - ~~Fingerprint stability under an unrelated edit~~ — tested in `corpus-lib.test.ts`.
 - Migration step for verdicts when a pin is refreshed (carry by `Class.method`).
