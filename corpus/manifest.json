@@ -1,0 +1,22 @@
+{
+  "repos": {
+    "ever-gauzy": {
+      "remote": "https://github.com/ever-co/ever-gauzy.git",
+      "sha": "7da5a66804a632d921d826ed5f35350e53af6769",
+      "tsconfig": "packages/core/tsconfig.lib.json",
+      "flags": [],
+      "prepare": [
+        "npx --yes yarn@1.22.22 install --frozen-lockfile --ignore-scripts --ignore-engines --network-timeout 600000"
+      ],
+      "tiers": ["smoke", "standard", "full"]
+    },
+    "novu": {
+      "remote": "https://github.com/novuhq/novu.git",
+      "sha": "4af47133e2cd5e3de296293e6b21bfd24a6b591f",
+      "tsconfig": "apps/api/tsconfig.json",
+      "flags": [],
+      "prepare": ["npx --yes pnpm@11.28.2 install --frozen-lockfile --ignore-scripts"],
+      "tiers": ["standard", "full"]
+    }
+  }
+}

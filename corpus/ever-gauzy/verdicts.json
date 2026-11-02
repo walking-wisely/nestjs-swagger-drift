@@ -1,0 +1,2807 @@
+{
+  "pin": "7da5a66804a632d921d826ed5f35350e53af6769",
+  "toolVersion": "0.1.2",
+  "recordedAt": "2026-11-02",
+  "entries": {
+    "63b7dec913b2e0d311de313387f12f9dd356489f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/app/app.controller.ts::AppController.getAppStatus undocumented-status 200"
+    },
+    "026ab9e0a74e982312d8aa84a3ca263c5ce2c60d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.confirm undocumented-status 200"
+    },
+    "4545cc8044a11a163b0da91f5ea2fadceaa53c10": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.previewMe undocumented-status 200"
+    },
+    "0cbdaa5f69657f850e2cda0ebe427470404261ad": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.previewMe undocumented-status 403"
+    },
+    "4a5b37bbf3d69a526df68983913df17cfc81dce5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.deleteMe undocumented-status 200"
+    },
+    "a5578fe272eb9f3f74e1e3e0faddd3a10c08111e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.deleteMe undocumented-status 403"
+    },
+    "2a6aa9007c0ef595c2d186658ce053da34d20238": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.deleteMe undocumented-status 409"
+    },
+    "39150691bdd52546e12d7290aecd3002b6b1a6ba": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/account-deletion/account-deletion.controller.ts::AccountDeletionController.verify undocumented-status 200"
+    },
+    "395b9dc3219b88519307492bc9140c045d1b05cc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/accounting-template/accounting-template.controller.ts::AccountingTemplateController.findAll undocumented-status 200"
+    },
+    "2a6b4bd884ecb913bf95cfa0273181a88305404b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/accounting-template/accounting-template.controller.ts::AccountingTemplateController.delete undocumented-status 400"
+    },
+    "9ca2b73f94ae75ee0c5de96e7171641fec138291": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/accounting-template/accounting-template.controller.ts::AccountingTemplateController.findById undocumented-status 400"
+    },
+    "23cb342f07cbd33caf8ced30c14aadbd6eefc99a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/accounting-template/accounting-template.controller.ts::AccountingTemplateController.update undocumented-status 400"
+    },
+    "b700dd39598bf262617cc70d9f85e50f74f86e7b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/accounting-template/accounting-template.controller.ts::AccountingTemplateController.getCount undocumented-status 200"
+    },
+    "4c4173e9ccb122bbd6a2d593b0b4188c2f2e320d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/accounting-template/accounting-template.controller.ts::AccountingTemplateController.pagination undocumented-status 200"
+    },
+    "9ec66b7115f7517c8d8bbcdfb767d2e4dd5497a6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/accounting-template/accounting-template.controller.ts::AccountingTemplateController.pagination undocumented-status 400"
+    },
+    "763b3624a29e754c5a2c10ea926c047c00694857": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/accounting-template/accounting-template.controller.ts::AccountingTemplateController.generatePreview undocumented-status 201"
+    },
+    "680acfb1dfac94f77f4ef67021bf24fbc3340fea": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/accounting-template/accounting-template.controller.ts::AccountingTemplateController.saveTemplate undocumented-status 201"
+    },
+    "fbc5486d5ff31a7884917f38a818e0186891b6c7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/accounting-template/accounting-template.controller.ts::AccountingTemplateController.saveTemplate undocumented-status 400"
+    },
+    "0f2c84abebb89ef48d0d3f268d08440727f738fc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/activity-log/activity-log.controller.ts::ActivityLogController.getActivityLogs undocumented-status 200"
+    },
+    "465f5453b012922a945d1a1ef3fb83662d0a9522": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/address-role/address-role.controller.ts::AddressRoleController.create undocumented-status 400"
+    },
+    "42cc1d11f3a7aedd44a76327cc2c2bfccba3d6f1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/address-role/address-role.controller.ts::AddressRoleController.delete undocumented-status 404"
+    },
+    "97721f61494ea6755d69da9b880be15b47628987": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/address-role/address-role.controller.ts::AddressRoleController.update undocumented-status 400"
+    },
+    "d063bbfc280ede924ca62edee2d7fd9eb8d0630a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/address-role/address-role.controller.ts::AddressRoleController.update undocumented-status 404"
+    },
+    "2e7457f60949bd19e50f969bfcacefa674b99ef6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/address/address.controller.ts::AddressController.create undocumented-status 404"
+    },
+    "4b111ee616543d13b1baf2ddec4244a259d522bf": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/api-call-log/api-call-log.controller.ts::ApiCallLogController.deleteById undocumented-status 400"
+    },
+    "bddaed79b0a468244ff2d8cef211584b8f816596": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/approval-policy/approval-policy.controller.ts::ApprovalPolicyController.findAll undocumented-status 202"
+    },
+    "2b13421c2944ddc6d26fccf02f21723e6e64457f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/approval-policy/approval-policy.controller.ts::ApprovalPolicyController.update undocumented-status 202"
+    },
+    "084c21619a704202408d9b86f29305ad7b5aff1d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/approval-policy/approval-policy.controller.ts::ApprovalPolicyController.pagination undocumented-status 200"
+    },
+    "d6a4808f73e1f0d66a1f927cb9e7c0f0ed9c1488": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/approval-policy/approval-policy.controller.ts::ApprovalPolicyController.findApprovalPoliciesForRequestApproval undocumented-status 202"
+    },
+    "e13fc245cbfd45868babd1ab8ff78308571cc913": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/auth0/auth0.controller.ts::Auth0Controller.auth0Login undocumented-status 200"
+    },
+    "ace4a33dd8c8dc5b45b8d1bf1865ad54d3e61564": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-check/email-check.controller.ts::EmailCheckController.checkEmail undocumented-status 201"
+    },
+    "36dbcf3e5899e77da126eed9a35f9c4489b5868c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/email-verification.controller.ts::EmailVerificationController.confirmEmail undocumented-status 200"
+    },
+    "004afad888d543c09d66eb1a164df4596b27c158": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/email-verification.controller.ts::EmailVerificationController.confirmEmail undocumented-status 400"
+    },
+    "ea74b2056c6891d7ee2cd74ec0603de8429449e7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/email-verification.controller.ts::EmailVerificationController.confirmEmailByCode undocumented-status 200"
+    },
+    "cc6f98853523786c4a9374a163a2739452b0a267": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/email-verification.controller.ts::EmailVerificationController.confirmEmailByCode undocumented-status 400"
+    },
+    "242681019498b8dd42bb41c779e931fe1dc77601": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/email-verification.controller.ts::EmailVerificationController.resendConfirmationLink undocumented-status 202"
+    },
+    "b60b0ca05dfa61bc7363a34ccc24fd8e10b87d46": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/email-verification.controller.ts::EmailVerificationController.resendConfirmationLink undocumented-status 400"
+    },
+    "236c55bd3a32735981b56f414531ba49af440493": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/email-verification.controller.ts::EmailVerificationController.getVerificationStatus undocumented-status 200"
+    },
+    "362b5238064f12f8a36b7fd9b2f28cda04979a3f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/facebook/facebook.controller.ts::FacebookController.facebookLogin undocumented-status 200"
+    },
+    "e3be46d25c28d581a80e08654069955308f33fd5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/github/github.controller.ts::GithubController.githubLogin undocumented-status 200"
+    },
+    "eeb4d0d7f83061c3c5fdb00f919bd80f54803c55": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/google/google.controller.ts::GoogleController.googleLogin undocumented-status 200"
+    },
+    "c8ecefac260fb4d93ba803816da0060d7d077ab9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/linkedin/linkedin.controller.ts::LinkedinController.linkedinLogin undocumented-status 200"
+    },
+    "f676443961735a78dc91b31c0951e38b7578ca7d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.login undocumented-status 200"
+    },
+    "1735dfe4775206eb15a88de456117d3a32aaeab5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/microsoft/microsoft.controller.ts::MicrosoftController.microsoftLogin undocumented-status 200"
+    },
+    "6c006f124443bddff3959398b221592f3f5006c9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.refreshToken undocumented-status 200"
+    },
+    "6b554b22539d9634600d2b0de371518560db6a4a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.requestPassword undocumented-status 201"
+    },
+    "5ae665b20ebc2432a2800d0a70ce4dce6e110605": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.requestPassword undocumented-status 400"
+    },
+    "e1706670b2954397f0edb3ac7595c416f7d1f3f9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.resetPassword undocumented-status 201"
+    },
+    "1b503359ea895ba0030d727f44f96db09edec664": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.resetPassword undocumented-status 400"
+    },
+    "9892bc620d432912e9865a5cd77a6d2486768b7f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.sendWorkspaceSigninCode undocumented-status 200"
+    },
+    "238ef8c96e4cea022f8f028c38cea517ca5d7cbe": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByPassword undocumented-status 200"
+    },
+    "f04a0d9f54ca058a58cdc3bbd4a6ceda63244cc1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByPassword undocumented-status 401"
+    },
+    "2098773d3a543f631afca74516249d183ba7ac6c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByPassword undocumented-status 429"
+    },
+    "bf4a23bc13225c56f6c4a30c90a8c7f34286dc79": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesBySocial undocumented-status 200"
+    },
+    "5a53b7e513c88b6de446da3fb43a5f1efd5a31d4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesBySocial undocumented-status 401"
+    },
+    "9e6b14570fa5c95d23f38ab76964eaa54863e001": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByMagicCode undocumented-status 201"
+    },
+    "dacce64c33049548fbf25e0e692894bb11b16c5f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByMagicCode undocumented-status 401"
+    },
+    "b7c62e35b6649ba9a118f86e4e892e3b43a653d3": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspacesByMagicCode undocumented-status 429"
+    },
+    "f02e248df84e7a787af67d3f9d9a4ab2248fd460": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.signinWorkspaceByToken undocumented-status 201"
+    },
+    "0b6e99af44a800d783b7df2f80c7a11df74b94b3": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.linkUserToSocialAccount undocumented-status 200"
+    },
+    "0bbc485b56a7b9de9b45e94e379e2969201ad767": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.linkUserToSocialAccount undocumented-status 400"
+    },
+    "fd02106611360754215f4fdfb7b91b107c326d74": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.linkUserToSocialAccount undocumented-status 401"
+    },
+    "e450c0169a2cdf34a5aa2fbef3252b8040fc7618": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.socialSignupCheckIfUserExistsBySocial undocumented-status 200"
+    },
+    "e6307a5d4acff63e37de3b22e8adf1bb55c8677e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/auth.controller.ts::AuthController.socialSignupCheckIfUserExistsBySocial undocumented-status 400"
+    },
+    "0ece88beba7a93ad351068d33e7fc4953cfdac59": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/twitter/twitter.controller.ts::TwitterController.twitterLogin undocumented-status 200"
+    },
+    "c144ba7ea382ceb79ed01936e7bdbbf9fc916456": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/availability-slots/availability-slots.controller.ts::AvailabilitySlotsController.update undocumented-status 202"
+    },
+    "89d50e578177abeec9badffb8c4cf1a9eb0718d6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.invoices undocumented-status 400"
+    },
+    "4891039ce3fc9fccf22701fc1ed767d13d316a37": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.invoices undocumented-status 404"
+    },
+    "09d87424f6ae3379cad74256f999d827cb6ef009": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.invoices undocumented-status 504"
+    },
+    "5be1faf1f5d6b847f80344c37c671568b9b870bd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.paymentMethod undocumented-status 400"
+    },
+    "b3f1712db93893ffff3c228de94df844e967544d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.paymentMethod undocumented-status 404"
+    },
+    "a094af79a5b2171ebac6bc86d22ca49e3438b2a9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.paymentMethod undocumented-status 504"
+    },
+    "616d624e3c992234994269898b52f9f14cc78877": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.plans undocumented-status 400"
+    },
+    "e21b396624dac09f3599a5188707904a1da8c183": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.plans undocumented-status 404"
+    },
+    "555dddf5b1a4f93c24b2945066aa5c65b7aa395f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.plans undocumented-status 504"
+    },
+    "2cbbf0ffab266b30f2f80c260d1910c5508ab2f1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.portal undocumented-status 400"
+    },
+    "7f6d08f1d01547c101bcac75020054206c75c2c4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.portal undocumented-status 404"
+    },
+    "7c8adeb127c892f6b73de301e4a45db2f3a47c06": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.portal undocumented-status 504"
+    },
+    "3d06524d364b91c570cd53abfeb49b717b834c08": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.subscription undocumented-status 400"
+    },
+    "2c2ecd44e070ed85d3d54681346e5d35c9a1f073": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.subscription undocumented-status 404"
+    },
+    "274b676a8a41c25b00a5302ccc6f1f36893d2af7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.subscription undocumented-status 504"
+    },
+    "6f1ad636e7022048e2664d8adc35f7725a5cf809": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.cancel undocumented-status 201"
+    },
+    "b410b82ed819e06c5050c326e2805f86e4cdc0eb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.cancel undocumented-status 400"
+    },
+    "d0b3489c7fe1f8858becee2201d9741223dd63c1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.cancel undocumented-status 404"
+    },
+    "e36f1295521392b6ba7b82861b8a77e36cfb0815": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.cancel undocumented-status 504"
+    },
+    "f8ce8a0929697b4d2db7f471a21e4aef96e252ca": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.changePlan undocumented-status 201"
+    },
+    "8f9c18f9be10d2925dc93d69d4c1544c272a20fd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.changePlan undocumented-status 400"
+    },
+    "d270b011adf678c6acf0e14ee4c1fbc3a391574a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.changePlan undocumented-status 404"
+    },
+    "a5ddf9ff071634d9132de93be6fad8a36d38cacd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.resume undocumented-status 201"
+    },
+    "fe6c2a5de13572f7023337769ddb46dbbee77a26": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.resume undocumented-status 400"
+    },
+    "8458a398be7037e8a683c7c38838ed45bd0b0ca7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.resume undocumented-status 404"
+    },
+    "679dc95a5920e763ee00799a15afb988dd54815e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/billing.controller.ts::BillingController.resume undocumented-status 504"
+    },
+    "947302a8480ae2fee4ea8b1bebd20620f36ea77a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/stripe-webhook.controller.ts::StripeWebhookController.handle undocumented-status 200"
+    },
+    "892262325ef2626e6707317a8ac7c03e93f5022d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared/billing/stripe-webhook.controller.ts::StripeWebhookController.handle undocumented-status 403"
+    },
+    "ea8eaf3b2574019bdbc90e2773e94306062ffb5f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/broadcast/broadcast.controller.ts::BroadcastController.delete undocumented-status 400"
+    },
+    "956c1c65cffbf081c923d87350ec833673acfc17": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-criterions-rating/candidate-criterion-rating.controller.ts::CandidateCriterionsRatingController.createBulk undocumented-status 201"
+    },
+    "4df8f52b2c56e4bc331f0c7694c5b7ac3952f79f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-criterions-rating/candidate-criterion-rating.controller.ts::CandidateCriterionsRatingController.updateBulk undocumented-status 200"
+    },
+    "22c2b2440dee9d67c0135d093426c9ccdad1f216": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-criterions-rating/candidate-criterion-rating.controller.ts::CandidateCriterionsRatingController.deleteBulkByFeedbackId undocumented-status 200"
+    },
+    "31facc44c8064b4b66de412e96e8c7c55aa0a508": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.create undocumented-status 201"
+    },
+    "e624b94c3353073a97b34eafc88177c68e30d485": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.create undocumented-status 400"
+    },
+    "a479f776ef42ba2a6fe59a4173d4714bb5b524d0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.update undocumented-status 200"
+    },
+    "000a8b1c07fce6311d1cd0e8fc678460fbff7efb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.update undocumented-status 400"
+    },
+    "003bc24cf1cb6e0a9b47152187ec401294163d09": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.update undocumented-status 404"
+    },
+    "6e9f4b7dd6aba10b2c6c559000789ea58923decc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.pagination undocumented-status 200"
+    },
+    "53df83f07b7d98f7c882fb7a838ca8f057fea662": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-education/candidate-education.controller.ts::CandidateEducationController.pagination undocumented-status 400"
+    },
+    "e31934d3d64baf4734146c9d09c5142e54dc45aa": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.create undocumented-status 201"
+    },
+    "905eae00650e7c1d2fcbd7812df29a18bd55d8f1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.create undocumented-status 400"
+    },
+    "c6f334e9fff358a8a35e8a376839f92e0b475011": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.update undocumented-status 200"
+    },
+    "b0b7121a6747786b0bc43456654e5a05ce5fd062": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.update undocumented-status 400"
+    },
+    "ab06d3523be8a05a7bc4fbee27dbd7f791fa91be": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.update undocumented-status 404"
+    },
+    "5aa1e260565a43e7609207f515ac04c2b0cc85fa": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.pagination undocumented-status 200"
+    },
+    "bf6ccd9cb7e319421be4840a8d2a371548c0ac3d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-experience/candidate-experience.controller.ts::CandidateExperienceController.pagination undocumented-status 400"
+    },
+    "4a274c4d511b008f526f6a9a0da277a8ebfbb045": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-feedbacks/candidate-feedbacks.controller.ts::CandidateFeedbacksController.create undocumented-status 201"
+    },
+    "d2ef455f55e632d76d92d1c02934ea078669669e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-feedbacks/candidate-feedbacks.controller.ts::CandidateFeedbacksController.create undocumented-status 400"
+    },
+    "7ba77367e7c88d156277b0d80677742ff6c639d7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-feedbacks/candidate-feedbacks.controller.ts::CandidateFeedbacksController.delete undocumented-status 202"
+    },
+    "d708f3c28bc937fe5c2c0e3818ca8d7d8971d869": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-feedbacks/candidate-feedbacks.controller.ts::CandidateFeedbacksController.update undocumented-status 200"
+    },
+    "c79b839e295b79a44a747b84c1e29cead193f077": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-feedbacks/candidate-feedbacks.controller.ts::CandidateFeedbacksController.deleteFeedback undocumented-status 200"
+    },
+    "ef16f958f3af81d7b1a88a59c6454219d0960df2": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-feedbacks/candidate-feedbacks.controller.ts::CandidateFeedbacksController.pagination undocumented-status 400"
+    },
+    "bc8c40e41b3d2552a2fdc3ff7af7f34c887a504d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-interview/candidate-interview.controller.ts::CandidateInterviewController.create undocumented-status 400"
+    },
+    "bfd920a87f76fd67b707c07b7e44ae61a32d3aa7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-interview/candidate-interview.controller.ts::CandidateInterviewController.update undocumented-status 200"
+    },
+    "9d2ab15242573688ec7a5ddde888957b1724f7af": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-interview/candidate-interview.controller.ts::CandidateInterviewController.update undocumented-status 400"
+    },
+    "4e53d05784abf384d75bbad8447f4194eff03cc6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-interview/candidate-interview.controller.ts::CandidateInterviewController.update undocumented-status 404"
+    },
+    "48d50058a4db3662445c9f0d2e5e4545b1e09d2f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-interview/candidate-interview.controller.ts::CandidateInterviewController.pagination undocumented-status 400"
+    },
+    "3aeebe4d079900d18bbdd1c30ff708941a4a580a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-interviewers/candidate-interviewers.controller.ts::CandidateInterviewersController.create undocumented-status 400"
+    },
+    "5bea8b47bced75646d453d9d1460adfcc5a91b2d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-personal-qualities/candidate-personal-qualities.controller.ts::CandidatePersonalQualitiesController.create undocumented-status 201"
+    },
+    "675ec2e85d09905938167669439353a96b9af147": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-personal-qualities/candidate-personal-qualities.controller.ts::CandidatePersonalQualitiesController.create undocumented-status 400"
+    },
+    "bcea0e0b8639e497ae25cf197f017b0fc7bb5566": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-personal-qualities/candidate-personal-qualities.controller.ts::CandidatePersonalQualitiesController.delete undocumented-status 200"
+    },
+    "04c3e53ec1452ead6f60052eac7c4f5c70258533": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-personal-qualities/candidate-personal-qualities.controller.ts::CandidatePersonalQualitiesController.delete undocumented-status 400"
+    },
+    "36c8de2a116f54503a45c0c173c28d9c51096314": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-personal-qualities/candidate-personal-qualities.controller.ts::CandidatePersonalQualitiesController.delete undocumented-status 404"
+    },
+    "8e0de263205903709d34c937ae934738bd969b3a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-personal-qualities/candidate-personal-qualities.controller.ts::CandidatePersonalQualitiesController.update undocumented-status 202"
+    },
+    "c0ecc940af75e717bb7849b76d5b2eb332581e30": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-personal-qualities/candidate-personal-qualities.controller.ts::CandidatePersonalQualitiesController.createBulk undocumented-status 201"
+    },
+    "73f047ad1f47839ddf221313668dab4eacf177f0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-personal-qualities/candidate-personal-qualities.controller.ts::CandidatePersonalQualitiesController.deleteBulk undocumented-status 200"
+    },
+    "c8388a82e65270fb9fae4f40b9d352b12eb037fd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-personal-qualities/candidate-personal-qualities.controller.ts::CandidatePersonalQualitiesController.findByInterviewId undocumented-status 200"
+    },
+    "200e90553e1ae874e0b813c7b53ba095078a7b9a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.create undocumented-status 201"
+    },
+    "dd27c6234b0daf97f97da9c6870092e0a6a12084": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.create undocumented-status 400"
+    },
+    "9fd2cc37a9abbe9e38798aee19deaf203e0653a3": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.update undocumented-status 200"
+    },
+    "84ab8eeea0bca9388ce5f82bdd9f581fa61d3273": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.update undocumented-status 400"
+    },
+    "e049b81a7cba9ec6c137dae4110efc13fd3a1313": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.update undocumented-status 404"
+    },
+    "32e2bc066223dbb95c802ccdef6f75e08c05559c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.pagination undocumented-status 200"
+    },
+    "b5f04a0e7f4259683308907b1257b32675660692": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-skill/candidate-skill.controller.ts::CandidateSkillController.pagination undocumented-status 400"
+    },
+    "672827ab7230ec77474ab0d65e5c875a90d86d03": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.create undocumented-status 201"
+    },
+    "49f74ba9f5023805ba6e0c650ae097af23f49c32": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.create undocumented-status 400"
+    },
+    "6c6ce52f6564eb2f1171d8e33b68b2f62ffb1676": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.update undocumented-status 200"
+    },
+    "d231ed4937e572c46baab8846c60511085cdce7e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.update undocumented-status 400"
+    },
+    "4bfd07e32f5fe38212338f08b37314b382c10eb0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.update undocumented-status 404"
+    },
+    "801a7ddf02f8b15432e1f973ac829f4daed22f57": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.pagination undocumented-status 200"
+    },
+    "a8890bbac394baee31810165e445ee84c02fd1a7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-source/candidate-source.controller.ts::CandidateSourceController.pagination undocumented-status 400"
+    },
+    "3cd81502ee7aa330e6c5d6a7549dd9e5ce57c233": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-technologies/candidate-technologies.controller.ts::CandidateTechnologiesController.create undocumented-status 201"
+    },
+    "d3c5869b898a9b3178978be5ca514935fb7e8318": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-technologies/candidate-technologies.controller.ts::CandidateTechnologiesController.create undocumented-status 400"
+    },
+    "7f2dc1df592ac962ad27610eaeeb5acdcb3cf8b8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-technologies/candidate-technologies.controller.ts::CandidateTechnologiesController.delete undocumented-status 200"
+    },
+    "817ab751f777088ed4e02cd4ba573c6af5bf3057": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-technologies/candidate-technologies.controller.ts::CandidateTechnologiesController.delete undocumented-status 400"
+    },
+    "ad8238072691f3c213105eda93299710b06cfbf4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-technologies/candidate-technologies.controller.ts::CandidateTechnologiesController.delete undocumented-status 404"
+    },
+    "5c35ad564ac8ea4c2b48922e6efb64d6b50f7142": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-technologies/candidate-technologies.controller.ts::CandidateTechnologiesController.update undocumented-status 202"
+    },
+    "b8deb4ba28b23f6b89b81f186a6f44089ce5bd43": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-technologies/candidate-technologies.controller.ts::CandidateTechnologiesController.createBulkCandidateTechnologies undocumented-status 201"
+    },
+    "656a6c19a33ef039178654c399612cae5a56f78f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-technologies/candidate-technologies.controller.ts::CandidateTechnologiesController.updateBulkCandidateTechnologies undocumented-status 200"
+    },
+    "b487d6c780446ef06a9243c1daeb91ee7c707735": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-technologies/candidate-technologies.controller.ts::CandidateTechnologiesController.deleteBulkTechnologies undocumented-status 200"
+    },
+    "d2af163ff6b8aef734da105ab03adc04d1d87718": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate-technologies/candidate-technologies.controller.ts::CandidateTechnologiesController.findByInterviewId undocumented-status 200"
+    },
+    "cebda706b0369c4d7728aea621eefa243aa8f86f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate/candidate.controller.ts::CandidateController.update undocumented-status 202"
+    },
+    "05a0ed1d0409724cd3a8a702fc50e65a9ea89abf": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate/candidate.controller.ts::CandidateController.updateCandidateStatus undocumented-status 202"
+    },
+    "72903982e57c5e3e0e18317b5371e3d7f2f14d7f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/candidate/candidate.controller.ts::CandidateController.pagination undocumented-status 400"
+    },
+    "f81d38d7e7117ecaeffd9d568a619255ce5273e7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/comment/comment.controller.ts::CommentController.findAll undocumented-status 400"
+    },
+    "8d8c66599f049ccb61b899b80d9fcffaf8485df5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/comment/comment.controller.ts::CommentController.delete undocumented-status 202"
+    },
+    "5d2c6a08d20f1c73415da82d173c2a4128bf2229": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/comment/comment.controller.ts::CommentController.delete undocumented-status 400"
+    },
+    "80e53657282d271b956051ee3679c40b5cddbc04": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/comment/comment.controller.ts::CommentController.findById undocumented-status 400"
+    },
+    "52b512d87100dc1390446ada7908a27be8faafaa": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/comment/comment.controller.ts::CommentController.update undocumented-status 202"
+    },
+    "bed204e3bb48eb666db971aadb851842d93e932e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/app/app.controller.ts::AppController.getAppConfigs undocumented-status 200"
+    },
+    "8f01ed4612001fc2118fa023e579b16eb1af16a8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/contact-credential/contact-credential.controller.ts::ContactCredentialController.create undocumented-status 403"
+    },
+    "b719c8dcf7d34d8d98062d2c603e75bd9db73abb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/contact-group-member/contact-group-member.controller.ts::ContactGroupMemberController.replace undocumented-status 403"
+    },
+    "6b865a12c7641f6c2d2b63409ff0f5b4cdd06d11": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/contact/contact.controller.ts::ContactController.delete undocumented-status 202"
+    },
+    "1d7c06cf110e9b900e759fe967e3be4437e0491d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/contact/contact.controller.ts::ContactController.update undocumented-status 202"
+    },
+    "b6acdd4ee3493d04cd1cb094b099031134960a44": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.get undocumented-status 400"
+    },
+    "f8badce9171639a2e7d1bd2931f68fe60c1a3a1b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.delete undocumented-status 400"
+    },
+    "939a1fd097004c9e9bf5ee951d4d6b32647431e6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.update undocumented-status 400"
+    },
+    "94f2a891cb8df4fce7da31370223d9244dda7287": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.addTaskToDailyPlan undocumented-status 201"
+    },
+    "61a74f2eed854d6c7e564745d683e12c532e62f5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.addTaskToDailyPlan undocumented-status 400"
+    },
+    "11302ce6de134a560a2c7cb4890bbae09591048b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.removeTaskFromDailyPlan undocumented-status 400"
+    },
+    "6d80a182067b5f9526ff7098ba61eaf22955a964": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.removeTaskFromManyPlans undocumented-status 400"
+    },
+    "c664f15ee49902aad17940c91be5e68e8f90d3dc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.getEmployeeDailyPlans undocumented-status 400"
+    },
+    "086d65bf0996166931321b1e153290d5caff7af4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.getMyPlans undocumented-status 400"
+    },
+    "9df893e3269e433b68df8fe8ef8df8d69a267f07": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.getDailyPlansForTaskId undocumented-status 400"
+    },
+    "3ed5049ef34252647576bef1714ad266b8361e57": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/daily-plan/daily-plan.controller.ts::DailyPlanController.getTeamDailyPlans undocumented-status 400"
+    },
+    "4e043ee1e11420bd5877c9bced47e200096df758": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/dashboard/dashboard-widget/dashboard-widget.controller.ts::DashboardWidgetController.delete undocumented-status 400"
+    },
+    "21dc000f97baafc148fd76f98443667c8277b564": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/dashboard/dashboard-widget/dashboard-widget.controller.ts::DashboardWidgetController.update undocumented-status 202"
+    },
+    "ef22658af44ed9fa8fbc4d433d95848e95d763bb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/dashboard/dashboard.controller.ts::DashboardController.delete undocumented-status 400"
+    },
+    "43fef8f35d659298dcc478f36eeaa146bad9bdf0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/deal/deal.controller.ts::DealController.delete undocumented-status 202"
+    },
+    "d622550c689196c78ba18f5b807331d6ce491b22": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-reset/email-reset.controller.ts::EmailResetController.findAll undocumented-status 401"
+    },
+    "bb18c58d79bf7d53a7a5b4e1924d4aa0cc188f00": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-reset/email-reset.controller.ts::EmailResetController.requestChangeEmail undocumented-status 200"
+    },
+    "2bba4288e07851823fce640ff5b07f66c9ee3afc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-reset/email-reset.controller.ts::EmailResetController.requestChangeEmail undocumented-status 401"
+    },
+    "e5c08929c955c96cf8d5aef643350e2583b70440": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-reset/email-reset.controller.ts::EmailResetController.verifyChangeEmail undocumented-status 202"
+    },
+    "8bf64508d10a2fa467ae70cf41cd9c8ca2756a3e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.findAll undocumented-status 200"
+    },
+    "3a512050c08a1ab40f0d6db1d6b7fe33c890e523": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.create undocumented-status 201"
+    },
+    "8d7a810fe9f7cfeedaed85b793105ab2b0b82dc9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.create undocumented-status 400"
+    },
+    "11ba990bd46186e32a540835e037d2fae3285b1b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.softRecover undocumented-status 202"
+    },
+    "5729f7b682f57551771b0246f2428099008709a6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.softRecover undocumented-status 404"
+    },
+    "13449014331f70adb0d0dae1ba751ecccb0b5f32": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.softRemove undocumented-status 202"
+    },
+    "530f2f5d130f1a008aeebe306a1d9d03e69aa084": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.softRemove undocumented-status 404"
+    },
+    "870c9ae8abd945dad2d83e8a33bcb57abbaaf6bc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.getCount undocumented-status 200"
+    },
+    "66331973e35b89300e85593af540b8bfb09b373c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.pagination undocumented-status 200"
+    },
+    "87bf6da040f43c547d1aed49a110b9ca19e69862": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.pagination undocumented-status 400"
+    },
+    "06390fb63b12121bf025d9ba1064728c6ce1a935": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.generatePreview undocumented-status 201"
+    },
+    "791370a6d382f2a6b18c9bac0a1f1dc875da6ac7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/email-template/email-template.controller.ts::EmailTemplateController.saveEmailTemplate undocumented-status 201"
+    },
+    "fb84d5ba6e78409bddc0944d5562aec910b13b73": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-appointment/employee-appointment.controller.ts::EmployeeAppointmentController.update undocumented-status 202"
+    },
+    "90e92f9d8a3a86c7e981daeef268f6e875eccda7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-appointment/employee-appointment.controller.ts::EmployeeAppointmentController.decodeToken undocumented-status 400"
+    },
+    "8380b0ca3c8a49af9fd6b3dd5ddf2ece41df0c25": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-appointment/employee-appointment.controller.ts::EmployeeAppointmentController.pagination undocumented-status 200"
+    },
+    "2753b536bce8514298afd9e691eac8a1d708471d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-appointment/employee-appointment.controller.ts::EmployeeAppointmentController.pagination undocumented-status 400"
+    },
+    "d70f18492685da8b90fd7c0a69b6a38c4e832988": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-availability/employee-availability.controller.ts::EmployeeAvailabilityController.update undocumented-status 404"
+    },
+    "1b0566c9483c121c7281ec39383342746d8e9c5f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-award/employee-award.controller.ts::EmployeeAwardController.delete undocumented-status 202"
+    },
+    "c7604d19b46318186d925cdb44afa515eae24d15": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-award/employee-award.controller.ts::EmployeeAwardController.delete undocumented-status 400"
+    },
+    "908e6cee4d13280c6d54dc267aa006cff2b4c675": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-award/employee-award.controller.ts::EmployeeAwardController.update undocumented-status 202"
+    },
+    "d3f7e38f32aeb7cc01c7ffc8add82a70bc6e6185": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-level/employee-level.controller.ts::EmployeeLevelController.findAll undocumented-status 200"
+    },
+    "e9b5d90779bc78621d53a3e077294892c75902ef": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-level/employee-level.controller.ts::EmployeeLevelController.delete undocumented-status 202"
+    },
+    "d7a8ddec34929d5c93beaa84e4199b5d98779c88": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-level/employee-level.controller.ts::EmployeeLevelController.update undocumented-status 200"
+    },
+    "440b27f82846f14f4324956f2bbdd492bbce4e2f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-level/employee-level.controller.ts::EmployeeLevelController.update undocumented-status 400"
+    },
+    "25a4ee5ad0fea3820ecc298029a2ad2c46e1f1c0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-notification/employee-notification.controller.ts::EmployeeNotificationController.create undocumented-status 400"
+    },
+    "8ce7ed8d678746e0be9dbe2851ea14a19fb5dee8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-notification-setting/employee-notification-setting.controller.ts::EmployeeNotificationSettingController.delete undocumented-status 400"
+    },
+    "fe53f5e3a8bd4d9403615c87e2505e37e63326bc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-notification-setting/employee-notification-setting.controller.ts::EmployeeNotificationSettingController.update undocumented-status 202"
+    },
+    "f76696649bd040495f6462ec7ff0fafbca8dd64b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-notification/employee-notification.controller.ts::EmployeeNotificationController.markAllAsRead undocumented-status 400"
+    },
+    "3183a7319cb3cbc14f8a4b18d5fe13e659fbe0b0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-recent-visit/employee-recent-visit.controller.ts::EmployeeRecentVisitController.getEmployeeRecentVisits undocumented-status 200"
+    },
+    "3022ff603273593395bc02afe2563eb42605887c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-recent-visit/employee-recent-visit.controller.ts::EmployeeRecentVisitController.getEmployeeRecentVisits undocumented-status 400"
+    },
+    "8aaef47519fba43fcbfd9dbcde990e3da4852e80": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-recurring-expense/employee-recurring-expense.controller.ts::EmployeeRecurringExpenseController.findAll undocumented-status 400"
+    },
+    "acfb18ca9ba76152242657fc338db4a32f03530e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-recurring-expense/employee-recurring-expense.controller.ts::EmployeeRecurringExpenseController.delete undocumented-status 202"
+    },
+    "c063d9e1996f19f7662bb5b43d72a746dc556322": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-recurring-expense/employee-recurring-expense.controller.ts::EmployeeRecurringExpenseController.update undocumented-status 202"
+    },
+    "a4a9ec4ac52c46d6b6fe1ef80b8720caddfc0e6a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-setting/employee-setting.controller.ts::EmployeeSettingController.create undocumented-status 202"
+    },
+    "5a93ea2a875dec1730f3f15f9ae29342bef4810b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-setting/employee-setting.controller.ts::EmployeeSettingController.delete undocumented-status 202"
+    },
+    "b38233f64229d0e7ab6650853a77103776ff1263": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-setting/employee-setting.controller.ts::EmployeeSettingController.delete undocumented-status 400"
+    },
+    "8e318767266c655ac1c187cc36b774b671eaa865": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee-setting/employee-setting.controller.ts::EmployeeSettingController.update undocumented-status 202"
+    },
+    "a6fedf96d61a6826ed70518d54b9df8af2825013": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee/employee.controller.ts::EmployeeController.delete undocumented-status 202"
+    },
+    "2be3825fccdd9743fe8cb8f0d33b16c1566ba278": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee/employee.controller.ts::EmployeeController.delete undocumented-status 400"
+    },
+    "8cd111dc6afde2fe22bc07ed64a4dffda903cc15": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee/employee.controller.ts::EmployeeController.softRecover undocumented-status 202"
+    },
+    "56f838d453b080ef16a2d5275a717016f58488ee": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee/employee.controller.ts::EmployeeController.softRecover undocumented-status 400"
+    },
+    "2f5ccdd906dc4d7f88bb12ddaaa3a3c7b4596814": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee/employee.controller.ts::EmployeeController.softRemove undocumented-status 202"
+    },
+    "553bbfb54412c3d78979c2f72832e5ed15fab837": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/employee/employee.controller.ts::EmployeeController.softRemove undocumented-status 400"
+    },
+    "1f65efb25da8524e8bf8503743b815ee2568eb3b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/entity-subscription/entity-subscription.controller.ts::EntitySubscriptionController.delete undocumented-status 400"
+    },
+    "322f53174e5296b23e460975c32333408c0f2d50": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/equipment-sharing/equipment-sharing.controller.ts::EquipmentSharingController.update undocumented-status 202"
+    },
+    "7e059feaef73d37483027717487867cc35d076d6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/equipment-sharing/equipment-sharing.controller.ts::EquipmentSharingController.equipmentSharingsRequestApproval undocumented-status 202"
+    },
+    "177077f0d3d281a56065f8e36f3137a46deacc8e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/equipment-sharing/equipment-sharing.controller.ts::EquipmentSharingController.findEquipmentSharingsByEmployeeId undocumented-status 400"
+    },
+    "37893a16ea2c06f36c150a4272dc5ec3c84e69a1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/equipment-sharing/equipment-sharing.controller.ts::EquipmentSharingController.createEquipmentSharing undocumented-status 202"
+    },
+    "3426b507c7d16ddd59b80993a45abb05df3cfc0f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/equipment-sharing/equipment-sharing.controller.ts::EquipmentSharingController.pagination undocumented-status 200"
+    },
+    "097e6d68bc509bcadff4ddd834205082323f7649": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/equipment-sharing/equipment-sharing.controller.ts::EquipmentSharingController.pagination undocumented-status 400"
+    },
+    "a42f4b583f438d5aceebca9fd3cd75fb07eef040": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/equipment-sharing/equipment-sharing.controller.ts::EquipmentSharingController.equipmentSharingsRequestRefuse undocumented-status 202"
+    },
+    "651743e533180308a01e8150834151e728392a4d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/equipment/equipment.controller.ts::EquipmentController.update undocumented-status 200"
+    },
+    "700ef53a20e9d606abee0ea3a3892ffd98684466": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/estimate-email/estimate-email.controller.ts::EstimateEmailController.validateEstimateEmail undocumented-status 200"
+    },
+    "260d3ab99d2344e932cbbe6dd6c1cd4e78f1f684": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/estimate-email/estimate-email.controller.ts::EstimateEmailController.validateEstimateEmail undocumented-status 400"
+    },
+    "4acee221aabbd9f7ee7628eab553d0deace80aad": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/event-types/event-type.controller.ts::EventTypeController.update undocumented-status 202"
+    },
+    "5b55155320b186b2220d1759c3f2c115fa752277": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/event-types/event-type.controller.ts::EventTypeController.getCount undocumented-status 200"
+    },
+    "7450c5fac7f401084542a5202a90c2f462f0bf55": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/event-types/event-type.controller.ts::EventTypeController.pagination undocumented-status 200"
+    },
+    "aa0d71832ed9ac3d3336c97079817be7bbc8c7c4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/event-types/event-type.controller.ts::EventTypeController.pagination undocumented-status 400"
+    },
+    "6a503add4ad5bed6eb7e88cb4c8da281d257594f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/expense-categories/expense-categories.controller.ts::ExpenseCategoriesController.pagination undocumented-status 400"
+    },
+    "3fd59c0cbb498ad8ed8b4e326805dd529f4d31d5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/expense/expense.controller.ts::ExpenseController.findById undocumented-status 200"
+    },
+    "a88ea2071e0376f822e3c66619bf501cc09d3bd3": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/expense/expense.controller.ts::ExpenseController.findById undocumented-status 404"
+    },
+    "1a6756316649870c52025ce71ab092e3d6e376af": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/expense/expense.controller.ts::ExpenseController.update undocumented-status 202"
+    },
+    "8c0d194cf34e37afc35b0c2e1ce372582fcc10fb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/expense/expense.controller.ts::ExpenseController.bulk undocumented-status 201"
+    },
+    "9f67c96f05ac5b0e2846b3d3fd08087a0eeb3ff8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/expense/expense.controller.ts::ExpenseController.getCount undocumented-status 200"
+    },
+    "257adfa5f045b39a1d648f5eeb4cd758fe6dfedf": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/expense/expense.controller.ts::ExpenseController.pagination undocumented-status 200"
+    },
+    "f6b7d95ea64a5c3c716470e34aea7c75f10c3c85": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/favorite/favorite.controller.ts::FavoriteController.create undocumented-status 202"
+    },
+    "b91b4f9f6fdca7b86855101d1f41f4253458b960": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/favorite/favorite.controller.ts::FavoriteController.delete undocumented-status 202"
+    },
+    "8407ef838d04768a911c5bfbd6753215f4e06aba": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/favorite/favorite.controller.ts::FavoriteController.delete undocumented-status 400"
+    },
+    "3e2bc1d35a361d06fcf764595ce4b58359829577": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/favorite/favorite.controller.ts::FavoriteController.findFavoritesByEmployee undocumented-status 400"
+    },
+    "1f6f909470c4967e80277f2c72cd30b3b81b8c34": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/favorite/favorite.controller.ts::FavoriteController.getFavoriteDetails undocumented-status 400"
+    },
+    "6a6f23dfb43fa952a440a4d92367c6a0398b11aa": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/feature/feature-toggle.controller.ts::FeatureToggleController.findAll undocumented-status 400"
+    },
+    "fdab7cd92dc02ed3e4cce43e871c616f4fd0c913": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/feature/feature-toggle.controller.ts::FeatureToggleController.getFeatureToggleDefinitions undocumented-status 200"
+    },
+    "33d2fd1376868cb761a4fe80fbbe5cc184c7f759": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/feature/feature-toggle.controller.ts::FeatureToggleController.getFeaturesOrganization undocumented-status 400"
+    },
+    "c64d85cb7fd14ae087dee830c231783b36d0dd45": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/feature/feature-toggle.controller.ts::FeatureToggleController.getParentFeatureList undocumented-status 400"
+    },
+    "192f827861fca511d733ddd7ff1edf4acd7f270d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-general-setting/goal-general-setting.controller.ts::GoalGeneralSettingController.findAll undocumented-status 200"
+    },
+    "e291ab1d66d71898e071c892442a04373facb35d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-general-setting/goal-general-setting.controller.ts::GoalGeneralSettingController.create undocumented-status 201"
+    },
+    "6a9cb70d0ce573d5dbcdebb02ab9a69e0293078b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-general-setting/goal-general-setting.controller.ts::GoalGeneralSettingController.create undocumented-status 400"
+    },
+    "52ebeb4f2cad6fcfd66a8e7f953768ee12088a39": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-general-setting/goal-general-setting.controller.ts::GoalGeneralSettingController.delete undocumented-status 202"
+    },
+    "6c7253b7ba02d79da81f2bb670dea1b9252d394c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-general-setting/goal-general-setting.controller.ts::GoalGeneralSettingController.update undocumented-status 202"
+    },
+    "f80fceadf6b4fdf6190ae785901f5e80abbe27bb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-kpi/goal-kpi.controller.ts::GoalKpiController.create undocumented-status 201"
+    },
+    "2b270118c057d8294b00985adf9312cb600b3520": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-kpi/goal-kpi.controller.ts::GoalKpiController.create undocumented-status 400"
+    },
+    "6dfd7e0c05dfe69c49287d7bf192472529ae5c8c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-kpi-template/goal-kpi-template.controller.ts::GoalKpiTemplateController.create undocumented-status 201"
+    },
+    "78ef15fd281b98732578c54ba574c84b66967b8c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-kpi-template/goal-kpi-template.controller.ts::GoalKpiTemplateController.create undocumented-status 400"
+    },
+    "381c76f5cda37c167fe602331abaaa5b3d9576d8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-kpi-template/goal-kpi-template.controller.ts::GoalKpiTemplateController.delete undocumented-status 202"
+    },
+    "13c4f86f81a1285dba047c4b9a0cb09408a2738f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-kpi-template/goal-kpi-template.controller.ts::GoalKpiTemplateController.update undocumented-status 202"
+    },
+    "df6f72882d13bbd2dab166c8778f207a7cd8c599": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-kpi/goal-kpi.controller.ts::GoalKpiController.delete undocumented-status 202"
+    },
+    "d7d00adb515c3f2a05b1a26e43df0b5807b52d99": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-kpi/goal-kpi.controller.ts::GoalKpiController.delete undocumented-status 400"
+    },
+    "76d4f738e2b8fabd5217da276c6280075e722f78": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-kpi/goal-kpi.controller.ts::GoalKpiController.delete undocumented-status 404"
+    },
+    "60182c919901b7cf339700ee657a851d03903d71": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-kpi/goal-kpi.controller.ts::GoalKpiController.update undocumented-status 202"
+    },
+    "bf9eb47d120b2837ff09b6e7435d498736f18ffa": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-template/goal-template.controller.ts::GoalTemplateController.create undocumented-status 201"
+    },
+    "d2e2c449bbbf9fd581abe8af6e1905c45e15d9e2": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-template/goal-template.controller.ts::GoalTemplateController.create undocumented-status 400"
+    },
+    "d2b593506a86447c0b2becede4aeaa5c606454e7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-template/goal-template.controller.ts::GoalTemplateController.delete undocumented-status 202"
+    },
+    "29524e037ed2042ebcb2e7ed975090202f8adbce": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-template/goal-template.controller.ts::GoalTemplateController.update undocumented-status 202"
+    },
+    "c4e930b24ab68b81cc62830fd74540821b7e9fec": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-time-frame/goal-time-frame.controller.ts::GoalTimeFrameController.create undocumented-status 201"
+    },
+    "1db3157f18d1a47d23160d5f5e0c28ecc5efa6be": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-time-frame/goal-time-frame.controller.ts::GoalTimeFrameController.create undocumented-status 400"
+    },
+    "a8ce704999fd20d55be5dd8866bd6908e6b5b076": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-time-frame/goal-time-frame.controller.ts::GoalTimeFrameController.delete undocumented-status 202"
+    },
+    "302781f6714f856b74d6938a8d447f28810be3c1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-time-frame/goal-time-frame.controller.ts::GoalTimeFrameController.delete undocumented-status 400"
+    },
+    "ca3f2bd635c0d59baf2bab5751c91d32260c2557": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-time-frame/goal-time-frame.controller.ts::GoalTimeFrameController.delete undocumented-status 404"
+    },
+    "65adeaa5c3277f9153a0f49541e32bcf5eeccd8a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal-time-frame/goal-time-frame.controller.ts::GoalTimeFrameController.update undocumented-status 202"
+    },
+    "53b330651da1e85d1c029dc705f8eded5ef7871e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal/goal.controller.ts::GoalController.findAll undocumented-status 200"
+    },
+    "70e338d62ebfbb2300f30d973b29a06b098ef269": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal/goal.controller.ts::GoalController.create undocumented-status 201"
+    },
+    "29baa9670d01474d1cc1164a687c90fdf18e6d73": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal/goal.controller.ts::GoalController.create undocumented-status 400"
+    },
+    "2d40392974e6bc3e44ed9c81302097515c40bf84": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal/goal.controller.ts::GoalController.delete undocumented-status 202"
+    },
+    "b8df6a355554c74afc7566abe50d11b0792a89d5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal/goal.controller.ts::GoalController.delete undocumented-status 400"
+    },
+    "fc5263a760381353974371e2a7c0c6315fac5032": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal/goal.controller.ts::GoalController.delete undocumented-status 404"
+    },
+    "c8de3babfab5a6a752a9521775cd90c4d0cc978c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/goal/goal.controller.ts::GoalController.update undocumented-status 202"
+    },
+    "88d8dab3f2654823ffdad7374a10baa15c03e0a4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/health/health.controller.ts::HealthController.getHealthStatus undocumented-status 200"
+    },
+    "750dfa8d50749b2bc91952a5d6cdd0b30f1a1536": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/health/health.controller.ts::HealthController.getLiveness undocumented-status 200"
+    },
+    "ce9276c7dcf9c1480dfb4fb5ccacaa665b47917e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.findAll undocumented-status 200"
+    },
+    "ad598a3abab4b76b6afdb294f933ea2cc56b90d6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.create undocumented-status 201"
+    },
+    "b7baa2a631834ee1e3f14c1270e8ab6428b8e623": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.create undocumented-status 400"
+    },
+    "88d49909de40083221950f8c5547f1b46d8eed42": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.delete undocumented-status 202"
+    },
+    "eca4ffbd51c2e797da02ea38500318e117869122": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.delete undocumented-status 400"
+    },
+    "c91c618b82c08c863b12527768ae1b503d5c3a44": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.delete undocumented-status 404"
+    },
+    "cc52e1870d346237e03b9354cbdf8cb6fab38fba": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.findById undocumented-status 200"
+    },
+    "191fc8079136f3ab62010d5e42fb1b7d807a1fe3": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.findById undocumented-status 404"
+    },
+    "9e3154465046c36b03e6a54a13a1750ab327f73f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.pagination undocumented-status 400"
+    },
+    "9364e0cbf1bc7356f78bde987af2eeca7ec902b3": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/image-asset/image-asset.controller.ts::ImageAssetController.upload undocumented-status 201"
+    },
+    "f4ad87d78662c27dad716a63b5c0a8e1dbc7b1a0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/export-import/import/import.controller.ts::ImportController.parse undocumented-status 201"
+    },
+    "8103230953ca024b918a642cab701b951070172d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/export-import/import-history/import-history.controller.ts::ImportHistoryController.findAll undocumented-status 400"
+    },
+    "c2ec91510a8b72663a998e37e89b163dcd3511c8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/export-import/import-history/import-history.controller.ts::ImportHistoryController.download undocumented-status 403"
+    },
+    "ee47f434c0156d084a346c0988797737db8ea228": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/income/income.controller.ts::IncomeController.delete undocumented-status 202"
+    },
+    "473cf2307591cb6230c30532ce7bf9b8bf8d08b6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/income/income.controller.ts::IncomeController.findById undocumented-status 200"
+    },
+    "3055da742de905e74a75e12fe64659637f06652d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/income/income.controller.ts::IncomeController.findById undocumented-status 404"
+    },
+    "78573f53d68225739870e3b1c01129af1fd5d2cd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/income/income.controller.ts::IncomeController.update undocumented-status 202"
+    },
+    "81165fa66f0b799bd3a13ef4ca74698e54a65f86": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/income/income.controller.ts::IncomeController.getCount undocumented-status 200"
+    },
+    "80537acda4e1784a64e075721a91c2252269bfc8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/income/income.controller.ts::IncomeController.pagination undocumented-status 200"
+    },
+    "37c57d6b4de9babe32a80e2db3e741163dd8b554": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/integration-setting/integration-setting.controller.ts::IntegrationSettingController.update undocumented-status 400"
+    },
+    "6ff1c0676a4ce76fcc689f13a7df485eb9923bb3": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/integration-tenant/integration-tenant.controller.ts::IntegrationTenantController.findAll undocumented-status 200"
+    },
+    "e8dfdc1e3ac770a22bdf3380be40f65132dde314": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/integration-tenant/integration-tenant.controller.ts::IntegrationTenantController.delete undocumented-status 200"
+    },
+    "e6aadd96188f429d2978002556d4361faaee16e5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/integration-tenant/integration-tenant.controller.ts::IntegrationTenantController.delete undocumented-status 400"
+    },
+    "6a7a01f1b757faf66942f9bf88427737e540d3f4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/integration-tenant/integration-tenant.controller.ts::IntegrationTenantController.findById undocumented-status 200"
+    },
+    "d2ff55309e17464914f56978cdda6852c75b5165": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/integration-tenant/integration-tenant.controller.ts::IntegrationTenantController.findById undocumented-status 500"
+    },
+    "7189f2240717fdaff88d6d63d3b4d71a024c9983": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/integration-tenant/integration-tenant.controller.ts::IntegrationTenantController.update undocumented-status 200"
+    },
+    "ad46cc192af64b76faa56b309ba7c6a60e5c1913": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/integration-tenant/integration-tenant.controller.ts::IntegrationTenantController.getIntegrationByOptions undocumented-status 200"
+    },
+    "f723f2381e01f02d18d55c6de32fdd23e4978161": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.authorize undocumented-status 400"
+    },
+    "d79e48ddb59b02d6ace6501b3ed53aa005d8e197": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.approveAuthorize undocumented-status 200"
+    },
+    "0e2e5af39085fb08b20fefa90407177552d7c2e2": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.approveAuthorize undocumented-status 400"
+    },
+    "532f1d31979705d09022dc8a5417b6f448444e9b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.approveAuthorize undocumented-status 401"
+    },
+    "fba7a165d9d969a7685e4db6eea5a56d58a97671": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.approveAuthorize undocumented-status 404"
+    },
+    "ab935751105b4a34ea93fcfeac87b60192fbfe0a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.approveAuthorize undocumented-status 500"
+    },
+    "72dee22f67b5a6cd50e77cb38acc5ad26cd6eac6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.getAuthorizeRequest undocumented-status 200"
+    },
+    "7993679bfd1d0ccb8ae8c0012573df11823dd4dd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.getAuthorizeRequest undocumented-status 404"
+    },
+    "358aec41e9d93c5298414c65a07e822b71a68b36": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.token undocumented-status 200"
+    },
+    "13803c4277b334147fa1522a497130513b224f68": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.token undocumented-status 400"
+    },
+    "d56d34e6dcf38be10d7ba7962451a9c9e8b9ad69": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/auth/src/lib/oauth-app/oauth-app.controller.ts::OAuthAppController.token undocumented-status 500"
+    },
+    "1c8672a0dfcb2fa03ef36ebcd7061f0fb0388e5c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invite/invite.controller.ts::InviteController.findAll undocumented-status 400"
+    },
+    "eaf71f82eed72c8db2ce72c73bab739e617a1749": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invite/invite.controller.ts::InviteController.delete undocumented-status 202"
+    },
+    "041eda415706fef5ebce5249b8c2438c4cb4c0be": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invite/invite.controller.ts::InviteController.delete undocumented-status 400"
+    },
+    "5153e91834def670a087e650a372111a100ba379": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invite/invite.controller.ts::InviteController.delete undocumented-status 403"
+    },
+    "af16080ada190569578e7732734daf131e843f9b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invite/invite.controller.ts::InviteController.handleInvitationResponse undocumented-status 400"
+    },
+    "d9b5feea145d7972cabd7e6fe791adb40290c700": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invite/invite.controller.ts::InviteController.getCurrentUserInvites undocumented-status 400"
+    },
+    "eb8c296fe0342dcc0f01ca3bcd3dc4795a5e8d89": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invite/invite.controller.ts::InviteController.inviteOrganizationContact undocumented-status 202"
+    },
+    "a5a2c7d7c64a29642a63b750d1061e7f26c1c7fe": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invite/invite.controller.ts::InviteController.validateInviteByCode undocumented-status 201"
+    },
+    "2860a27c926a9e38e129efc38a4282e611d7ada1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice-estimate-history/invoice-estimate-history.controller.ts::InvoiceEstimateHistoryController.findAll undocumented-status 200"
+    },
+    "cca96194c5a72ff18c8d9b91562542d0585e43d0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice-item/invoice-item.controller.ts::InvoiceItemController.findAll undocumented-status 200"
+    },
+    "8fbba1b4894114534da39384d3f2d91733edc920": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice-item/invoice-item.controller.ts::InvoiceItemController.delete undocumented-status 202"
+    },
+    "a813eae74076ce35b3fb70b91b72e394fc9ff8c9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice-item/invoice-item.controller.ts::InvoiceItemController.update undocumented-status 202"
+    },
+    "17dc46f17e9d1f4a3516442ab4ee73be412268cd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.findAll undocumented-status 200"
+    },
+    "1fbf505119a085231e1c5dfce50133151556560c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.findAll undocumented-status 400"
+    },
+    "3aa256e596bbf530b7c61d290669022a58a3b776": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.delete undocumented-status 202"
+    },
+    "ad94a87dc033348e3bc625f585cb9789f00afaa4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.findById undocumented-status 200"
+    },
+    "d23315fcd0f8e88f9158f656762c0bdc2d9b82c7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.findById undocumented-status 404"
+    },
+    "417abf6155446433db9008b8cd7a4e83115c96cf": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.update undocumented-status 202"
+    },
+    "9f8f081f687dc3c00fc9c021476db8d5201cbff4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.updateAction undocumented-status 202"
+    },
+    "3103f19f5612c391a3faca399235847113d5d5e8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.updateEstimate undocumented-status 202"
+    },
+    "83d44620f80ab777f697f6252aa1854d2221db1c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.getCount undocumented-status 200"
+    },
+    "70eb55b063d1585e0b57c2c8cb7b0db3ced236fb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.emailInvoice undocumented-status 202"
+    },
+    "1d70e73a1a16bb012a95a2e1b55b8bf69276fa05": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.generateLink undocumented-status 202"
+    },
+    "43bcd992880b0bb7e0ad603cc16d681ecec0c628": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.findHighestInvoiceNumber undocumented-status 200"
+    },
+    "342b0c89342f94e7f34bf171d7a3b98447c725ec": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.findHighestInvoiceNumber undocumented-status 400"
+    },
+    "d2bbb73161d483cba17827a581c290961b6eaadb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.pagination undocumented-status 200"
+    },
+    "172d8e064071baede7fd904df32994894a5c6957": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/invoice/invoice.controller.ts::InvoiceController.pagination undocumented-status 400"
+    },
+    "338dcbc067c5ddcefd46d725fc023bfd9a24d460": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/issue-type/issue-type.controller.ts::IssueTypeController.markAsDefault undocumented-status 400"
+    },
+    "cf8363d96fc8866a98d1a42625ed7521ce791027": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult-template/keyresult-template.controller.ts::KeyresultTemplateController.create undocumented-status 201"
+    },
+    "41e24a95a30808841bce9c6d4eeced2d0bb876db": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult-template/keyresult-template.controller.ts::KeyresultTemplateController.create undocumented-status 400"
+    },
+    "2ff2865626dc48cc95312c3deca11374203a7ce6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult-template/keyresult-template.controller.ts::KeyresultTemplateController.delete undocumented-status 202"
+    },
+    "5553d760ac48fc23dbb364c28c57d79f6c5863a4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult-template/keyresult-template.controller.ts::KeyresultTemplateController.update undocumented-status 202"
+    },
+    "e5652535c1303eaddb12c438326a2c66b79e272f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult-update/keyresult-update.controller.ts::KeyResultUpdateController.create undocumented-status 201"
+    },
+    "84e257a3ee569714b719d38d4322f747dcc1fc25": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult-update/keyresult-update.controller.ts::KeyResultUpdateController.update undocumented-status 202"
+    },
+    "ce5bb6d10e2ac02d70ca422bf970e014bc6b15f6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult/keyresult.controller.ts::KeyResultController.create undocumented-status 201"
+    },
+    "1ba41c0ae83cddcebd8094a149a9d3215bd7bbc7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult/keyresult.controller.ts::KeyResultController.create undocumented-status 400"
+    },
+    "50305a631aca88c830f6df01ac8254499c044ee6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult/keyresult.controller.ts::KeyResultController.delete undocumented-status 202"
+    },
+    "09201a2d19b1955f7b874e8a2d0a35414d5fff99": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult/keyresult.controller.ts::KeyResultController.delete undocumented-status 400"
+    },
+    "126fc1123e662ee1d79cfebd102941e1f9f03ed5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult/keyresult.controller.ts::KeyResultController.delete undocumented-status 404"
+    },
+    "359360c280b1cbce04f17eca09c307f88cbc3095": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult/keyresult.controller.ts::KeyResultController.update undocumented-status 202"
+    },
+    "efc8b48024f426a4f130031dfd9a51ccefc4c87a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/keyresult/keyresult.controller.ts::KeyResultController.createBulkKeyResults undocumented-status 201"
+    },
+    "1281388ab385e43d146294afd7ba525395e5e919": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/language/language.controller.ts::LanguageController.findByName undocumented-status 200"
+    },
+    "3f58c8f0599713acb7bc2c650da76b2f4bd4f4fc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/language/language.controller.ts::LanguageController.findByName undocumented-status 404"
+    },
+    "4c481cc5da39482bcfa1be3307194ff3d3a5b4e7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/merchant/merchant.controller.ts::MerchantController.findAll undocumented-status 400"
+    },
+    "214d5945a5bde8c88922beba6424640ef0666f36": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/merchant/merchant.controller.ts::MerchantController.update undocumented-status 202"
+    },
+    "fc6c79c9043db719a2ddddbebbd77c9b60ee76d8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/merchant/merchant.controller.ts::MerchantController.pagination undocumented-status 200"
+    },
+    "7e36c358d06f9a8469c95e9b3fb2b37d5e5a066a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/merchant/merchant.controller.ts::MerchantController.pagination undocumented-status 400"
+    },
+    "7c32ef753f407c07577315a990e1c246af5c3b8f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.findAll undocumented-status 400"
+    },
+    "f82bdec985109360324a49d52960ab0683dbd58c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.create undocumented-status 403"
+    },
+    "426c45aef04413c6157e76095ded413eb3a16914": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.remove undocumented-status 404"
+    },
+    "001408dbc363bded8ac0f2ea2e7c4f853f42838a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.update undocumented-status 404"
+    },
+    "11eee6d008ee5fb4cb8c898ca5bf78819371b5be": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.rotateSecret undocumented-status 400"
+    },
+    "55ab97ec235a4b972041b80ebd2b5bc2df1133ac": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/auth/oauth-client/oauth-client.controller.ts::OAuthClientController.rotateSecret undocumented-status 404"
+    },
+    "fb94e6fba2de286bcd0e397b8129315091dbbef9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/official-holiday/official-holiday.controller.ts::OfficialHolidayController.create undocumented-status 403"
+    },
+    "8e1b1f388ee24f3a35ef7159420c642f6ca0395c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/official-holiday/official-holiday.controller.ts::OfficialHolidayController.delete undocumented-status 400"
+    },
+    "3547b6a7f28f0d47a43e406ef2dd51fe3224ac0a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/official-holiday/official-holiday.controller.ts::OfficialHolidayController.delete undocumented-status 403"
+    },
+    "f4bd788e2a18985ecef99d682c72ebae1242ea92": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/official-holiday/official-holiday.controller.ts::OfficialHolidayController.findById undocumented-status 403"
+    },
+    "b9148133e2cde8fca2e64c7452bc2a94d6a206ae": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/official-holiday/official-holiday.controller.ts::OfficialHolidayController.update undocumented-status 403"
+    },
+    "64235e74addf2cb5e985fdc04a2b451012203bd4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-award/organization-award.controller.ts::OrganizationAwardController.delete undocumented-status 202"
+    },
+    "5a91dbce064a52557641da9f4911b22b0570286a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-award/organization-award.controller.ts::OrganizationAwardController.delete undocumented-status 400"
+    },
+    "4b4ba5e7f049d0a6d426c035110dca28e2b76728": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-award/organization-award.controller.ts::OrganizationAwardController.update undocumented-status 202"
+    },
+    "abd39bcebfbb3471da9fadfa1e14ee28abae7980": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-contact/organization-contact.controller.ts::OrganizationContactController.create undocumented-status 201"
+    },
+    "454dda79e4b3cac0287d4c18d473d04383c3d670": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-contact/organization-contact.controller.ts::OrganizationContactController.update undocumented-status 202"
+    },
+    "92c51d06195877b784de4ee485769a9cc5d68bfa": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-contact/organization-contact.controller.ts::OrganizationContactController.updateByEmployee undocumented-status 202"
+    },
+    "621be40b5c16bef6175e77f33b140fe9defcb9f2": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-contact/organization-contact.controller.ts::OrganizationContactController.findByEmployee undocumented-status 400"
+    },
+    "f5e4a6572d70246ec14116a9ce16d1de6a903379": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-department/organization-department.controller.ts::OrganizationDepartmentController.update undocumented-status 202"
+    },
+    "31cde0d28c53671df7e6b69a58f6f28e79784750": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-department/organization-department.controller.ts::OrganizationDepartmentController.updateByEmployee undocumented-status 202"
+    },
+    "43ee33ddfd52d724d9640eb1f207524ba0dc8d92": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-department/organization-department.controller.ts::OrganizationDepartmentController.pagination undocumented-status 200"
+    },
+    "3c580ec3053633afce0d3511a29e87185d255fbc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-document/organization-document.controller.ts::OrganizationDocumentController.delete undocumented-status 202"
+    },
+    "3a5ea0ff3a34dc76dbc3c1934fed56af2f08dc76": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-document/organization-document.controller.ts::OrganizationDocumentController.update undocumented-status 202"
+    },
+    "799feccbc50a80a4b6c5d80db2712e61bcb67a75": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-employment-type/organization-employment-type.controller.ts::OrganizationEmploymentTypeController.update undocumented-status 200"
+    },
+    "b8f5e871a7ed3fe0517fca24ed8693410701c6fa": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-employment-type/organization-employment-type.controller.ts::OrganizationEmploymentTypeController.update undocumented-status 400"
+    },
+    "4ee79c321c8d22daf6d569d72b419933fa9d00b3": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-language/organization-language.controller.ts::OrganizationLanguageController.delete undocumented-status 202"
+    },
+    "d75e4c6c02cf2baabed703a4750c954cfc81e3b9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-language/organization-language.controller.ts::OrganizationLanguageController.delete undocumented-status 400"
+    },
+    "db115a43be15679748a9040943d5f20aa1011b5f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-language/organization-language.controller.ts::OrganizationLanguageController.update undocumented-status 202"
+    },
+    "665f269686411f629cd51d17b709098de66d9d4e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-position/organization-position.controller.ts::OrganizationPositionController.update undocumented-status 200"
+    },
+    "ecfd5c18fb0ce0113b320c8f79c5755024d3ba30": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-position/organization-position.controller.ts::OrganizationPositionController.update undocumented-status 400"
+    },
+    "0b2a0d3b34109efbb9ebb4edf9bee6c70b108572": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-project-module/organization-project-module.controller.ts::OrganizationProjectModuleController.create undocumented-status 202"
+    },
+    "8d75ea7abe4977507f6b418e065f49fe49a1b29b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-project-module/organization-project-module.controller.ts::OrganizationProjectModuleController.delete undocumented-status 200"
+    },
+    "c3526ff58448b7286c9a280fc592179ce009ca26": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-project-module/organization-project-module.controller.ts::OrganizationProjectModuleController.delete undocumented-status 400"
+    },
+    "b0ef37b9436ee88d8423f685ea4bd4ff491fd0ab": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-project-module/organization-project-module.controller.ts::OrganizationProjectModuleController.delete undocumented-status 404"
+    },
+    "dd5d9eaa78f2dc59f2d042d5d3546069187b6b56": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-project-module/organization-project-module.controller.ts::OrganizationProjectModuleController.update undocumented-status 202"
+    },
+    "05641cb36e4dba30bfbf427e5dbf647fe00beb43": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-project-module/organization-project-module.controller.ts::OrganizationProjectModuleController.getEmployeeProjectModules undocumented-status 400"
+    },
+    "b2fb3bd82367607fb6d5b4e7df8eec9a7008bba1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-project-module/organization-project-module.controller.ts::OrganizationProjectModuleController.findByEmployee undocumented-status 400"
+    },
+    "b4a2c2edcc515f25473d932a9882ac05d927aeb5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-project-module/organization-project-module.controller.ts::OrganizationProjectModuleController.findTeamProjectModules undocumented-status 400"
+    },
+    "3cee2a694d343330e656c9744dd3d01a8c7b94e6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-project/organization-project.controller.ts::OrganizationProjectController.delete undocumented-status 400"
+    },
+    "2417ef8d35fdf876d32cb50e0e5f59a915c25f0b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-project/organization-project.controller.ts::OrganizationProjectController.findById undocumented-status 400"
+    },
+    "adfbde9f2a8a2eb4cf40d95963e95da9ec9c451d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-project/organization-project.controller.ts::OrganizationProjectController.findSyncedProjects undocumented-status 400"
+    },
+    "c1162a5210fbaa4a18c3e6810fcb4bf6a4b2ca94": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-recurring-expense/organization-recurring-expense.controller.ts::OrganizationRecurringExpenseController.delete undocumented-status 202"
+    },
+    "d1a0772b95a0d3eb89b24e0f759f6c1ec1f00e74": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-recurring-expense/organization-recurring-expense.controller.ts::OrganizationRecurringExpenseController.update undocumented-status 202"
+    },
+    "f60f408b2c8e2d72329a586ad1c8f2858a58cfe1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-sprint/organization-sprint.controller.ts::OrganizationSprintController.delete undocumented-status 200"
+    },
+    "1b08b6605847b869f79656069bd6b3f43f374cd0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-sprint/organization-sprint.controller.ts::OrganizationSprintController.delete undocumented-status 400"
+    },
+    "e505c016735233636f60db512d729730d34ef760": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-sprint/organization-sprint.controller.ts::OrganizationSprintController.delete undocumented-status 404"
+    },
+    "2ce3c9a1d77007acc28e3ce1740d6bd4ec75bf27": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-sprint/organization-sprint.controller.ts::OrganizationSprintController.findById undocumented-status 200"
+    },
+    "89c002d8af6f2f1dba9a2981be302c95cc364fbb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-sprint/organization-sprint.controller.ts::OrganizationSprintController.findById undocumented-status 404"
+    },
+    "e0548e8cf4ca791220bc1a1c6e604209f5457afb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-sprint/organization-sprint.controller.ts::OrganizationSprintController.update undocumented-status 202"
+    },
+    "c0553fbc6690dfa572519f17a39202bc9d901b3f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-strategic-initiative/organization-strategic-initiative.controller.ts::OrganizationStrategicInitiativeController.delete undocumented-status 400"
+    },
+    "b0e0ae48997f07dc29f19667834121b548da8bb5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-task-setting/organization-task-setting.controller.ts::OrganizationTaskSettingController.update undocumented-status 200"
+    },
+    "ed840c1d89f13cd9295b1a8d1f3975b5c70a2379": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-task-setting/organization-task-setting.controller.ts::OrganizationTaskSettingController.findByOrganizationId undocumented-status 400"
+    },
+    "d2b54ea2fc86f82a28489a8d8cb2215abe25865d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.findAll undocumented-status 400"
+    },
+    "c1b3c5987248748e668fc7850f508bd53514be86": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.create undocumented-status 200"
+    },
+    "d171a461efcda78d9fa189a26f2d67a5d28b9b09": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-employee/organization-team-employee.controller.ts::OrganizationTeamEmployeeController.delete undocumented-status 403"
+    },
+    "717fb400198c7b9f25a9ab673ed76859f4932431": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-employee/organization-team-employee.controller.ts::OrganizationTeamEmployeeController.update undocumented-status 200"
+    },
+    "dc3c7191de6b31bf5db51b61b74b41d712738a19": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-employee/organization-team-employee.controller.ts::OrganizationTeamEmployeeController.update undocumented-status 403"
+    },
+    "e71953f728cbec2528d32a3f39dcfc54d1c9954b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-employee/organization-team-employee.controller.ts::OrganizationTeamEmployeeController.updateActiveTask undocumented-status 200"
+    },
+    "84c14c071ab2aa3d12fd3a3d7e76e92db464b6c4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-employee/organization-team-employee.controller.ts::OrganizationTeamEmployeeController.updateActiveTask undocumented-status 403"
+    },
+    "c2aa42da1068e6a776af703b1c249fe3319ff560": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.findAll undocumented-status 200"
+    },
+    "fb702cde251e96fb666701dd12cec7ab5710826d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.create undocumented-status 201"
+    },
+    "d784f28ec7ea9a2ed489312c832cf38d2fc9a7be": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.acceptRequestToJoin undocumented-status 200"
+    },
+    "d8d8dd8691cc6ec00351f87133d8e05be020763d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.acceptRequestToJoin undocumented-status 403"
+    },
+    "149841765107b7349fbb2f6d9548054439888465": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.acceptRequestToJoin undocumented-status 404"
+    },
+    "f631e8156812f5f7256f0b132d5e787112850f28": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.acceptRequestToJoin undocumented-status 409"
+    },
+    "1324c27fbf58eaa70f379816d2d83bcc0a1d97c9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.resendConfirmationCode undocumented-status 200"
+    },
+    "c97238b1dfad9d3203d73f553c5b02d01613ca88": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.validateJoinRequest undocumented-status 202"
+    },
+    "34b51fbdd17bc082a31f5afe8bde50a91571672a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.validateJoinRequest undocumented-status 400"
+    },
+    "a3fe44d27d902887f88c1de1f84501f7611141b9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team-join-request/organization-team-join-request.controller.ts::OrganizationTeamJoinRequestController.validateJoinRequest undocumented-status 429"
+    },
+    "941b716d17717f26625004db5fe3f2e2d32787f2": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.delete undocumented-status 202"
+    },
+    "7a21adacab65c117772651a9d1d291f4492407d3": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.findById undocumented-status 200"
+    },
+    "22674f2a900f4000d3d7b4b4c032e6396e372bfd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.update undocumented-status 202"
+    },
+    "eb88ce0f2d785a611baaabe334c6819b6803c8ae": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.addMember undocumented-status 400"
+    },
+    "6dde42501125bc4b72371ce0386ce3d6af91065d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.getCount undocumented-status 200"
+    },
+    "e676232ddc6d381beadf643dbbd73726b2fc21b9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.pagination undocumented-status 200"
+    },
+    "77ca417e0a6d2e19ede951afebef9cb571058157": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.pagination undocumented-status 400"
+    },
+    "9a2c3516f677bb3b3fd77df4ce7d98ebbe240743": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-team/organization-team.controller.ts::OrganizationTeamController.existTeamsAsMember undocumented-status 202"
+    },
+    "80c79199102f17cb30c579eda685b3269a019e40": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-vendor/organization-vendor.controller.ts::OrganizationVendorController.delete undocumented-status 202"
+    },
+    "e45239c0a3ae154fadcd235cec7790b43899be27": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-vendor/organization-vendor.controller.ts::OrganizationVendorController.update undocumented-status 200"
+    },
+    "c4155b27b8d4772a3226f1610d8bbf1e5743d357": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-vendor/organization-vendor.controller.ts::OrganizationVendorController.update undocumented-status 400"
+    },
+    "e32ea547f86552f3eb37d39e0eecee2c401fc9c7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization-vendor/organization-vendor.controller.ts::OrganizationVendorController.pagination undocumented-status 200"
+    },
+    "c7cd5be0b3d45fae6cda0f4e67c1594cd11b9f9e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization/organization.controller.ts::OrganizationController.bulk undocumented-status 201"
+    },
+    "6d5518dd755c01cd5bd314e8e520460b76abc9c7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization/organization.controller.ts::OrganizationController.getCount undocumented-status 200"
+    },
+    "9f87ef26ce99d49980c289d9e8eed8ecb6a1f254": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/organization/organization.controller.ts::OrganizationController.pagination undocumented-status 400"
+    },
+    "7009036279627d9a79664e2259aeffd5ccbb5152": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.create undocumented-status 404"
+    },
+    "32db826b5ab3aadeacf12e068e49bd1bc72cc338": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.delete undocumented-status 404"
+    },
+    "e6a290649c43a67bbc87424050df55bea6bfcec8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.update undocumented-status 404"
+    },
+    "1b5b404efd12f1f67868f1cccba53f4f73dd462f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.updateLines undocumented-status 404"
+    },
+    "0d181374e12b87e4ddd735e6d5033a3982eb9502": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment-term/payment-term.controller.ts::PaymentTermController.schedule undocumented-status 404"
+    },
+    "25e5c2f33c5e8294560eccbf9f0354277a69c3ba": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment/payment.controller.ts::PaymentController.findAll undocumented-status 202"
+    },
+    "a57bf5024318916bbf51a6a2ecd796cb0a9ecd35": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment/payment.controller.ts::PaymentController.create undocumented-status 201"
+    },
+    "692b31118fbf3ab737699b2f77abbe113b03d51b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment/payment.controller.ts::PaymentController.create undocumented-status 400"
+    },
+    "e04f1f66350b1152f2f356db533fa2ff931eb4f6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment/payment.controller.ts::PaymentController.update undocumented-status 202"
+    },
+    "7371b1404eec6bb168f52feab42bcf05de711322": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment/payment.controller.ts::PaymentController.update undocumented-status 400"
+    },
+    "8762726620c2933ad94412d7f96a6d4d056adc57": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment/payment.controller.ts::PaymentController.pagination undocumented-status 200"
+    },
+    "aab31c3bc5e744bff1a9d2df102c5e5bccd29696": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payment/payment.controller.ts::PaymentController.sendReceipt undocumented-status 202"
+    },
+    "debf4af7e8fe9290b1dd2a941b60bc7f90944ef8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.create undocumented-status 403"
+    },
+    "bef672d0b3d60af46946db0f6953c4c9fbd54788": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.update undocumented-status 400"
+    },
+    "a5af00adab42845821c36dd86485a74f070e68b1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.approve undocumented-status 400"
+    },
+    "d7ef8b1b75b6b8d38005610dcbe3319d860ff2f2": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.approve undocumented-status 404"
+    },
+    "dbcfd8800b5445bf9f861fde4fea6b6fff991df4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.cancel undocumented-status 400"
+    },
+    "62f7ab8755fc6d393176f425b4468d37dbf2632a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.cancel undocumented-status 404"
+    },
+    "03a5638a5272c63ec8d82cf8869e4efe709b31f0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.addItem undocumented-status 400"
+    },
+    "3f50010ec08fc03bb4215a9f99dfca1264bd0851": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.addItem undocumented-status 404"
+    },
+    "4ced9f0bd32d0d20734eb8164ae01165fa4e51bd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.removeItem undocumented-status 400"
+    },
+    "609ee6a92f3447004841b7aaea553c7ca9e0dfc9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.process undocumented-status 400"
+    },
+    "a75dcfef11793dfd6b153158de04dd631c0ac310": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.process undocumented-status 404"
+    },
+    "3f3fafa65f40575690c7227ed389a34e4dcad3f9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.submitForApproval undocumented-status 400"
+    },
+    "47067f2bd946d5ec1029cbf7ee98167781a5458b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.submitForApproval undocumented-status 404"
+    },
+    "2de77ee5534986073a1e1330316b4f32c995009d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.getSummary undocumented-status 404"
+    },
+    "f356f2d536b3b6e8953ba7befe13b869b7adbf3b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/payroll-run/payroll-run.controller.ts::PayrollRunController.findItems undocumented-status 400"
+    },
+    "47fbe4b0cbc1f2dcb2556864f95d47bcaaa97bad": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/pipeline/pipeline.controller.ts::PipelineController.delete undocumented-status 202"
+    },
+    "11691ff54367c7b1aa9058ed6ba1ba8c0b08be30": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/pipeline/pipeline.controller.ts::PipelineController.delete undocumented-status 400"
+    },
+    "ad8f0e774fa52e1b574f069ace1cb37749dafc41": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/pipeline/pipeline.controller.ts::PipelineController.update undocumented-status 202"
+    },
+    "fe1b96e35a6417237707cc82b7573b945ea742ec": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/pipeline/pipeline.controller.ts::PipelineController.pagination undocumented-status 200"
+    },
+    "36f649846b814627af8864c5f6f83c663c401191": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-category/product-category.controller.ts::ProductCategoryController.update undocumented-status 202"
+    },
+    "1822de41a302fa2be722693f8b7554b86a931435": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-option/product-option.controller.ts::ProductOptionController.delete undocumented-status 202"
+    },
+    "0c0b7ed2be67d58eab3416413aa3a1f284286648": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-option/product-option.controller.ts::ProductOptionController.update undocumented-status 202"
+    },
+    "2a4e1b741e6992d4b7974c060d25f032cb7c7020": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-type/product-type.controller.ts::ProductTypeController.update undocumented-status 202"
+    },
+    "fb9e7d1722627b4b2a2a876b7c03ba77bb3be4a6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-variant-price/product-variant-price.controller.ts::ProductVariantPriceController.delete undocumented-status 202"
+    },
+    "e8cc68f28dc5b95cf59e215c263344ab6228e80d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-variant-price/product-variant-price.controller.ts::ProductVariantPriceController.update undocumented-status 202"
+    },
+    "e8c078d9e8f271b7d7dd1b97b4d9f124704299c0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-setting/product-setting.controller.ts::ProductVariantSettingController.delete undocumented-status 202"
+    },
+    "488cfdfdd71ee052dc8d984f4a19828e7385dbf9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-setting/product-setting.controller.ts::ProductVariantSettingController.update undocumented-status 202"
+    },
+    "8d445d808716c839d02b5349759c43af5bb3e3d1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-variant/product-variant.controller.ts::ProductVariantController.delete undocumented-status 202"
+    },
+    "103b09d15de059aa293e6eaf2b3fbc140f986bbd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-variant/product-variant.controller.ts::ProductVariantController.update undocumented-status 202"
+    },
+    "cda44f85402aea0b1a5dbdb6a9cd50bd00e6e64d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-variant/product-variant.controller.ts::ProductVariantController.deleteFeaturedImage undocumented-status 202"
+    },
+    "204227a6c2d23a71a2acfc7cecb73e3b6beeed06": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product-variant/product-variant.controller.ts::ProductVariantController.deleteFeaturedImage undocumented-status 400"
+    },
+    "59a4536bd24d4df519de31967f2fb90ad28d6dc2": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product/product.controller.ts::ProductController.delete undocumented-status 202"
+    },
+    "1640975a3887be049421958324b3a56fef3f8da1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product/product.controller.ts::ProductController.update undocumented-status 202"
+    },
+    "b2746eaea6c2e13fab854ef50b8d94b7f3e840cf": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product/product.controller.ts::ProductController.deleteGalleryImage undocumented-status 202"
+    },
+    "339e9680c80a02de811fe0e710702ca60b08fe89": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product/product.controller.ts::ProductController.deleteGalleryImage undocumented-status 400"
+    },
+    "0a79c4ade1cbb8132a933a37d2ac694c256c6518": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product/product.controller.ts::ProductController.bulk undocumented-status 201"
+    },
+    "bd8c2b1009d3df8d3f5ff82153d0d2509f807c7e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product/product.controller.ts::ProductController.deleteFeaturedImage undocumented-status 202"
+    },
+    "837d05a115dca35bf7c2f17c76b9de253de55ab9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product/product.controller.ts::ProductController.deleteFeaturedImage undocumented-status 400"
+    },
+    "9b199e5e9bab65dfaf1a2afe7c5a5633a752cb59": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/product/product.controller.ts::ProductController.pagination undocumented-status 200"
+    },
+    "76959184cda9def349cdc56aefb6b6eccfb78e7c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/public-share/invoice/public-invoice.controller.ts::PublicInvoiceController.updateInvoiceByEstimateEmailToken undocumented-status 200"
+    },
+    "26b0e0b3a0cf26a80c3b788f0236d13d26b03c15": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/public-share/organization/public-organization.controller.ts::PublicOrganizationController.findPublicClientCountsByOrganization undocumented-status 200"
+    },
+    "655fb59b11c1dd14fbaf78ef246dab41b98c8d92": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/public-share/organization/public-organization.controller.ts::PublicOrganizationController.findPublicClientCountsByOrganization undocumented-status 404"
+    },
+    "42fbf6fae68a3daef62f1d531294e8dda2fc05eb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/public-share/organization/public-organization.controller.ts::PublicOrganizationController.findPublicProjectCountsByOrganization undocumented-status 200"
+    },
+    "4bb609c9182553d6d95a09ad56dd91aa04d46c36": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/public-share/organization/public-organization.controller.ts::PublicOrganizationController.findPublicProjectCountsByOrganization undocumented-status 404"
+    },
+    "b482ba9b790fb1a0e548df4e943a236fa146e234": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/reaction/reaction.controller.ts::ReactionController.delete undocumented-status 400"
+    },
+    "cafe964be2bbbcf7bd588b111f28ce3b73282359": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/reports/report-category.controller.ts::ReportCategoryController.delete undocumented-status 404"
+    },
+    "c311ca4f86951565b3a7a69a6f188eaaac028227": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/reports/report-category.controller.ts::ReportCategoryController.update undocumented-status 400"
+    },
+    "2cddac3c541fc12f6e17799e96568d4d21432d61": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/reports/report.controller.ts::ReportController.updateReportMenu undocumented-status 201"
+    },
+    "197a8a7a3c8a8b9a2e80a96875b02787c7703997": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/reports/report.controller.ts::ReportController.updateReportMenu undocumented-status 400"
+    },
+    "51edf979cd70d11ef34ac913e34e84640bbb79f1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/reports/report.controller.ts::ReportController.updateReportMenu undocumented-status 403"
+    },
+    "ff0cb3fd946c863233991e53210b6d4ac99324cc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/request-approval/request-approval.controller.ts::RequestApprovalController.create undocumented-status 201"
+    },
+    "4bec8a37e8654b12950c291f8104fd8f9e75d18c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/request-approval/request-approval.controller.ts::RequestApprovalController.delete undocumented-status 202"
+    },
+    "8c2f5572a698d62d5146be6041ac107a519754ca": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/request-approval/request-approval.controller.ts::RequestApprovalController.update undocumented-status 202"
+    },
+    "91ae236a4de56d66d9c9a807b468c7d5e627140a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/request-approval/request-approval.controller.ts::RequestApprovalController.employeeApprovalRequestApproval undocumented-status 202"
+    },
+    "dd5c1cfd078ea4dffea03bc97862b95e0bb42e42": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/request-approval/request-approval.controller.ts::RequestApprovalController.employeeRefuseRequestApproval undocumented-status 202"
+    },
+    "3ce0030d474aeb80300e4cafc664f2f8ec2dec5c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/resource-link/resource-link.controller.ts::ResourceLinkController.create undocumented-status 202"
+    },
+    "fd67c25a9a34fe272a93592c7ad08f507ad0923e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/resource-link/resource-link.controller.ts::ResourceLinkController.delete undocumented-status 202"
+    },
+    "aa4b81235ec76531b7a44f9ffd6c3d6626382ce8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/resource-link/resource-link.controller.ts::ResourceLinkController.delete undocumented-status 400"
+    },
+    "a8a8ef2cf8c99c625d3ae25fd82672ad1cea2fd4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/resource-link/resource-link.controller.ts::ResourceLinkController.update undocumented-status 202"
+    },
+    "9afad8df5e432358974084e202a7cbfdf431b9c1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/role-permission/role-permission.controller.ts::RolePermissionController.delete undocumented-status 202"
+    },
+    "28f55ab7c4962aaed8e088180e8ac77c0f5aeb4b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/role-permission/role-permission.controller.ts::RolePermissionController.delete undocumented-status 400"
+    },
+    "a4eab1b95c426adc598aa70e1e2dddd5e2fed648": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/role-permission/role-permission.controller.ts::RolePermissionController.update undocumented-status 202"
+    },
+    "bca3f49ef70271a1e2fccf2e4f7d7c5cf70001c9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/role/role.controller.ts::RoleController.create undocumented-status 201"
+    },
+    "71e8596fe0e272fd00b41b1f89670824e1dbe649": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/role/role.controller.ts::RoleController.create undocumented-status 400"
+    },
+    "683785f97f2a15c8d98433ab56d7f0299d8136e9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/role/role.controller.ts::RoleController.delete undocumented-status 200"
+    },
+    "556e96287993f5333622247de861d08139133c40": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/role/role.controller.ts::RoleController.update undocumented-status 202"
+    },
+    "c13dbfa895f6f9bfbacaf3ee6428293d7b059eb4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/screening-tasks/screening-tasks.controller.ts::ScreeningTasksController.create undocumented-status 202"
+    },
+    "d6de71e1bf8a4d494d9adf6fb3d68342aa27a668": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/screening-tasks/screening-tasks.controller.ts::ScreeningTasksController.delete undocumented-status 202"
+    },
+    "6f9c4c87458a13ed8d33fabd9ee9b9246fb38a6c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/screening-tasks/screening-tasks.controller.ts::ScreeningTasksController.delete undocumented-status 400"
+    },
+    "836a759f37eef4552fd812428c5f4f0f5d5c7c18": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/screening-tasks/screening-tasks.controller.ts::ScreeningTasksController.update undocumented-status 202"
+    },
+    "088e1fc7f25060a1d257452aff754ba33c4ffd06": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared-entity/shared-entity.controller.ts::SharedEntityController.delete undocumented-status 400"
+    },
+    "909a09bf4f208f206abf67ece9f1cda081fa626d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared-entity/shared-entity.controller.ts::SharedEntityController.delete undocumented-status 404"
+    },
+    "4347d5a76cc21fee4676fa9b9e8f21f0c3d04e8e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/shared-entity/shared-entity.controller.ts::SharedEntityController.pagination undocumented-status 400"
+    },
+    "29f62a3f10ee4521c38c38f278ae1c3525822bbc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/skills/skill.controller.ts::SkillController.delete undocumented-status 202"
+    },
+    "50c058b25e7df81bd9d72c89fa5b3bbab944afc8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/skills/skill.controller.ts::SkillController.update undocumented-status 202"
+    },
+    "d37f6b7d99a371fa1fda343ecb802086420027e8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/skills/skill.controller.ts::SkillController.findByName undocumented-status 200"
+    },
+    "96396cc42eb09ca339394336d5f595151baba93c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/custom-smtp/custom-smtp.controller.ts::CustomSmtpController.delete undocumented-status 202"
+    },
+    "7e4d44af3a5dbe3e8ee38f7db164cc6874ae2887": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/custom-smtp/custom-smtp.controller.ts::CustomSmtpController.update undocumented-status 200"
+    },
+    "aabf19d10522748605d694b28a669a00bfe537d6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/custom-smtp/custom-smtp.controller.ts::CustomSmtpController.validateSmtpSetting undocumented-status 201"
+    },
+    "4574bd997bf63560d8b062971d1e7374904d3b7b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/stats/stats.controller.ts::StatsController.getGlobalStats undocumented-status 200"
+    },
+    "d56efa6cd5104d455f39be4c8495306e3df1bf72": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tag-type/tag-type.controller.ts::TagTypeController.create undocumented-status 201"
+    },
+    "40a9af161003955c4677dec777dcd171fc1d40e5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tag-type/tag-type.controller.ts::TagTypeController.create undocumented-status 400"
+    },
+    "a831aa724e489898b350bf46b9c2d1ff7d4d29fb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tag-type/tag-type.controller.ts::TagTypeController.delete undocumented-status 202"
+    },
+    "421551fb619d9554d04f9c843d18f2f6a1488502": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tag-type/tag-type.controller.ts::TagTypeController.update undocumented-status 202"
+    },
+    "ef0188d8a52b359832129eb8054314d0026f7efd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tag-type/tag-type.controller.ts::TagTypeController.update undocumented-status 400"
+    },
+    "7496c45939df1cc8604fabd75991d5a47ab7168d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tag-type/tag-type.controller.ts::TagTypeController.update undocumented-status 404"
+    },
+    "83e29d1246632386e03538095c1877e75a779455": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.findAll undocumented-status 200"
+    },
+    "3f19aaad4115c85e6b2c5f85e47caa6c2432ea75": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.create undocumented-status 201"
+    },
+    "7e31c1eedaea57efdda14343281e08cfdecf88a6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.create undocumented-status 400"
+    },
+    "a86c403a84c61048d28d6b1f7f6d465601d63fe0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.update undocumented-status 202"
+    },
+    "a24a2a6f41bf512df4d0fc9989f265f29e45c448": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.update undocumented-status 400"
+    },
+    "3f765b96b5470b2fc9c0f2236c642e9b30c6df7a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.update undocumented-status 404"
+    },
+    "38cad7845e66ba4446a8cb0a180b5d135ec47943": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.bulk undocumented-status 201"
+    },
+    "29fe3394101518ccb61d233324714b792e93a3f6": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.findTagsByLevel undocumented-status 200"
+    },
+    "397a25943963a77151588097989c202a630a32fb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tags/tag.controller.ts::TagController.findTagsByLevel undocumented-status 400"
+    },
+    "260ace4698138630fa8063286101ba2b1057fc99": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/estimation/task-estimation.controller.ts::TaskEstimationController.create undocumented-status 202"
+    },
+    "a157680e20eab8fe3b8fc74080973e713a67d944": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/estimation/task-estimation.controller.ts::TaskEstimationController.delete undocumented-status 200"
+    },
+    "4bd7891f0b5d1837f5463788ba4896ee31b9c1a4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/estimation/task-estimation.controller.ts::TaskEstimationController.update undocumented-status 202"
+    },
+    "30652f66115f30a013af1656581fd4289db37aee": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/linked-issue/task-linked-issue.controller.ts::TaskLinkedIssueController.delete undocumented-status 202"
+    },
+    "a2a4ef6c4fd57010791326b4d4942d731276b8a5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/linked-issue/task-linked-issue.controller.ts::TaskLinkedIssueController.delete undocumented-status 400"
+    },
+    "a30cd263c05dc5745b800da104a9bd99b57df313": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/linked-issue/task-linked-issue.controller.ts::TaskLinkedIssueController.update undocumented-status 202"
+    },
+    "a285e6a99f9ab209e37046c55b8832b7637bf2c1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/linked-issue/task-linked-issue.controller.ts::TaskLinkedIssueController.softRemove undocumented-status 202"
+    },
+    "65b12943405740c9f1415e704cdc1b770a80582f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/linked-issue/task-linked-issue.controller.ts::TaskLinkedIssueController.softRemove undocumented-status 400"
+    },
+    "226ccc1145a62590b3fb725af95d9311f89be573": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task-metadata-bootstrap/task-metadata-bootstrap.controller.ts::TaskMetadataBootstrapController.bootstrap undocumented-status 200"
+    },
+    "d8737dd46c68a4b1afa877406b69855c30c1c374": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task-metadata-bootstrap/task-metadata-bootstrap.controller.ts::TaskMetadataBootstrapController.bootstrap undocumented-status 400"
+    },
+    "d9d0c2dc1749bd5079fdbca4cfd13c7deab2a614": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task-metadata-bootstrap/task-metadata-bootstrap.controller.ts::TaskMetadataBootstrapController.bootstrap undocumented-status 403"
+    },
+    "549097050a6a720a991700c1d9662cf4ac88b07a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/priorities/priority.controller.ts::TaskPriorityController.fetchAll undocumented-status 400"
+    },
+    "bffb2db2e73e3002acaa9b6c0c5162796d2d8f48": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/sizes/size.controller.ts::TaskSizeController.fetchAll undocumented-status 400"
+    },
+    "4ec4a2561a8d0916f4b91d4dfd86952dc386202c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/statuses/status.controller.ts::TaskStatusController.markAsDefault undocumented-status 400"
+    },
+    "6e8bb1212a887972439743160ae9cf864863a48d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/views/view.controller.ts::TaskViewController.create undocumented-status 202"
+    },
+    "8fb7ca5dbde68008e542128e5b3020d3365c3284": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/views/view.controller.ts::TaskViewController.delete undocumented-status 202"
+    },
+    "1f07bb331519d056ec7a4de16b499b152e2bbc9f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/views/view.controller.ts::TaskViewController.delete undocumented-status 400"
+    },
+    "54a59a489648cb32a9ea23817befad050e0095ca": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/views/view.controller.ts::TaskViewController.update undocumented-status 202"
+    },
+    "bd93e98c3b7f156190fc0224a29f3f2e42b10491": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.findAll undocumented-status 400"
+    },
+    "8e3b101ee74634bae4cfef3c86a2d7b71b6a22a1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.create undocumented-status 202"
+    },
+    "7247910c0047537d5872d6981d5ddee9e7053232": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.delete undocumented-status 400"
+    },
+    "458760fbd51c263e1e3cb0a9b894204eef3e1e3f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.update undocumented-status 202"
+    },
+    "3b82e4bc59615864ebac69849948a14435a92f63": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.bulk undocumented-status 201"
+    },
+    "d6f60490c4bac141774d4c1bf3413c19c8f7dd16": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.findEmployeeTask undocumented-status 400"
+    },
+    "b9ce8ae98d141df73558a50fcfcf5bbf0b91d891": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.deleteEmployeeFromTasks undocumented-status 200"
+    },
+    "fbc42ff3d562221f7798b64bb7db9d745829ddfd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.deleteEmployeeFromTasks undocumented-status 400"
+    },
+    "47820b8036b958153b2b2640c5d59463e6811766": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.getAllTasksByEmployee undocumented-status 400"
+    },
+    "448187dfacb48fba58ee5662ca309c12442438c0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.getTasksByDateFilters undocumented-status 400"
+    },
+    "e0cb66cff8a55c4c0a9166e3700608b0cba97d99": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.getMaxTaskNumberByProject undocumented-status 400"
+    },
+    "0286ef68465001777d50d6215ecfc2f714d89c91": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.findMyTasks undocumented-status 400"
+    },
+    "27e0c276ea78ad52c369d6b1cad1e1a7818e6b6e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.findModuleTasks undocumented-status 400"
+    },
+    "9835a1402497e10ec4e3ca23c2e2b7605e69cb13": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.findTeamTasks undocumented-status 400"
+    },
+    "d95d19c25de6bcf9ce3e84558a47797c2d423cca": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tasks/task.controller.ts::TaskController.findTasksByViewQuery undocumented-status 400"
+    },
+    "097da72cff60a09d886daa99e943672a2ae784ff": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tenant/tenant.controller.ts::TenantController.delete undocumented-status 403"
+    },
+    "4a50369c5fe0c23844ddce8520ec81658c96a1da": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tenant/tenant.controller.ts::TenantController.create undocumented-status 409"
+    },
+    "8cf5a03fbfab4a179413c7d45884451ba333b43c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tenant/tenant.controller.ts::TenantController.update undocumented-status 200"
+    },
+    "0472ef4beb3db3a4935c745cc9fd983661839d05": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tenant/tenant.controller.ts::TenantController.update undocumented-status 403"
+    },
+    "f14baf07acf8765d22528e2ad32dcef4d6531ba0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.revoke undocumented-status 403"
+    },
+    "795c4cf899a315ed310f5b9f31ba28ca30925ef1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.revoke undocumented-status 404"
+    },
+    "80157d0090aeebfe92a8cbce3029ab4b42f3a306": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.rename undocumented-status 400"
+    },
+    "503def76e01bc1a30e4e2c3f160243efcf6f9398": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.rename undocumented-status 403"
+    },
+    "c831e3621675ce9013ac5a800e378e7f913926cc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tenant-api-key/tenant-api-key.controller.ts::TenantApiKeyController.generateKeyPair undocumented-status 500"
+    },
+    "eef2b796f838e57fb945110e090b153488095362": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/tenant/tenant-setting/tenant-setting.controller.ts::TenantSettingController.validateWasabiConfiguration undocumented-status 201"
+    },
+    "87b0b30d2f216978299bd09166cdb4f55e5bb356": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/terms-acceptance/terms-acceptance.controller.ts::TermsAcceptanceController.accept undocumented-status 401"
+    },
+    "e2cdee5909156e9664e236af7e89a0d8da961856": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/terms-acceptance/terms-acceptance.controller.ts::TermsAcceptanceController.acceptances undocumented-status 401"
+    },
+    "d7d161f070dd2322b13ed305d679bf444f303aeb": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.findAll undocumented-status 403"
+    },
+    "38417fbcd389539ca91fec39bf28d916a03fd4d8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.carryForward undocumented-status 400"
+    },
+    "d839e67176ba381e37fb804093db82e60828646b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.carryForward undocumented-status 404"
+    },
+    "0c50f41682bfd52ef53aba5db844c57e235dd9e1": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.deduct undocumented-status 404"
+    },
+    "b5c207ef5a4107e1abed005053631a89010d1478": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-balance/time-off-balance.controller.ts::TimeOffBalanceController.findMine undocumented-status 403"
+    },
+    "545b53bdbd8d3da2aeafb4ea6aede755b9cfec67": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-policy/time-off-policy.controller.ts::TimeOffPolicyController.update undocumented-status 202"
+    },
+    "40126872ed41cfca909aa11b20421ce84aa721d7": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-policy/time-off-policy.controller.ts::TimeOffPolicyController.pagination undocumented-status 200"
+    },
+    "e65d48d7a41e00572dcc541bf7c1ca330c8619bf": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-policy/time-off-policy.controller.ts::TimeOffPolicyController.pagination undocumented-status 400"
+    },
+    "8089428cc64ad53df0658ee7b524c5b1db1f5797": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-request/time-off-request.controller.ts::TimeOffRequestController.findAll undocumented-status 400"
+    },
+    "34f0b277d92ef5c2e448b37df4bb53a57cdc3a2e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-request/time-off-request.controller.ts::TimeOffRequestController.create undocumented-status 202"
+    },
+    "813040e5ff67839abe3854a592da76a157c4ba06": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-request/time-off-request.controller.ts::TimeOffRequestController.create undocumented-status 400"
+    },
+    "9637dc262e408f674b91fc09099c94792b5c261c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-request/time-off-request.controller.ts::TimeOffRequestController.update undocumented-status 202"
+    },
+    "63c65d6951cc7d316bbb07473c1e78690529127b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-request/time-off-request.controller.ts::TimeOffRequestController.update undocumented-status 400"
+    },
+    "3a64cf4a64417f93833b4e2112ba49e7b82f5361": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-request/time-off-request.controller.ts::TimeOffRequestController.timeOffRequestApproved undocumented-status 202"
+    },
+    "8ca57ce6a76695d6f8d0a5d1e05484889a1372fa": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-request/time-off-request.controller.ts::TimeOffRequestController.timeOffRequestDenied undocumented-status 202"
+    },
+    "4256e15b23784718b54c1165c187781131e413d3": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-request/time-off-request.controller.ts::TimeOffRequestController.pagination undocumented-status 200"
+    },
+    "75640cc803b684acb749736dc52cd321959d9bd2": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-off-request/time-off-request.controller.ts::TimeOffRequestController.pagination undocumented-status 400"
+    },
+    "4f68082a06bbcb7179a6e1e0c4626941a214c425": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet-project-change-request.controller.ts::TimesheetProjectChangeRequestController.requestProjectChange undocumented-status 403"
+    },
+    "b2a5501d4a8a04d05ddd3e92861627900b83794a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet-project-change-request.controller.ts::TimesheetProjectChangeRequestController.requestProjectChange undocumented-status 404"
+    },
+    "72b1df1c51a879f20ae23cc08848dbaa5f32bf3e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet-project-change-request.controller.ts::TimesheetProjectChangeRequestController.review undocumented-status 400"
+    },
+    "ec075b08de68881dc5dcc25d5adecacd2b4ae27e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet-project-change-request.controller.ts::TimesheetProjectChangeRequestController.findAllByTimesheet undocumented-status 403"
+    },
+    "1d21ac8674f1071d71810085a8058820075d823b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timesheet/timesheet.controller.ts::TimeSheetController.findById undocumented-status 404"
+    },
+    "dc2f157750591363f4575a6d37e32b53bd97eb8c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/activity/activity.controller.ts::ActivityController.bulkSaveActivities undocumented-status 201"
+    },
+    "d0446faa06a0841799793004b40df974b474304b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getActiveSessions undocumented-status 400"
+    },
+    "b85dc43888dc5ca7fe50fa54f866c1eb39fbfd34": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getSessionsBySessionId undocumented-status 400"
+    },
+    "c93fc197eb3734a0029fc940aa0b8616df9510b8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getTrackingSessions undocumented-status 400"
+    },
+    "3dba5445fe283209ee12735cd19c0e29ddd3c8df": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/custom-tracking/custom-tracking.controller.ts::CustomTrackingController.getTimeSlotTrackingData undocumented-status 400"
+    },
+    "658ee18631169be381f79942e3be726ba4bfb5ec": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/screenshot/screenshot.controller.ts::ScreenshotController.create undocumented-status 201"
+    },
+    "7d741b1f7bf0cd9790695129268513cbb057cf19": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/screenshot/screenshot.controller.ts::ScreenshotController.create undocumented-status 413"
+    },
+    "ef72143871fa8642861da0ed0037f45c49bab467": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/screenshot/screenshot.controller.ts::ScreenshotController.create undocumented-status 500"
+    },
+    "bfd145400b59782f78dea4a6c65f06a8d4e5a52b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/statistic/profile-activity.controller.ts::ProfileActivityController.getProfileActivity undocumented-status 200"
+    },
+    "0d001214cafb97e1e098e5ce96c641657535b797": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/statistic/profile-activity.controller.ts::ProfileActivityController.getProfileActivity undocumented-status 403"
+    },
+    "0d8cc4a2ccf3fb852324330709414e79cf19caf5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/statistic/statistic.controller.ts::StatisticController.getTasksStatistics undocumented-status 201"
+    },
+    "83e26fe3ce522b93f487e723fe03de835fd05cbc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.deleteTimeLog undocumented-status 406"
+    },
+    "014f1c32cf6f43eec529ad3665c7928ea69912a9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.addManualTime undocumented-status 201"
+    },
+    "16f37b8e93515f9135da1dd04135ed4fa1c671f0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.findById undocumented-status 200"
+    },
+    "8b2a98ecfe92ec47bca4a719cefd29f3930acaf9": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.findById undocumented-status 404"
+    },
+    "8069ce6240a8d1afa5104794c5f598fbbde83a99": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.bulk undocumented-status 201"
+    },
+    "a1a3b9a7682c105ad901d8fcd5f0fd08edf9e0dd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/time-log/time-log.controller.ts::TimeLogController.getConflict undocumented-status 403"
+    },
+    "91d384c1f191bb78a4db6aacb5c7cf2f3436b1de": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/time-slot/time-slot.controller.ts::TimeSlotController.findAll undocumented-status 200"
+    },
+    "95119883af1da944d6b6e259d75b9707b89856d0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/time-slot/time-slot.controller.ts::TimeSlotController.create undocumented-status 201"
+    },
+    "ec40446129bfe41df7e9d5ac19fe70030adb038e": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/time-slot/time-slot.controller.ts::TimeSlotController.findById undocumented-status 200"
+    },
+    "596c692635d3c46d7e55287f98560912f30a73bc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/time-slot/time-slot.controller.ts::TimeSlotController.findById undocumented-status 404"
+    },
+    "dfcf62aa35f72c145e05d369910154d6ebacaef4": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/time-slot/time-slot.controller.ts::TimeSlotController.update undocumented-status 200"
+    },
+    "c739f3b1a4f08b4252d55c2b3749fc7faa27f9aa": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.startTimer undocumented-status 201"
+    },
+    "69adc42d50e031acd9a47c9e85d06d93db53cc2c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.getTimerStatus undocumented-status 200"
+    },
+    "2bd4d0d6fa4950eaa46bfa8f716880b75df42abf": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.getTimerWorkedStatus undocumented-status 200"
+    },
+    "50fc3e3d24e2482b92ef1744cde60071676eed98": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.stopTimer undocumented-status 201"
+    },
+    "7cd7d8127a53b4f9d63a8e96fdcf94fdf4dc789c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.toggleTimer undocumented-status 201"
+    },
+    "9125abfe4664ab1ca8de5042321b44e088c05933": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.toggleTimer undocumented-status 403"
+    },
+    "4e4ee0a44e464dff80ae9547010ab58beb67646b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.toggleTimer undocumented-status 404"
+    },
+    "0df5d2f7af76d1b85f4434c0c035d07cbeb594bc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/time-tracking/timer/timer.controller.ts::TimerController.toggleTimer undocumented-status 406"
+    },
+    "13724514913861bfb450ab12ca7d1497081fec8f": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/measurement/unit-category.controller.ts::UnitCategoryController.delete undocumented-status 404"
+    },
+    "bcd84e1fed0b35751c3d59b87488ff114d95eb57": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/measurement/unit-category.controller.ts::UnitCategoryController.update undocumented-status 400"
+    },
+    "b0e6d3a2c896406e2ba8f827a24fecd40763f1cd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/measurement/unit-category.controller.ts::UnitCategoryController.update undocumented-status 404"
+    },
+    "ea47526c47db879e2d5f8df043e7c331084986c5": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.create undocumented-status 404"
+    },
+    "ca2f0eef0363eccfb5eb50e60590df1fa91f5d12": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.delete undocumented-status 404"
+    },
+    "61022000ed3340f026496ea3125eee785426967a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.update undocumented-status 400"
+    },
+    "61db6809d477026e490a709218d30668fa56a86c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.update undocumented-status 404"
+    },
+    "ec257e772272e5ecbb324314ea46d6305f7878bf": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/measurement/unit.controller.ts::UnitController.convert undocumented-status 404"
+    },
+    "572bb4de45c0b83e3222e6bb7eceddc5ae1b54dd": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/user-organization/user-organization.controller.ts::UserOrganizationController.delete undocumented-status 202"
+    },
+    "a4d1c9f5359bd36888bc233594171da1b9575782": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/user/user.controller.ts::UserController.update undocumented-status 202"
+    },
+    "27927fee0d0dceec75e7d6be5a9fc2f51f9afa63": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/user/user.controller.ts::UserController.bulk undocumented-status 201"
+    },
+    "6c9ae21ddd47445e1c2626e0e706865f5090b3ae": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/user/user.controller.ts::UserController.getCount undocumented-status 200"
+    },
+    "692647464ba449621625d94173ced0a48ed03a0b": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/user/user.controller.ts::UserController.pagination undocumented-status 200"
+    },
+    "07321c36ed40cb68e5e1bba841ecdbc3849f5b36": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/user/user.controller.ts::UserController.pagination undocumented-status 400"
+    },
+    "93673b4f852ca0bdd16ca80d5f38b45fb9604a8d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/user/user.controller.ts::UserController.updatePreferredLanguage undocumented-status 202"
+    },
+    "8ad4d0707affdbfe9e6fdad99728844f2ffabf35": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/user/user.controller.ts::UserController.updatePreferredLanguage undocumented-status 404"
+    },
+    "5d13952978e2450505a0a2a9e7c8ede7a9eaff9d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/user/user.controller.ts::UserController.updatePreferredComponentLayout undocumented-status 202"
+    },
+    "7602fb14cb48c852b45d52bff0317e4673c888d8": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/user/user.controller.ts::UserController.updatePreferredComponentLayout undocumented-status 404"
+    },
+    "d78fdfbd2797c91036f571d78503c0131ed059a0": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/user/user.controller.ts::UserController.updateUiPreferences undocumented-status 404"
+    },
+    "24cc98f0f09229ea6ca1e8d39fd73a0dcd47bbfc": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/app/app.controller.ts::AppController.getAppVersion undocumented-status 200"
+    },
+    "009536a2d465a34f026afebad6a369e138de4c17": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/warehouse/warehouse.controller.ts::WarehouseController.create undocumented-status 201"
+    },
+    "d0aaa1eaebdb92eb62d1694343c3c1848fc69a46": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/warehouse/warehouse.controller.ts::WarehouseController.create undocumented-status 400"
+    },
+    "78a41900084c610a9f8715c7a114a767d6e43d79": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/warehouse/warehouse.controller.ts::WarehouseController.findById undocumented-status 200"
+    },
+    "a3fcfa71ead4fc87260e8608f57af23d1542a396": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/warehouse/warehouse.controller.ts::WarehouseController.update undocumented-status 202"
+    },
+    "0d15d596858a0445fccd9b0c5bc548d4854fcc0c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/warehouse/warehouse.controller.ts::WarehouseController.updateWarehouseProductQuantity undocumented-status 201"
+    },
+    "9ba3fa20364599227b40a04175cf4bc0764c062c": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/warehouse/warehouse.controller.ts::WarehouseController.updateWarehouseProductVariantQuantity undocumented-status 201"
+    },
+    "c0089e8afd3b39d9f0b70c8afd832172c7edda73": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/warehouse/warehouse.controller.ts::WarehouseController.addWarehouseProducts undocumented-status 404"
+    },
+    "c3a3615304fcc7dd47caa6b2a063ed6799f63114": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/warehouse/warehouse.controller.ts::WarehouseController.pagination undocumented-status 200"
+    },
+    "ef2310328afdadb20b9f75d671a57196e9010ded": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/warehouse/warehouse.controller.ts::WarehouseController.pagination undocumented-status 400"
+    },
+    "d81c09997052077444f54f3b181549330f838bda": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/core/src/lib/webhook/webhook-subscription.controller.ts::WebhookSubscriptionController.update undocumented-status 409"
+    }
+  }
+}

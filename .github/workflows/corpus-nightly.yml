@@ -1,0 +1,49 @@
+name: Corpus nightly
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: Corpus repo id from corpus/manifest.json
+        default: ever-gauzy
+
+permissions:
+  contents: read
+
+concurrency:
+  group: corpus-nightly
+  cancel-in-progress: false
+
+jobs:
+  corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      CORPUS_REPO: ${{ inputs.repo || 'ever-gauzy' }}
+      CORPUS_CACHE_DIR: ${{ runner.temp }}/corpus-cache
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run corpus -- prepare "$CORPUS_REPO"
+      - run: npm run corpus -- run "$CORPUS_REPO" --out "$RUNNER_TEMP/corpus-out"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: corpus-delta-${{ env.CORPUS_REPO }}
+          path: ${{ runner.temp }}/corpus-out
+          if-no-files-found: ignore
