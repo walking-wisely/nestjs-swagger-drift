@@ -1,0 +1,19 @@
+{
+  "pin": "7656495d27f0dceff89657590c3f14149e45c7a6",
+  "toolVersion": "0.1.2",
+  "recordedAt": "2026-11-02",
+  "entries": {
+    "6316f47936f9a7308d0e2e6223ed5b09c8ad384a": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/amplication-server/src/core/user/user.controller.ts::UserController.notifyUseFeatureAnnouncement undocumented-status 201"
+    },
+    "0e871c4be6d86c9c0f926ff15d750e45b84900bf": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/amplication-server/src/core/auth/auth.controller.ts::AuthController.github undocumented-status 200"
+    },
+    "facbed6b54bf6567ba4525a48164e7181217a30d": {
+      "verdict": "UNTRIAGED",
+      "key": "packages/amplication-server/src/core/subscription/subscription.controller.ts::SubscriptionController.updateStatus undocumented-status 201"
+    }
+  }
+}

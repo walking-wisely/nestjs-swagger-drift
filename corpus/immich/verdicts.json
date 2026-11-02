@@ -1,0 +1,1547 @@
+{
+  "pin": "2c87a17c87e68f0180d6982722faa0fbb0238cbc",
+  "toolVersion": "0.1.2",
+  "recordedAt": "2026-11-02",
+  "entries": {
+    "ad78a78b937857355ada800f06b8cb76dd3fc263": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/activity.controller.ts::ActivityController.getActivities undocumented-status 200"
+    },
+    "0ebfd3a35b9e3106b89bc191e8e47c59c29cbf99": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/activity.controller.ts::ActivityController.deleteActivity undocumented-status 204"
+    },
+    "6e2fbb8c8ab5d31e5292f3a56e819e614e43ddaf": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/activity.controller.ts::ActivityController.getActivityStatistics undocumented-status 200"
+    },
+    "8e65fbfd3c578934989eda689881e31245d38599": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth-admin.controller.ts::AuthAdminController.unlinkAllOAuthAccountsAdmin undocumented-status 204"
+    },
+    "9bb0c0ec774dacd46cba36559ee9c350f5837dc8": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/config-admin.controller.ts::ConfigAdminController.getAdminConfig undocumented-status 200"
+    },
+    "ad63b44ea5c902cf74224155fc0054823429602f": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/config-admin.controller.ts::ConfigAdminController.updateAdminConfig undocumented-status 200"
+    },
+    "0a0ae8b3801abd68a1db98f321028a2f9d308b24": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/config-admin.controller.ts::ConfigAdminController.updateAdminConfig undocumented-status 400"
+    },
+    "3a9c7c53a463c346bf9494dd666261b8cb865429": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/config-admin.controller.ts::ConfigAdminController.getAdminConfigDefaults undocumented-status 200"
+    },
+    "f0f9080b0232809e94e284053e13072da72e34f7": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/database-backup.controller.ts::DatabaseBackupController.deleteDatabaseBackup undocumented-status 200"
+    },
+    "dc540723225086e8072e62c2aca2707e2d39ec6d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/database-backup.controller.ts::DatabaseBackupController.deleteDatabaseBackup undocumented-status 400"
+    },
+    "27d2c2b4113b162b1759ebd0373751919354638d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.deleteDatabaseBackup undocumented-status 200"
+    },
+    "9e84a229cfbe7dce4668164fef2dd3822da67ee1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.deleteDatabaseBackup undocumented-status 400"
+    },
+    "758c4ca11c83d88670b9560c795394306089bdeb": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/database-backup.controller.ts::DatabaseBackupController.listDatabaseBackups undocumented-status 200"
+    },
+    "7102bec7511c9774a9dcc1fef8cff08c83baf192": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.listDatabaseBackups undocumented-status 200"
+    },
+    "a300de3be1aec6fbd8eeede3a92e4e6c7dbe9514": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/database-backup.controller.ts::DatabaseBackupController.uploadDatabaseBackup undocumented-status 201"
+    },
+    "799678ed5b92ce408ba53b12cd34e2751e483837": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/database-backup.controller.ts::DatabaseBackupController.uploadDatabaseBackup undocumented-status 400"
+    },
+    "8c6a3b9bf394dbfc18749eeb0ca072eca95f134d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.uploadDatabaseBackup undocumented-status 201"
+    },
+    "2e19272d16319e7bb5db79879f6d8763fa472009": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.uploadDatabaseBackup undocumented-status 400"
+    },
+    "a4e7f2b167c299bd65e81708c348a12fa4a668a1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/integrity-admin.controller.ts::IntegrityAdminController.getIntegrityReport undocumented-status 200"
+    },
+    "56af68e67798a2235e831e0293176d07d30af4ea": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/integrity-admin.controller.ts::IntegrityAdminController.deleteIntegrityReport undocumented-status 200"
+    },
+    "fbb0098fdd38ca0d8de2c31000b07291c449a4a4": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/integrity-admin.controller.ts::IntegrityAdminController.getIntegrityReportSummary undocumented-status 200"
+    },
+    "26e573806393ca5df1ec58ecc11f9d944f0e71da": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.setMaintenanceMode undocumented-status 201"
+    },
+    "dfd98606faa69673710dd18231b7bed1f7034cf1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/maintenance.controller.ts::MaintenanceController.detectPriorInstall undocumented-status 200"
+    },
+    "e7d18f3f14db3fb615e3204f43d76d4d4eaad58a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.detectPriorInstall undocumented-status 200"
+    },
+    "d4ee3f632cf865eba2b14d37c4175ef4cebdc9b7": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/maintenance.controller.ts::MaintenanceController.maintenanceLogin undocumented-status 201"
+    },
+    "5985a517f1199ed40b720cb57f5171dbe53f13b6": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/maintenance.controller.ts::MaintenanceController.maintenanceLogin undocumented-status 400"
+    },
+    "3a7183d465ff456eb6e1d276ef976fcff3769d14": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.maintenanceLogin undocumented-status 401"
+    },
+    "01d1ebdb0bcc228546f5000b5da8dde40b7d9fa4": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/maintenance.controller.ts::MaintenanceController.getMaintenanceStatus undocumented-status 200"
+    },
+    "235a5be0ef398753777b3ab26ae1fb403b76ff43": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.maintenanceStatus undocumented-status 200"
+    },
+    "df79a412d729c19d994cff727e0c8b94bb3054f5": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/notification-admin.controller.ts::NotificationAdminController.createNotification undocumented-status 201"
+    },
+    "da08893742642294f62a5de42b46e806078ede21": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/notification-admin.controller.ts::NotificationAdminController.getNotificationTemplateAdmin undocumented-status 200"
+    },
+    "761842c6769c47c85ae1e61913eef505e9b4a6ba": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/notification-admin.controller.ts::NotificationAdminController.sendTestEmailAdmin undocumented-status 200"
+    },
+    "76e8cc4f518a4b58c1a2f8ccd156665e8fdddf1e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/notification-admin.controller.ts::NotificationAdminController.sendTestEmailAdmin undocumented-status 400"
+    },
+    "eb6c9d615dce280bd859c9e474ae9179ea972324": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.searchUsersAdmin undocumented-status 200"
+    },
+    "6c7a0a11dcfb7b535012ba2f64b048a10403cb78": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.createUserAdmin undocumented-status 201"
+    },
+    "bdf0c2e9a7f8ff3f3c0525ebbc58262b2d9636b6": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.createUserAdmin undocumented-status 400"
+    },
+    "09f8d0660bc91bd90c68acc9d8c13321a4cd5a2f": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.deleteUserAdmin undocumented-status 200"
+    },
+    "528bfadc085c8638791189b8298ca0f4b77f2f9e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.deleteUserAdmin undocumented-status 403"
+    },
+    "18ddc0c4d22ad644a6946de5fc83894ca05cba7c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.getUserAdmin undocumented-status 200"
+    },
+    "46590319ed2b293e346db349b993fac30987a265": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.updateUserAdmin undocumented-status 200"
+    },
+    "8688a71470d57712be7688722c38a378601da043": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.updateUserAdmin undocumented-status 400"
+    },
+    "e48a020646600df488e218530deef562c4b8f9ca": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.getUserCalendarHeatmapAdmin undocumented-status 200"
+    },
+    "ab72bed245d7886cb8501c323ee77e1119be1a74": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.getUserPreferencesAdmin undocumented-status 200"
+    },
+    "9e576272164f20a805a9d63ee421685973b9db23": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.updateUserPreferencesAdmin undocumented-status 200"
+    },
+    "3367df0d74a0a15078f3b8c8c92f5ff643e7601a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.restoreUserAdmin undocumented-status 200"
+    },
+    "b7d6b2a2adad7d54e9a4c45e295bfb39ebb74f1e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.getUserSessionsAdmin undocumented-status 200"
+    },
+    "8bfca77cb61bb9a19e14e70ce93228503cf1affc": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user-admin.controller.ts::UserAdminController.getUserStatisticsAdmin undocumented-status 200"
+    },
+    "30e69094cb776c59a9b0fe1775a12cbfeb234232": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.getAllAlbums undocumented-status 200"
+    },
+    "a99e899236b141ab8f004cbb8df3af91fcc06a6e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.createAlbum undocumented-status 201"
+    },
+    "f46981e573a7af84fdd2ede5ee5600db6b27bc7a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.createAlbum undocumented-status 400"
+    },
+    "7125ac85d86cf8f430869822a01807f2d8842f90": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.deleteAlbum undocumented-status 204"
+    },
+    "84d2c5acae417ba8da66562c9a3023932bad93ec": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.getAlbumInfo undocumented-status 200"
+    },
+    "ee34341755d2305c0f6106d9db005d33c239ce7d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.updateAlbumInfo undocumented-status 200"
+    },
+    "44aaf7b486e45e0ebb501851525394afb0a72ce7": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.updateAlbumInfo undocumented-status 400"
+    },
+    "2a91554aa636096fff11f39ef7c7b77a8018eb99": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.removeAssetFromAlbum undocumented-status 200"
+    },
+    "07d94191d341d3d799ce2d1999d748f618287bf1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.addAssetsToAlbum undocumented-status 200"
+    },
+    "030314d1f05bf56fc51a2e13079fdd17686da626": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.getAlbumMapMarkers undocumented-status 200"
+    },
+    "e4b31f3e8e861dc11083185bc29c4c3ec3ca4154": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.removeUserFromAlbum undocumented-status 204"
+    },
+    "e0cfbd810e58c032f4b9c45bea235a913c4fb414": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.removeUserFromAlbum undocumented-status 400"
+    },
+    "569362bd718885491f083ff550505cbced92988c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.updateAlbumUser undocumented-status 204"
+    },
+    "f3ed07d40870effe77ee7d9634551114a51739a2": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.updateAlbumUser undocumented-status 400"
+    },
+    "fab0d74b327bdab95aec61944ba6e2a61f86be78": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.addUsersToAlbum undocumented-status 200"
+    },
+    "2427e4862d8e627583b774c2045c538178e89023": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.addUsersToAlbum undocumented-status 400"
+    },
+    "6ae08cd522cabf133b56ec68d938ce03949c7b54": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.addAssetsToAlbums undocumented-status 200"
+    },
+    "7388eca5406884879643deb9e6ff8dc0fe7fd9df": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/album.controller.ts::AlbumController.getAlbumStatistics undocumented-status 200"
+    },
+    "d4fb25eab4d08b7d0b482a5701c5f869f7a5222b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.getApiKeys undocumented-status 200"
+    },
+    "8629d231c5887437d67d4fa2001e95f96213919b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.createApiKey undocumented-status 201"
+    },
+    "b82bbb97ce14425190970dae4b9d095cb8cd5ddf": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.createApiKey undocumented-status 400"
+    },
+    "2a0405562b7a6452c6726411e98f7e4b27bcceb7": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.deleteApiKey undocumented-status 204"
+    },
+    "580536744abebef52a1d3019ce94f2ed3086c088": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.deleteApiKey undocumented-status 400"
+    },
+    "60d716e2c0a8408ad67e22004d2b556ff2000aec": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.getApiKey undocumented-status 200"
+    },
+    "90a59da8fb0cdc765fc81623bae269774ef9ad24": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.getApiKey undocumented-status 400"
+    },
+    "b16ee4fa6c923e94b95992bb1f3bbb38a85c4df9": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.updateApiKey undocumented-status 200"
+    },
+    "ca6ef661fb7720da3f38461f678eefc37f787f63": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.updateApiKey undocumented-status 400"
+    },
+    "c3f8b8acd13a2fb76d497a7558781839ea7b1ba7": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.rotateApiKey undocumented-status 201"
+    },
+    "e7c142355d87f199b1614c7a77555b39084f43c3": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.rotateApiKey undocumented-status 400"
+    },
+    "0b3e4c0379a102dbc13b43abda807b132823266b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.getMyApiKey undocumented-status 200"
+    },
+    "34af6e3f0d92e0dd351e0ba121e358d4e2b60291": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.getMyApiKey undocumented-status 400"
+    },
+    "d273d8186d9047e8657f321e00e7d539de289fb3": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/api-key.controller.ts::ApiKeyController.getMyApiKey undocumented-status 403"
+    },
+    "b31bec1b14f8b3caaf9c6a034a1423fe27de8129": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset-file.controller.ts::AssetFilesController.searchAssetFiles undocumented-status 200"
+    },
+    "93d8b2c307915f7928517766218bfad5f0186fda": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset-file.controller.ts::AssetFilesController.deleteAssetFile undocumented-status 204"
+    },
+    "1bb60005aeed576602154ecbf6803e3661974a90": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset-file.controller.ts::AssetFilesController.deleteAssetFile undocumented-status 400"
+    },
+    "2d09b38952b9ec47a7c4c63d79eefec61f87d006": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset-file.controller.ts::AssetFilesController.getAssetFile undocumented-status 200"
+    },
+    "c38c38682184aa7597bb657e6007a01fdc5717ee": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.deleteAssets undocumented-status 204"
+    },
+    "6f3561a75f31118a7286d93b37541e981d896ac2": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset-media.controller.ts::AssetMediaController.uploadAsset undocumented-status 500"
+    },
+    "328afa8810df3ad498bf0d6017243a0de26d916a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.updateAssets undocumented-status 204"
+    },
+    "9680b28ab6363144c0df747801a7d87d3300aa2c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.getAssetInfo undocumented-status 200"
+    },
+    "2950d5de79ac9b62e55478a4c3a8e3f9e01e2b4d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.getAssetInfo undocumented-status 400"
+    },
+    "f1ce6e5b0ef1d03b9f667fefbeaaa4351ee18d9e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.updateAsset undocumented-status 200"
+    },
+    "42c28acd2cb3e4ab48fb0717dbeb1b27b3d7c9e9": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.updateAsset undocumented-status 400"
+    },
+    "538f138ac7508533f77f65ada95cb957b61f5c8b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.removeAssetEdits undocumented-status 204"
+    },
+    "8bd017fa7dd0fe36a9c2113838c77fc175177fb1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.removeAssetEdits undocumented-status 400"
+    },
+    "9a9f59f2fc389dd57117d8e20a9687bcd7f2c588": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.getAssetEdits undocumented-status 200"
+    },
+    "3eb4ba5dbf842009c4abae15203011317c9222fe": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.editAsset undocumented-status 200"
+    },
+    "a15924687d7c2c83ada6f322763e6ec8d6b2429a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.editAsset undocumented-status 400"
+    },
+    "2fe84906cded9fbc61c4565e8f71be9c7daffc91": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.getAssetMetadata undocumented-status 200"
+    },
+    "86efe9e7489b0c8eee3f27b3394431bab3535811": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.updateAssetMetadata undocumented-status 200"
+    },
+    "18896cfa2f405366e3446e17463d0a2de9ed33af": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.updateAssetMetadata undocumented-status 400"
+    },
+    "9400d2b480d2a3fd5f44404beb37a9ffca125f1e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.deleteAssetMetadata undocumented-status 204"
+    },
+    "b9885967ee6f66b8ae8231eaa0160461711f4786": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.getAssetMetadataByKey undocumented-status 200"
+    },
+    "2bc8ac84ffde29bd9f402c4731cb1847cb3a8de3": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.getAssetMetadataByKey undocumented-status 400"
+    },
+    "7eeee97e286b765970a3ae25c6d966cdb3c7c8da": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.getAssetOcr undocumented-status 200"
+    },
+    "543e2670802d1d086617d779ebfa88cddd37eb31": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.getAssetOcr undocumented-status 400"
+    },
+    "7ff7f4593891701b010ba14b42e1a13de49a333a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset-media.controller.ts::AssetMediaController.viewAsset undocumented-status 400"
+    },
+    "a832cfa884e292608886930ccaa326d67b57ce22": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset-media.controller.ts::AssetMediaController.viewAsset undocumented-status 404"
+    },
+    "3454700388e5e6c37e194af13949d58bcf8748be": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/video-stream.controller.ts::VideoStreamController.endSession undocumented-status 204"
+    },
+    "0a9b582d2dcda66fb61a704b1bff75185587a90d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/video-stream.controller.ts::VideoStreamController.getSegment undocumented-status 400"
+    },
+    "986d3200711fd69696dddc6f906befd12a794339": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/video-stream.controller.ts::VideoStreamController.getMediaPlaylist undocumented-status 200"
+    },
+    "550ffdf84354e4a05ff485c4f50d17b59e9e8226": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/video-stream.controller.ts::VideoStreamController.getMediaPlaylist undocumented-status 400"
+    },
+    "ad358d8d0303850357f38cd246531a8cf04b4980": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/video-stream.controller.ts::VideoStreamController.getMediaPlaylist undocumented-status 404"
+    },
+    "c68767dd7506c9dbee14eb6024635bb55c2f6e41": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/video-stream.controller.ts::VideoStreamController.getMainPlaylist undocumented-status 200"
+    },
+    "d84e3d89346566722a9f816b53681678d7717e42": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/video-stream.controller.ts::VideoStreamController.getMainPlaylist undocumented-status 400"
+    },
+    "ec4497a47ef6c03a18ee56d7dad5d854184849e6": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/video-stream.controller.ts::VideoStreamController.getMainPlaylist undocumented-status 404"
+    },
+    "cf33e9d68d54ff9b6437fed9c51028b6c691b730": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset-media.controller.ts::AssetMediaController.checkBulkUpload undocumented-status 200"
+    },
+    "be6df1f9c6d2db7346cdd49bbf85bba6e6c770d9": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.copyAsset undocumented-status 204"
+    },
+    "c4df0f0d0a16b92164174d58600148dd9648cc06": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.copyAsset undocumented-status 400"
+    },
+    "cc205c2653e6cb54e3dcb74ca6370c738c8025e3": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.runAssetJobs undocumented-status 204"
+    },
+    "895cb1075630a82efc562928cd28dc9acda7415e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.deleteBulkAssetMetadata undocumented-status 204"
+    },
+    "6f2fd810f4009063e277459bf219a4edb80cbee0": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.updateBulkAssetMetadata undocumented-status 200"
+    },
+    "611e3c297c64fc2e2bcc04d2d21eb275e92c0443": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.updateBulkAssetMetadata undocumented-status 400"
+    },
+    "e5debccafe21263817ec65a315ec407865fe0031": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/asset.controller.ts::AssetController.getAssetStatistics undocumented-status 200"
+    },
+    "5e1221e79feb0c218fc05e70492bde3740608c6d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.signUpAdmin undocumented-status 201"
+    },
+    "b4099b35586164d2691317a1027574bb60166154": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.signUpAdmin undocumented-status 400"
+    },
+    "f85ffe9298565107cc7f71b3f80bce8126ad96fc": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.changePassword undocumented-status 200"
+    },
+    "bd134cca94d18fd71190b4f2134bf6d092d35595": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.changePassword undocumented-status 400"
+    },
+    "b83a249285d4d281988643b7e7c7c1b58f33b889": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.login undocumented-status 401"
+    },
+    "f6f6bf698b29c38961c234312de5ee6a502961ed": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.logout undocumented-status 500"
+    },
+    "ae4ce8bde3b0447ac89b17873280ae8dfe37c660": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.resetPinCode undocumented-status 204"
+    },
+    "0bd648b2bd473762759814846893400d6734e385": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.resetPinCode undocumented-status 400"
+    },
+    "100487cc5a031f2515b941fd1fb317de586c3183": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.setupPinCode undocumented-status 204"
+    },
+    "dc054e4a73a9f6e1f6262a3cfaab9c417db635b4": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.setupPinCode undocumented-status 400"
+    },
+    "33336bedf6382b51d437b52c7d59bfdb48934459": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.setupPinCode undocumented-status 401"
+    },
+    "73caf57f7b3852ec21d7868dbbe4a54ca484a6ad": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.changePinCode undocumented-status 204"
+    },
+    "8af61167afa219763c22a1cee2de57fcea307b26": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.changePinCode undocumented-status 400"
+    },
+    "b5705ba504f4b7d51f6ca4a5ac0d0da96bcb4e35": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.lockAuthSession undocumented-status 204"
+    },
+    "926fa02a1b596eef3ed632aaa6cfa2ea9d79a365": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.lockAuthSession undocumented-status 400"
+    },
+    "358546160d779b0d13fe5881c6d4440aa18fa625": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.unlockAuthSession undocumented-status 204"
+    },
+    "7d46f3ac87a32fde62acc62503ef76d00276a649": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.unlockAuthSession undocumented-status 400"
+    },
+    "f5a2bd17232139c85e7f9bf1b5ae7605d3036e4e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.getAuthStatus undocumented-status 200"
+    },
+    "b5c607a3b7ff45c4ba96876dc40e7f7bd563fb83": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.getAuthStatus undocumented-status 401"
+    },
+    "e4e72935d2fd8d640838f5262a3cb4e41b5e77df": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/auth.controller.ts::AuthController.validateAccessToken undocumented-status 200"
+    },
+    "3dca8397f58275de0305d07f4c63249caddb1003": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/cluster-group.controller.ts::ClusterGroupController.leaveClusterGroup undocumented-status 204"
+    },
+    "beab0ba897977aeaa49fdd3c6cb27aafc7e09400": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/cluster-group.controller.ts::ClusterGroupController.leaveClusterGroup undocumented-status 400"
+    },
+    "240912d2dbfaede42cfd60c38e46c384935c19d8": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/cluster-group.controller.ts::ClusterGroupController.clusterGroupRegeneratePeople undocumented-status 204"
+    },
+    "63479603b61ae0871e5b1d7b66f1db8f13a8cefe": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/cluster-group.controller.ts::ClusterGroupController.getClusterGroupRequestsForGroup undocumented-status 200"
+    },
+    "299a0fe34416e19d0d2a5a1d8403169185a93804": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/cluster-group.controller.ts::ClusterGroupController.createClusterGroupRequest undocumented-status 400"
+    },
+    "d54242daddf45fbad45450a510b0efa487cefbee": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/cluster-group.controller.ts::ClusterGroupController.getClusterGroupUsers undocumented-status 200"
+    },
+    "5531adab67ec196b8b78118ecc8a154ef54f1f4b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/cluster-group.controller.ts::ClusterGroupController.getClusterGroupRequests undocumented-status 200"
+    },
+    "68fd948bfbabbfe87e6a8bd69de30a2ff8c8a55a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/cluster-group.controller.ts::ClusterGroupController.deleteClusterGroupRequest undocumented-status 204"
+    },
+    "a4d90d9d4972a8cef74be894ec683197244bf948": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/cluster-group.controller.ts::ClusterGroupController.acceptClusterGroupRequest undocumented-status 204"
+    },
+    "51fcdc4d3c0370d4b121b6e7333dc67a7b20e9ca": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/config-user.controller.ts::ConfigUserController.getUserConfig undocumented-status 200"
+    },
+    "7d54a65b587cc3a296f24851377d4c677c0398a0": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/config-user.controller.ts::ConfigUserController.getUserConfigDefaults undocumented-status 200"
+    },
+    "91a70621cf7f0fa6c3cccee98d3398e3be140e43": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/download.controller.ts::DownloadController.downloadArchive undocumented-status 200"
+    },
+    "1ff52e2a7025916e871450eb30a07dfd3921032a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/download.controller.ts::DownloadController.getDownloadInfo undocumented-status 201"
+    },
+    "013d0b06bf99d6a01f71d472a71a49482b05002f": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/download.controller.ts::DownloadController.getDownloadInfo undocumented-status 400"
+    },
+    "98aa6d88463c3c4dbed087260ad5c2e98080b9e6": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/duplicate.controller.ts::DuplicateController.deleteDuplicates undocumented-status 204"
+    },
+    "e7e8cfbbf7ed8077b1c028187d9ac30546e4a5ee": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/duplicate.controller.ts::DuplicateController.getAssetDuplicates undocumented-status 200"
+    },
+    "495279686b5a9ffc6db2b3cd3699b1a9c061a64c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/duplicate.controller.ts::DuplicateController.deleteDuplicate undocumented-status 204"
+    },
+    "797d2487ce9a89dc2281a5b26fded7a1d3348198": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/duplicate.controller.ts::DuplicateController.resolveDuplicates undocumented-status 200"
+    },
+    "34146ee0c92130d50bb541e0bf261a708ec9a69d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/face.controller.ts::FaceController.getFaces undocumented-status 200"
+    },
+    "5c7094fa0003de58a6cf789b0787776257f467cb": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/face.controller.ts::FaceController.createFace undocumented-status 201"
+    },
+    "cdc842c8fe1e01b74b7533ff9e5a86ccd0485cea": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/face.controller.ts::FaceController.createFace undocumented-status 400"
+    },
+    "acb03cea91cddeeb8fab16961365221aa53a5b64": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/face.controller.ts::FaceController.createFace undocumented-status 404"
+    },
+    "8bd988b661b14e889fa3d1822ca4fdf9d3bc68bf": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/face.controller.ts::FaceController.deleteFace undocumented-status 204"
+    },
+    "3f71b8a217a51fbc2ac3404c6ac9435cca7f1a3c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/face.controller.ts::FaceController.reassignFacesById undocumented-status 200"
+    },
+    "3b70fc31f2cd988465766c7ec20574d0e20f2a6a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/job.controller.ts::JobController.getQueuesLegacy undocumented-status 200"
+    },
+    "47af5c04bca1405e405132e7e3bef4681f25580f": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/job.controller.ts::JobController.createJob undocumented-status 204"
+    },
+    "509c575cfcc9ed4c78f4633859f4c80a99432071": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/job.controller.ts::JobController.runQueueCommandLegacy undocumented-status 200"
+    },
+    "630b9a439480b8c1573781eaecf03f62b54e6e18": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/job.controller.ts::JobController.runQueueCommandLegacy undocumented-status 400"
+    },
+    "39146b0aba6d20185a79c9e6f8e9a2b524b9caec": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/library.controller.ts::LibraryController.getAllLibraries undocumented-status 200"
+    },
+    "cfb958990faf3c561369ee02713df5d4e1f06507": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/library.controller.ts::LibraryController.createLibrary undocumented-status 201"
+    },
+    "d4ec479eb21af5c63ea795eec619369d48f82382": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/library.controller.ts::LibraryController.deleteLibrary undocumented-status 204"
+    },
+    "df375a84fe6e6706c41ed91d542b3004cb4a52ed": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/library.controller.ts::LibraryController.getLibrary undocumented-status 200"
+    },
+    "2cbe3e2d9553244e6820db5f16c27d347e417ffb": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/library.controller.ts::LibraryController.updateLibrary undocumented-status 200"
+    },
+    "8efef470c7d7974c031c56cedd5af50d9084d537": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/library.controller.ts::LibraryController.updateLibrary undocumented-status 400"
+    },
+    "ddc9cb0f179b253e662807989a1ebab2aed09461": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/library.controller.ts::LibraryController.scanLibrary undocumented-status 204"
+    },
+    "55b2d5d384e9fa34b2a5b846fab2570216a5aac1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/library.controller.ts::LibraryController.getLibraryStatistics undocumented-status 200"
+    },
+    "5dbf05c91bcc9faa8a1dccf4e96804f86e7e2798": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/library.controller.ts::LibraryController.getLibraryStatistics undocumented-status 400"
+    },
+    "d3902a905804e6bbaaa719184896b6488b3a89ec": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/library.controller.ts::LibraryController.validate undocumented-status 200"
+    },
+    "ba32bd7c0ac8856125556fbd9fc72cdf852ecef6": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/map.controller.ts::MapController.getMapMarkers undocumented-status 200"
+    },
+    "be8b946f4edc7248943d44ac94d918d5f0b9b9ea": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/map.controller.ts::MapController.reverseGeocode undocumented-status 200"
+    },
+    "59ca1fd4de4b1b01da7d042dc738217e10b840cb": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/memory.controller.ts::MemoryController.searchMemories undocumented-status 200"
+    },
+    "25c099802f3207e323d70db3b04f86bca49992f4": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/memory.controller.ts::MemoryController.createMemory undocumented-status 201"
+    },
+    "aa6cf76cf63182254c08ac41327de7eadd53c5a3": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/memory.controller.ts::MemoryController.deleteMemory undocumented-status 204"
+    },
+    "f610169f311d589a258f6e17d5b71253ef27b08b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/memory.controller.ts::MemoryController.getMemory undocumented-status 200"
+    },
+    "930fbc3ec11353370185f65eb842159c96dda00b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/memory.controller.ts::MemoryController.updateMemory undocumented-status 200"
+    },
+    "d406f77a0e18e973a151af7e50370a0232c696fd": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/memory.controller.ts::MemoryController.removeMemoryAssets undocumented-status 200"
+    },
+    "a9a667bb9917408c3462521c100eded15ee7e76b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/memory.controller.ts::MemoryController.addMemoryAssets undocumented-status 200"
+    },
+    "cc16959b28236a45180012d8116c34f3792a0874": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/memory.controller.ts::MemoryController.memoriesStatistics undocumented-status 200"
+    },
+    "e06a11dd0237127959418ca6524a6f866f2e9d8d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/notification.controller.ts::NotificationController.deleteNotifications undocumented-status 204"
+    },
+    "5b2a6c953a9978aa97a5d40af700a74d07364a39": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/notification.controller.ts::NotificationController.getNotifications undocumented-status 200"
+    },
+    "d8ce63cbaf9a440d4ea3669a02a9af4790b94138": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/notification.controller.ts::NotificationController.updateNotifications undocumented-status 204"
+    },
+    "882598c103fb9bdb742182d1fac014f6a1671f1d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/notification.controller.ts::NotificationController.deleteNotification undocumented-status 204"
+    },
+    "c4b82ee201a7e573e4b33836a6da67f5f367e96b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/notification.controller.ts::NotificationController.getNotification undocumented-status 200"
+    },
+    "03238c2cbd1e6bf2432f696ac01943f831386fc2": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/notification.controller.ts::NotificationController.getNotification undocumented-status 400"
+    },
+    "f9e7d5764a23fdcd4163dacb183856b3d9abbc84": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/notification.controller.ts::NotificationController.updateNotification undocumented-status 200"
+    },
+    "1830c300d0c6cbc165387dbf8cccc2a03ef6389e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/oauth.controller.ts::OAuthController.startOAuth undocumented-status 400"
+    },
+    "1027240e42563297761f4683a0cb8611a6b46f9c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/oauth.controller.ts::OAuthController.startOAuth undocumented-status 500"
+    },
+    "fda97419e1990530187d5f059cbff3a83efdb650": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/oauth.controller.ts::OAuthController.logoutOAuth undocumented-status 200"
+    },
+    "52893f360e8e899ef995cc76c53625cbd51d346b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/oauth.controller.ts::OAuthController.logoutOAuth undocumented-status 400"
+    },
+    "a68d5ba1607874c6eeb5482c64fbafe59816bc8f": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/oauth.controller.ts::OAuthController.finishOAuth undocumented-status 400"
+    },
+    "511c5ef607c739453e3c60cc6799cc2fb6a5e6c2": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/oauth.controller.ts::OAuthController.finishOAuth undocumented-status 500"
+    },
+    "6b51eea35644b59cf4af11ea6b6e5a8b772c0884": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/oauth.controller.ts::OAuthController.linkOAuthAccount undocumented-status 200"
+    },
+    "86f4c9bf7c724fa46f5a7b3b49b4d35acd2a4b29": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/oauth.controller.ts::OAuthController.linkOAuthAccount undocumented-status 400"
+    },
+    "03fc6acaf9cccb6c151613d7a4fbc5ec2b003100": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/oauth.controller.ts::OAuthController.linkOAuthAccount undocumented-status 500"
+    },
+    "b3f22f7707c5c8875d20716a76923d635b308856": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/oauth.controller.ts::OAuthController.unlinkOAuthAccount undocumented-status 200"
+    },
+    "b171dd57a6c4a17875de1f8a5bb3781313b6d653": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/partner.controller.ts::PartnerController.getPartners undocumented-status 200"
+    },
+    "d3a5d1fbba60d07477f615fdbef3f7340ec3b35d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/partner.controller.ts::PartnerController.createPartner undocumented-status 201"
+    },
+    "60be2ec1e6e40cc2b741e92aa374057f676ad173": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/partner.controller.ts::PartnerController.createPartner undocumented-status 400"
+    },
+    "99b1073f250c5e900506a9a180c7a17bf9e195e8": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/partner.controller.ts::PartnerController.removePartner undocumented-status 204"
+    },
+    "347ee0a364b6865f002893ddc2dbac0c7d5c59e1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/partner.controller.ts::PartnerController.removePartner undocumented-status 400"
+    },
+    "170ebe711995bd0b3b492433cfbd017faf461f72": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/partner.controller.ts::PartnerController.createPartnerDeprecated undocumented-status 201"
+    },
+    "875f429bd0f6d04a3673c5ba85600011400933eb": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/partner.controller.ts::PartnerController.createPartnerDeprecated undocumented-status 400"
+    },
+    "22e425d21c608cfe25f681fd7016c35ae2162bf2": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/partner.controller.ts::PartnerController.updatePartner undocumented-status 200"
+    },
+    "8cdcee91b2c7a3f70074f6eb7fcb7a4223d59ad8": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.searchPasskeys undocumented-status 200"
+    },
+    "36fc88c3491092db205928d2a689a8e9cb96f7ae": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.deletePasskey undocumented-status 204"
+    },
+    "f0080e932c3df6222b6409ddb9885ae78cc33b62": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.getPasskey undocumented-status 200"
+    },
+    "91810e4b3bb53789bf5d17773db53492af777dff": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.updatePasskey undocumented-status 200"
+    },
+    "758988adaf919232c9c373a981852094493b3df0": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.finishAuthentication undocumented-status 400"
+    },
+    "1483454abd4ef9bbc4d81735a8f2795d4fe0dc49": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.finishAuthentication undocumented-status 401"
+    },
+    "22b82f88637057280b1126f81024b92bfd47bac9": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.startAuthentication undocumented-status 200"
+    },
+    "81abb94de6894a4f673f3aecdf62ac871cb546e0": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.startAuthentication undocumented-status 400"
+    },
+    "e6e44d13271ab9632fb83e9fd65ff8a51b185f0f": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.finishRegistration undocumented-status 201"
+    },
+    "ee517c18ca85aa51b2be11621af0e7398386b2c1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.finishRegistration undocumented-status 400"
+    },
+    "5672c3981a84e2b7f58150d0efaf4041a75aca83": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.startRegistration undocumented-status 200"
+    },
+    "af89bd0bc4397b093ebebfd56242754d7773673c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/passkey.controller.ts::PasskeyController.startRegistration undocumented-status 400"
+    },
+    "4098ad33244cf4f3c147f802bee5d0600271eb65": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.deletePeople undocumented-status 204"
+    },
+    "5c2bafacdc91c99766e355d0213a2bc7e551108a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.getAllPeople undocumented-status 200"
+    },
+    "742f730c9b0a4e39b40f1cc69df353d49a3b96f4": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.createPerson undocumented-status 201"
+    },
+    "04a6e071268c84a5366b55eba1c88571e93809b5": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.updatePeople undocumented-status 200"
+    },
+    "0a7833a883d960e5e6a3f59582360ad2268519b2": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.deletePerson undocumented-status 204"
+    },
+    "506c9ae5f084eb6d6b32735b68d8212a3338ec73": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.getPerson undocumented-status 200"
+    },
+    "cba55432d7787b1bb6f86132d619936b0ae2b0d6": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.updatePerson undocumented-status 200"
+    },
+    "da417a65b94bdb58b73fd10feac44272dc18791e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.updatePerson undocumented-status 400"
+    },
+    "b426fc8d68afcc1b5121b6856613a857998b21f4": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.mergePersonLegacy undocumented-status 200"
+    },
+    "d8550efc5f366ce0b47356e33f012fcd71f96d89": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.mergePersonLegacy undocumented-status 400"
+    },
+    "f28014d471c521919c75040ff949000000d7fadc": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.reassignFaces undocumented-status 200"
+    },
+    "61b62e0dd98e310ccf226f080ac8946028bfed10": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.getPersonStatistics undocumented-status 200"
+    },
+    "976dea80467a9e28913a1f283da695437289ca9b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.mergePeople undocumented-status 200"
+    },
+    "729394a108eb389ab8515e90cdf5f06c43780176": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.mergePeople undocumented-status 400"
+    },
+    "69c6fe97e4777ce1502b7980469aa399e238e932": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.removeUsersFromPeople undocumented-status 200"
+    },
+    "678f59efaef26d3dc05f95cf292be9031191223d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.getUsersForPeople undocumented-status 200"
+    },
+    "0e8443280b0c7e7d4a510a5bb70d19b5e3dcaab1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.upsertPeopleUsers undocumented-status 200"
+    },
+    "2b6b980dcc6092d878bc1cd63d419e869de7baad": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/person.controller.ts::PersonController.upsertPeopleUsers undocumented-status 400"
+    },
+    "e658dcab1b7e5aef129f93cdf62722fd333925b1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/plugin.controller.ts::PluginController.searchPlugins undocumented-status 200"
+    },
+    "541029cc5ada625bce146f7ddc1731c95ca029c0": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/plugin.controller.ts::PluginController.getPlugin undocumented-status 200"
+    },
+    "0aadc6a7c9d5fb0c4af14492435f69a7c1a503fa": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/plugin.controller.ts::PluginController.getPlugin undocumented-status 400"
+    },
+    "93cc96d914568f8623cff7ca4cb575f0a3b7749c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/plugin.controller.ts::PluginController.searchPluginMethods undocumented-status 200"
+    },
+    "e999b64d7d030f13eaaede9581c908f331274855": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/plugin.controller.ts::PluginController.searchPluginTemplates undocumented-status 200"
+    },
+    "3d002cb07b6445cc0a9ea3465366ae5d65f377b8": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/config-public.controller.ts::ConfigPublicController.getPublicConfig undocumented-status 200"
+    },
+    "3db3370e45d5ad95685147f8d6200019f5dac9d8": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/config-public.controller.ts::ConfigPublicController.getPublicConfigDefaults undocumented-status 200"
+    },
+    "39cee330abb0aeb8b54a821536a3402b5dd833a2": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/queue.controller.ts::QueueController.getQueues undocumented-status 200"
+    },
+    "b5bc1c4f8fc264a010e142def46c6b1a5fb89bad": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/queue.controller.ts::QueueController.getQueue undocumented-status 200"
+    },
+    "040521dc49623f3c4bbfd8063da8ed2cba65ce84": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/queue.controller.ts::QueueController.updateQueue undocumented-status 200"
+    },
+    "01ccb055660ebf7fbdba4795e22edf26a4ed0c9e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/queue.controller.ts::QueueController.updateQueue undocumented-status 400"
+    },
+    "4294d6441682b776bee97ab2238912b9ee993cb1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/queue.controller.ts::QueueController.emptyQueue undocumented-status 204"
+    },
+    "7314c8d5622fe1c8f7fc4d000a026a3c76d08836": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/queue.controller.ts::QueueController.getQueueJobs undocumented-status 200"
+    },
+    "b260dbe800f3fee1abb31f014a06010230523ea1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.getAssetsByCity undocumented-status 200"
+    },
+    "b6197658786d798ab1482fbeae6542fabeb11072": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.getExploreData undocumented-status 200"
+    },
+    "a5b22cd23cdb7383ec7c21cacec2b4eb5f1cdc7b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.searchLargeAssets undocumented-status 200"
+    },
+    "33e48e0ad44fc6616bc237ecf0a45b6162082276": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.searchAssets undocumented-status 200"
+    },
+    "6aaf4c2707b7b339ccbd34dab7dd92d8d94aeebc": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.searchAssets undocumented-status 400"
+    },
+    "55269ead2d884a529c9759170163abe8af78ae40": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.searchPerson undocumented-status 200"
+    },
+    "45e2a23d1d19f48244e36456644408128cee0365": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.searchPlaces undocumented-status 200"
+    },
+    "41abcb3aa3ed7acc4541933bae12aa0bdc364249": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.searchRandom undocumented-status 200"
+    },
+    "edf5b5038046ae6855b52b900088a6e07c9c720a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.searchRandom undocumented-status 400"
+    },
+    "fcf44baa29e92273aef917586be4905ab2bdec34": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.searchSmart undocumented-status 200"
+    },
+    "99a857a48e258ab47685de869c9f5403a341d423": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.searchSmart undocumented-status 400"
+    },
+    "fda42f0e2bc689fa3841e5b1985a87f2485809ae": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.searchAssetStatistics undocumented-status 200"
+    },
+    "05d0f6026a139e6ed1d18654ff65caee245cb71b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.searchAssetStatistics undocumented-status 400"
+    },
+    "74b6db1b2424f99c8f3a762cb1a103dce7c1f4ad": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/search.controller.ts::SearchController.getSearchSuggestions undocumented-status 200"
+    },
+    "a36144e23ddddbff3db6b26c9f2a321009449f89": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.getAboutInfo undocumented-status 200"
+    },
+    "bf87c9bdd70f7e033ab634199a9a00f0d02893f1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.getApkLinks undocumented-status 200"
+    },
+    "41b70359b2aee8460afc8631f8aa1b5f190a1ed1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.getServerConfig undocumented-status 200"
+    },
+    "80aba0468a11505f14e00dabc906ee6146e86ce4": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.getServerConfig undocumented-status 200"
+    },
+    "7f659b73bd5d874412a9a84e5facc798798296c8": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.getServerFeatures undocumented-status 200"
+    },
+    "73d2472e659136de97d903b33bda781ac702a4cb": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.deleteServerLicense undocumented-status 204"
+    },
+    "d671817ef1e7705ddcc846cdbb67f87fb518df22": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.getServerLicense undocumented-status 200"
+    },
+    "f293de9c07665934054ea7ed05f141846aaf34f5": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.setServerLicense undocumented-status 200"
+    },
+    "58b627a2b1f8cb9ad30790ed3c317b77b183b815": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.setServerLicense undocumented-status 400"
+    },
+    "d00f6b234989e97b5871b6896000ced63b7f2198": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.getSupportedMediaTypes undocumented-status 200"
+    },
+    "598d021d5c766774053b9ac49c3ac690a5510041": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.pingServer undocumented-status 200"
+    },
+    "41194f5aabae413a130e207c0c4b69b67ce9e983": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.pingServer undocumented-status 200"
+    },
+    "4683fda413a6eabe5720fadf1e3bd1bb4c550383": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.getServerStatistics undocumented-status 200"
+    },
+    "376d947b0c96b7a03e16cd1045cf3951a3958b70": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.getStorage undocumented-status 200"
+    },
+    "c65d69a61183d22b5aeee1c8d782508ff7c2beaa": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/maintenance/maintenance-worker.controller.ts::MaintenanceWorkerController.getServerVersion undocumented-status 200"
+    },
+    "da9268194ff75fa4708731bea86fe13aad313a02": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.getServerVersion undocumented-status 200"
+    },
+    "e7a12bee6c6bf0b0736127d9260cd841ccab6b19": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.getVersionCheck undocumented-status 200"
+    },
+    "625399b00a95d69d9632313d9ebfa7544e9a641b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/server.controller.ts::ServerController.getVersionHistory undocumented-status 200"
+    },
+    "d6fbdb48941c65dca92341dfaf697da2eaf0cd40": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/session.controller.ts::SessionController.deleteAllSessions undocumented-status 204"
+    },
+    "cc1e1bc6299a5b719dde9e577ac5f3f220a179c8": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/session.controller.ts::SessionController.getSessions undocumented-status 200"
+    },
+    "c0c0f7d15199ff4b15e930a324f13df57d4cf2e3": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/session.controller.ts::SessionController.createSession undocumented-status 201"
+    },
+    "7d229bedaed02bfc56b5d9d4def599c8c81640f6": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/session.controller.ts::SessionController.createSession undocumented-status 400"
+    },
+    "a59b1294abf8bcf338b368f4028fb199f6657ffe": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/session.controller.ts::SessionController.deleteSession undocumented-status 204"
+    },
+    "fa928c0788af1189bf516c73da3ccf035f67d093": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/session.controller.ts::SessionController.updateSession undocumented-status 200"
+    },
+    "6c92d2edcaccc2dfd6ef609ca9f7c96d433210d2": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/session.controller.ts::SessionController.updateSession undocumented-status 400"
+    },
+    "77a5f8b5e7d4bde1e3167c74bf09b79f25fae386": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/session.controller.ts::SessionController.lockSession undocumented-status 204"
+    },
+    "54d681c5d230bccaa0fd0f8085aa9525696c3993": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.getAllSharedLinks undocumented-status 200"
+    },
+    "b5796d02687d24a5a8760e65163055f6771a0494": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.createSharedLink undocumented-status 201"
+    },
+    "4e67ef7e4727888a216fc24dd394c77e82d19db8": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.createSharedLink undocumented-status 400"
+    },
+    "73512b51a5ad83dc9dcc4a75350b4c1bcbe9914d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.removeSharedLink undocumented-status 204"
+    },
+    "7850ae45edfcd165841d752dc948d802286ef582": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.getSharedLinkById undocumented-status 200"
+    },
+    "d12fe83472f8fe0a416baaf2c4cc98dcb92b8eae": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.updateSharedLink undocumented-status 200"
+    },
+    "7bb948eeb6a7d1d9c34bf949d19774d077c7562c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.updateSharedLink undocumented-status 400"
+    },
+    "136c8beb8fff0701f55341496379e065019e3f54": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.removeSharedLinkAssets undocumented-status 200"
+    },
+    "6fe73c450b89ca9983924aae24123a2ba2c04222": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.removeSharedLinkAssets undocumented-status 400"
+    },
+    "0e7d999b8a97928791f6dcad6bea4fa0219c191f": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.addSharedLinkAssets undocumented-status 200"
+    },
+    "8ad302854877c1ae2cc33be274d2a0fda7a57be3": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.addSharedLinkAssets undocumented-status 400"
+    },
+    "80bb797c57ce83fa16ef392b35a8c267ef98da69": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.sharedLinkLogin undocumented-status 400"
+    },
+    "35a81735b98f3e495b6837d5a7053d8e50ab09b8": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.sharedLinkLogin undocumented-status 401"
+    },
+    "8dfd4ae96037b2a1c91b6d756da555ea64a9e0ca": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.sharedLinkLogin undocumented-status 403"
+    },
+    "cf0b49375cf4af18851402c3833c64a8bd9571d7": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.getMySharedLink undocumented-status 200"
+    },
+    "24a18ca16a808c40e15cbd1146925d61242105de": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.getMySharedLink undocumented-status 401"
+    },
+    "f80623ab0f3264fac4d6d77772c731907addc39b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/shared-link.controller.ts::SharedLinkController.getMySharedLink undocumented-status 403"
+    },
+    "daa93218507d91222c5b3c2a1484de7d8a12bbee": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/stack.controller.ts::StackController.deleteStacks undocumented-status 204"
+    },
+    "237d15cb859081b59ef9f97758bb29e4e3fe9cab": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/stack.controller.ts::StackController.searchStacks undocumented-status 200"
+    },
+    "3811b690551c1725670b5af8a0378a612eb6ca6e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/stack.controller.ts::StackController.createStack undocumented-status 201"
+    },
+    "ac976c9e1ceeedbe25351ce0c914183f5a6b03ef": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/stack.controller.ts::StackController.deleteStack undocumented-status 204"
+    },
+    "f0197926a23d70509086b45cc2fdaa1888cbba9c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/stack.controller.ts::StackController.getStack undocumented-status 200"
+    },
+    "80dde6efacb5ee8ab8c447bbebffcf87ffb00a06": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/stack.controller.ts::StackController.updateStack undocumented-status 200"
+    },
+    "15aac33d62bb8ff3d86745e06723e3eab4876227": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/stack.controller.ts::StackController.updateStack undocumented-status 400"
+    },
+    "0c69de2adfcbaf01ce363d79e5aff320944ec795": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/stack.controller.ts::StackController.removeAssetFromStack undocumented-status 204"
+    },
+    "5512f5dda55ffeb3b762cd8dab87e9e2d68f8e9c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/stack.controller.ts::StackController.removeAssetFromStack undocumented-status 400"
+    },
+    "3551caf8f445b536766a03b62fe7cc10952b2eac": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/sync.controller.ts::SyncController.deleteSyncAck undocumented-status 204"
+    },
+    "a545119dd424426e50e0e99404bcf999efc51816": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/sync.controller.ts::SyncController.getSyncAck undocumented-status 200"
+    },
+    "ee77132530fa8756dd444dffcf289b0a34ca8c70": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/sync.controller.ts::SyncController.sendSyncAck undocumented-status 204"
+    },
+    "845d33eae9493245bef3c1730a7eadb96a33cbc1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/sync.controller.ts::SyncController.sendSyncAck undocumented-status 400"
+    },
+    "80bc8967e216d9feaf4d9dbfdc765350d049f707": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/system-config.controller.ts::SystemConfigController.getConfig undocumented-status 200"
+    },
+    "ff91f09b54c3269475e38f9dfd3620550edbe54f": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/system-config.controller.ts::SystemConfigController.updateConfig undocumented-status 200"
+    },
+    "cce2de57489f17d8f5f5778b4b6724fc3f11c537": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/system-config.controller.ts::SystemConfigController.updateConfig undocumented-status 400"
+    },
+    "298f2c7d90165d53acf5db72290541941d103dee": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/system-config.controller.ts::SystemConfigController.getConfigDefaults undocumented-status 200"
+    },
+    "b048d4a2a80e3ffa8295daf506497dbf9d5e8057": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/system-config.controller.ts::SystemConfigController.getStorageTemplateOptions undocumented-status 200"
+    },
+    "93ff69d340a0c53d78b1af3779eba696732ec4f1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/system-metadata.controller.ts::SystemMetadataController.getAdminOnboarding undocumented-status 200"
+    },
+    "015d25eb938da571756e21fa697c8e959d3bcdba": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/system-metadata.controller.ts::SystemMetadataController.updateAdminOnboarding undocumented-status 204"
+    },
+    "13d21874c83b9aec3ad661a1a75e7ffc1978145d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/system-metadata.controller.ts::SystemMetadataController.getReverseGeocodingState undocumented-status 200"
+    },
+    "f86791d55ffc4f9495019426c9a5e3805fbe6ed7": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/system-metadata.controller.ts::SystemMetadataController.getVersionCheckState undocumented-status 200"
+    },
+    "2d55ef99dbc5c48a84d27e8cdb197394b2701d29": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/tag.controller.ts::TagController.getAllTags undocumented-status 200"
+    },
+    "a906bffeac961d9fe85cddf7123b396f8a2cf921": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/tag.controller.ts::TagController.createTag undocumented-status 201"
+    },
+    "9a78265562d246961aa5430cd0bed448b7ce27c4": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/tag.controller.ts::TagController.createTag undocumented-status 400"
+    },
+    "7a16e8c0bda34b076acaf82c724098643c1c6dcc": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/tag.controller.ts::TagController.upsertTags undocumented-status 200"
+    },
+    "9f55ef9082754aec9140cf19d352773a65316cbe": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/tag.controller.ts::TagController.deleteTag undocumented-status 204"
+    },
+    "fd8df72d9ae41b2c9e2659ff33e6ad19e48b7d6d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/tag.controller.ts::TagController.getTagById undocumented-status 200"
+    },
+    "8a6bc3ee9a7ae307b67b2de9018ca44c268539d1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/tag.controller.ts::TagController.updateTag undocumented-status 200"
+    },
+    "e11cace483485ee829a681f410a35faa1f040faf": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/tag.controller.ts::TagController.untagAssets undocumented-status 200"
+    },
+    "36f17354cd2da4d36e54511d6d291ff3f7123ef3": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/tag.controller.ts::TagController.tagAssets undocumented-status 200"
+    },
+    "fdd937ea3d5dbc06070e7a249f1010a338a55a9e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/tag.controller.ts::TagController.bulkTagAssets undocumented-status 200"
+    },
+    "5ae6bcd7cc28539d01fe62a5835f4f41b756519d": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/timeline.controller.ts::TimelineController.getTimeBucket undocumented-status 400"
+    },
+    "98edbeb63bf2106b44750183288368a62fe1c378": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/timeline.controller.ts::TimelineController.getTimeBuckets undocumented-status 200"
+    },
+    "3b21396d3f69e4812ba9afe59213bff828f8f004": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/timeline.controller.ts::TimelineController.getTimeBuckets undocumented-status 400"
+    },
+    "7df1ac99f4dd0582081cf9e9126c913055442362": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/trash.controller.ts::TrashController.emptyTrash undocumented-status 200"
+    },
+    "296080d0b792fed7a66ba71b69519bab4b00e832": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/trash.controller.ts::TrashController.restoreTrash undocumented-status 200"
+    },
+    "0dbf8d4bade9dedef2409c855a505fee3871adbd": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/trash.controller.ts::TrashController.restoreAssets undocumented-status 200"
+    },
+    "bb6439f19ed906a83b2e0406498bbe8261698d18": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.searchUsers undocumented-status 200"
+    },
+    "a9bb11b0b4d9b434dffe570d78495d515ce45797": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.getUser undocumented-status 200"
+    },
+    "6c5be97450afeff3ac78d4de6c1db0e4d5e3580f": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.getMyUser undocumented-status 200"
+    },
+    "c85779a92f446de40dd70e43f89d5e278e264696": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.getMyUser undocumented-status 400"
+    },
+    "5066aabcbf8d1b6aa017c62558268eb72e8bf731": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.updateMyUser undocumented-status 200"
+    },
+    "6274a4eb39585febdd116691037f3f773ad6f4cb": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.updateMyUser undocumented-status 400"
+    },
+    "0e97fe55044a24a63bb70573262762baa094136c": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.getMyCalendarHeatmap undocumented-status 200"
+    },
+    "0b692671734ceba6b62ec34b8094137a9cd868f1": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.deleteUserLicense undocumented-status 204"
+    },
+    "0804e4cf710a4af767b62cf1e17b57ad43b1b518": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.getUserLicense undocumented-status 200"
+    },
+    "1cdd21b6d3fd259af93b004192b8f0042de0d951": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.getUserLicense undocumented-status 404"
+    },
+    "0e615e1e2c05e6cc7b8f67c99022641012440502": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.setUserLicense undocumented-status 200"
+    },
+    "f90d1f79eec1e88547e8a1d8cf8ed374c8eb5a00": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.setUserLicense undocumented-status 400"
+    },
+    "35d36de253a6df2df01c14554676cc0f5352642f": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.deleteUserOnboarding undocumented-status 204"
+    },
+    "b3745d841a16d9fb7b5d9a60e252bc0e7734fedb": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.getUserOnboarding undocumented-status 200"
+    },
+    "a787d8290ad954678cf6d8edbc87d24383f5810a": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.setUserOnboarding undocumented-status 200"
+    },
+    "3c329affd3076f461dc2724462d9868ef2406f7f": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.getMyPreferences undocumented-status 200"
+    },
+    "b07cda14531725f641610a6f36eaef3f5de65e8e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.updateMyPreferences undocumented-status 200"
+    },
+    "bd093a38456e8242f61db3450bbd0cfc3a154365": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.deleteProfileImage undocumented-status 204"
+    },
+    "342ece13c7ce41c816008cc9ef446e48ed891725": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.deleteProfileImage undocumented-status 400"
+    },
+    "a598dd617208d0dfdc4caa1e12562cd6d0ac8d65": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.createProfileImage undocumented-status 201"
+    },
+    "d092346525da2b51871bf991a84d6a1d01793248": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/user.controller.ts::UserController.createProfileImage undocumented-status 400"
+    },
+    "19ed67d8d281929eea315363e56273494fcbd25b": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/view.controller.ts::ViewController.getAssetsByOriginalPath undocumented-status 200"
+    },
+    "edc39b97aaba4a3d3c315bac14531352c928daec": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/view.controller.ts::ViewController.getUniqueOriginalPaths undocumented-status 200"
+    },
+    "e420dfb9ff280e92c4c2ce8772ace905391c3721": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/workflow.controller.ts::WorkflowController.searchWorkflows undocumented-status 200"
+    },
+    "334cf2f740b50e4aaa80af6c1d6aa9768840c762": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/workflow.controller.ts::WorkflowController.createWorkflow undocumented-status 201"
+    },
+    "1a1878e3cdb644dd399a0c9b56326babf4c5eccd": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/workflow.controller.ts::WorkflowController.createWorkflow undocumented-status 400"
+    },
+    "2d3499e3e1de8ed6820c697c7679f3c789f05af0": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/workflow.controller.ts::WorkflowController.deleteWorkflow undocumented-status 204"
+    },
+    "d69f066ac2afbe4e2fa9d1e394a10cee1e73dd72": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/workflow.controller.ts::WorkflowController.getWorkflow undocumented-status 200"
+    },
+    "945952215278a1136af07a71421aea2377459519": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/workflow.controller.ts::WorkflowController.updateWorkflow undocumented-status 200"
+    },
+    "6100ba30266fb50fd83d99f2eabed2969c94b58e": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/workflow.controller.ts::WorkflowController.updateWorkflow undocumented-status 400"
+    },
+    "d7c81df693560f4b82dfa9d53772db0276ff01aa": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/workflow.controller.ts::WorkflowController.getWorkflowLogs undocumented-status 200"
+    },
+    "4599eb6b7789140413ce638dea0f450a7d30b8f5": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/workflow.controller.ts::WorkflowController.getWorkflowForShare undocumented-status 200"
+    },
+    "f970bd58c0716dc99a10b06cb1573bbf9218d416": {
+      "verdict": "UNTRIAGED",
+      "key": "server/src/controllers/workflow.controller.ts::WorkflowController.getWorkflowTriggers undocumented-status 200"
+    }
+  }
+}

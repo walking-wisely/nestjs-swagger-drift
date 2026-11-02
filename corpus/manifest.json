@@ -17,6 +17,24 @@
       "flags": [],
       "prepare": ["npx --yes pnpm@11.28.2 install --frozen-lockfile --ignore-scripts"],
       "tiers": ["standard", "full"]
+    },
+    "immich": {
+      "remote": "https://github.com/immich-app/immich.git",
+      "sha": "2c87a17c87e68f0180d6982722faa0fbb0238cbc",
+      "tsconfig": "server/tsconfig.build.json",
+      "flags": [],
+      "prepare": [
+        "npx --yes pnpm@12.15.0 install --frozen-lockfile --ignore-scripts --filter immich..."
+      ],
+      "tiers": ["full"]
+    },
+    "amplication": {
+      "remote": "https://github.com/amplication/amplication.git",
+      "sha": "7656495d27f0dceff89657590c3f14149e45c7a6",
+      "tsconfig": "packages/amplication-server/tsconfig.app.json",
+      "flags": [],
+      "prepare": ["npm ci --ignore-scripts --legacy-peer-deps --no-audit --no-fund"],
+      "tiers": ["full"]
     }
   }
 }

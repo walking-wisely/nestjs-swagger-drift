@@ -244,10 +244,12 @@ consumer of `--fix`.
 
 ### 11.12 Implemented so far
 
-- `corpus/manifest.json` pins Ever Gauzy and Novu at the SHAs current on
-  2026-11-02. The SHA behind the original 554-finding triage was not recorded,
+- `corpus/manifest.json` pins Ever Gauzy, Novu, Immich (`server/tsconfig.build.json`)
+  and Amplication (`packages/amplication-server/tsconfig.app.json`) at the SHAs
+  current on 2026-11-02. The SHA behind the original 554-finding triage was not recorded,
   so the Gauzy pin is a fresh one and its finding count will differ.
-  Immich and Amplication are not pinned yet (§11.11 step 6).
+  Baselines hold 338 (Novu), 385 (Immich) and 3 (Amplication) findings, all
+  `UNTRIAGED`.
 - `scripts/corpus/cli.ts` (`npm run corpus -- <prepare|bootstrap|run> <repo-id>`)
   and `scripts/corpus/lib.ts` (fingerprint and delta, unit-tested in
   `test/unit/corpus-lib.test.ts`). Needs `npm run build` first and Node with
