@@ -343,8 +343,11 @@ export interface AnalysisOptions {
    * not declared in `@nestjs/swagger`. A listed name replaces whatever its
    * body would resolve to. Config-only.
    */
-  responseDecorators?: Readonly<Record<string, readonly (number | StatusRange)[]>>;
+  responseDecorators?: ResponseDecoratorStatuses;
 }
+
+/** Decorator name to the statuses it documents. */
+export type ResponseDecoratorStatuses = Readonly<Record<string, readonly (number | StatusRange)[]>>;
 
 /** A response-related local decorator whose documented statuses could not be determined. */
 export interface DocumentationGap {

@@ -17,7 +17,6 @@ import type {
   AnalysisOptions,
   DocumentationGap,
   DocumentedStatusValue,
-  StatusRange,
 } from './types.js';
 import {
   type ArgEnv,
@@ -29,13 +28,13 @@ import {
   strictEquals,
 } from './const-eval.js';
 import { checkProvenance } from './provenance.js';
+import { isStatusRange } from './status-value.js';
 import { SHORTHAND_RESPONSE_DECORATORS } from './nest-exceptions.js';
 
 const SWAGGER_MODULE = '@nestjs/swagger';
 const COMMON_MODULE = '@nestjs/common';
 const MAX_DEPTH = 8;
 const RESPONSE_NAME = /^Api\w*Responses?$/;
-const RANGE = /^[1-5]XX$/;
 
 export interface WrapperContext {
   checker: ts.TypeChecker;
@@ -142,7 +141,7 @@ function declarationOf(
 
 function rangeOrNumber(value: EnvValue | undefined): DocumentedStatusValue | undefined {
   if (value?.kind === 'number' && Number.isInteger(value.value)) return value.value;
-  if (value?.kind === 'string' && RANGE.test(value.value)) return value.value as StatusRange;
+  if (value?.kind === 'string' && isStatusRange(value.value)) return value.value;
   return undefined;
 }
 

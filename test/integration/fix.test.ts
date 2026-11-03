@@ -457,3 +457,44 @@ describe('--fix write mode + idempotency', () => {
     expect(applyFixesToFile(firstFile, [])).toBeUndefined();
   });
 });
+
+describe('local bindings that shadow the inserted decorator', () => {
+  const tmpDirs: string[] = [];
+  afterEach(() => {
+    for (const dir of tmpDirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  function applyWithAppendedSource(extra: string) {
+    const { findings, baseDir } = analyzeFixture(FIXTURE_DIR);
+    const plan = buildFixPlan(findings, baseDir);
+    const [file, entries] = [...groupEntriesByFile(plan.entries)].find(([f]) =>
+      f.endsWith('fresh-import.controller.ts'),
+    )!;
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fix-shadow-'));
+    tmpDirs.push(dir);
+    const copy = path.join(dir, 'copy.controller.ts');
+    fs.writeFileSync(copy, `${fs.readFileSync(file, 'utf8')}\n${extra}\n`);
+    const target = entries.find((e) => e.status === 404)!;
+    return { result: applyFixesToFile(copy, [target])!, target };
+  }
+
+  it('skips an entry whose decorator name is imported from another module', () => {
+    const name = 'ApiNotFoundResponse';
+    const { result, target } = applyWithAppendedSource(
+      `import { ${name} } from './local-responses';`,
+    );
+    expect(result.applied).toEqual([]);
+    expect(result.notApplied).toEqual([
+      { entry: target, reason: `a different ${name} is already in scope in this file` },
+    ]);
+  });
+
+  it('skips an entry whose decorator name is declared locally', () => {
+    const name = 'ApiNotFoundResponse';
+    const { result, target } = applyWithAppendedSource(`const ${name} = () => () => undefined;`);
+    expect(result.applied).toEqual([]);
+    expect(result.notApplied).toEqual([
+      { entry: target, reason: `a different ${name} is already in scope in this file` },
+    ]);
+  });
+});

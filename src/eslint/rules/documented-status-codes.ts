@@ -60,8 +60,8 @@
 import * as ts from 'typescript';
 import { ESLintUtils } from '@typescript-eslint/utils';
 import type { TSESTree } from '@typescript-eslint/utils';
-import type { AnalysisOptions, Finding, StatusRange } from '../../core/index.js';
-import { analyzeHandler, createAnalysisContext } from '../../core/index.js';
+import type { AnalysisOptions, Finding, ResponseDecoratorStatuses } from '../../core/index.js';
+import { STATUS_RANGE_PATTERN, analyzeHandler, createAnalysisContext } from '../../core/index.js';
 
 /**
  * `RuleCreator`'s `PluginDocs` generic (`@typescript-eslint/utils`) is how a
@@ -119,7 +119,7 @@ interface Options {
   /** See `AnalysisOptions.guardGuarantees`. Default: none. */
   guardGuarantees?: Record<string, string[]>;
   /** See `AnalysisOptions.responseDecorators`. Default: none. */
-  responseDecorators?: Record<string, (number | StatusRange)[]>;
+  responseDecorators?: ResponseDecoratorStatuses;
 }
 
 type RuleOptionsTuple = [Options];
@@ -210,7 +210,7 @@ export const documentedStatusCodesRule = createRule<RuleOptionsTuple, MessageIds
               items: {
                 anyOf: [
                   { type: 'integer', minimum: 100, maximum: 599 },
-                  { type: 'string', pattern: '^[1-5]XX$' },
+                  { type: 'string', pattern: STATUS_RANGE_PATTERN.source },
                 ],
               },
             },

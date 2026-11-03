@@ -40,20 +40,15 @@ import type {
 } from './types.js';
 import { type WrapperContext, resolveWrapperDecorator } from './response-wrappers.js';
 import { getDecoratorInfos } from './decorators.js';
-import { resolveStatusExpression } from './status-value.js';
+import { isStatusRange, resolveStatusExpression } from './status-value.js';
 import { SHORTHAND_RESPONSE_DECORATORS } from './nest-exceptions.js';
 import { getBaseClassDeclaration } from './heritage.js';
 
 const SWAGGER_MODULE = '@nestjs/swagger';
-const RANGE_STATUS_PATTERN = /^[1-5]XX$/;
 
 function getDecoratorCallArgument(decorator: ts.Decorator): ts.Expression | undefined {
   const expr = decorator.expression;
   return ts.isCallExpression(expr) ? expr.arguments[0] : undefined;
-}
-
-function isRangeStatusLiteral(text: string): text is StatusRange {
-  return RANGE_STATUS_PATTERN.test(text);
 }
 
 /** Resolves `expr` to a numeric status or an `NXX` range literal, where statically possible. */
@@ -61,7 +56,7 @@ function resolveStatusLiteralExpression(
   expr: ts.Expression,
   checker: ts.TypeChecker,
 ): number | StatusRange | undefined {
-  if (ts.isStringLiteralLike(expr) && isRangeStatusLiteral(expr.text)) return expr.text;
+  if (ts.isStringLiteralLike(expr) && isStatusRange(expr.text)) return expr.text;
   return resolveStatusExpression(expr, checker);
 }
 
@@ -145,7 +140,7 @@ function resolveShorthandStatusValue(
   if (!symbol) return undefined;
   const type = checker.getTypeOfSymbolAtLocation(symbol, prop);
   if (type.isNumberLiteral()) return type.value;
-  if (type.isStringLiteral() && isRangeStatusLiteral(type.value)) return type.value;
+  if (type.isStringLiteral() && isStatusRange(type.value)) return type.value;
   return undefined;
 }
 
@@ -164,7 +159,7 @@ function resolveStatusViaExpressionType(
     if (!propSymbol) return undefined;
     const propType = checker.getTypeOfSymbolAtLocation(propSymbol, expr);
     if (propType.isNumberLiteral()) return propType.value;
-    if (propType.isStringLiteral() && isRangeStatusLiteral(propType.value)) return propType.value;
+    if (propType.isStringLiteral() && isStatusRange(propType.value)) return propType.value;
   } catch {
     // fall through
   }

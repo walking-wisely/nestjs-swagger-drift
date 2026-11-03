@@ -20,7 +20,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { pathToFileURL } from 'node:url';
 import * as ts from 'typescript';
-import type { StatusRange } from '../core/index.js';
+import { isStatusRange, type ResponseDecoratorStatuses } from '../core/index.js';
 
 export interface CliConfigFile {
   project?: string;
@@ -43,7 +43,7 @@ export interface CliConfigFile {
   /** Guard class name to the `Receiver.method` calls it guarantees to be truthy; see `AnalysisOptions.guardGuarantees`. */
   guardGuarantees?: Record<string, string[]>;
   /** Local response decorator name to the statuses it documents; see `AnalysisOptions.responseDecorators`. */
-  responseDecorators?: Record<string, (number | StatusRange)[]>;
+  responseDecorators?: ResponseDecoratorStatuses;
   baseDir?: string;
 }
 
@@ -71,7 +71,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 function isDocumentableStatus(item: unknown): boolean {
   if (typeof item === 'number') return Number.isInteger(item) && item >= 100 && item <= 599;
-  return typeof item === 'string' && /^[1-5]XX$/.test(item);
+  return isStatusRange(item);
 }
 
 const CONFIG_KEYS = new Set<string>([
@@ -254,7 +254,7 @@ function validateConfig(
         value,
       );
     }
-    config.responseDecorators = value as Record<string, (number | StatusRange)[]>;
+    config.responseDecorators = value as ResponseDecoratorStatuses;
   }
 
   if ('baseDir' in raw) {

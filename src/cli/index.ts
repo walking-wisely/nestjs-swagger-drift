@@ -82,7 +82,12 @@ import {
   type FileFixResult,
   type FixNotApplied,
 } from './fix/index.js';
-import type { AnalysisOptions, Finding, HandlerInfo, StatusRange } from '../core/index.js';
+import type {
+  AnalysisOptions,
+  Finding,
+  HandlerInfo,
+  ResponseDecoratorStatuses,
+} from '../core/index.js';
 import {
   analyzeHandler,
   createAnalysisContext,
@@ -268,7 +273,7 @@ interface ResolvedOptions {
   checkGuards: boolean;
   checkParsePipes: boolean;
   guardGuarantees: Record<string, string[]>;
-  responseDecorators: Record<string, (number | StatusRange)[]>;
+  responseDecorators: ResponseDecoratorStatuses;
   baseDir: string | undefined;
   audit: boolean;
   explain: boolean;

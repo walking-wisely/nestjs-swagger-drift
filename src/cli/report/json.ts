@@ -16,10 +16,10 @@ import {
   findingConfidence,
   traceSource,
   type Finding,
+  type DocumentationGap,
   type HandlerInfo,
   type StatusSource,
 } from '../../core/index.js';
-import type { DocumentationGap } from '../../core/index.js';
 import { locationOf, type Location } from './location.js';
 
 interface JsonSource {
