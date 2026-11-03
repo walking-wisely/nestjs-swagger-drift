@@ -32,7 +32,7 @@
 
 import * as ts from 'typescript';
 import type { Finding, StatusSource } from '../../core/index.js';
-import { resolveSuccessResponseType } from '../../core/index.js';
+import { findingConfidence, resolveSuccessResponseType } from '../../core/index.js';
 import { locationOf, type Location } from '../report/location.js';
 import {
   escapeSingleQuoted,
@@ -156,6 +156,14 @@ export function buildFixPlan(
         finding,
         reason:
           'only sourced from opt-in implicit checks (validation-pipe/guards) — inference, not fact',
+      });
+      continue;
+    }
+
+    if (findingConfidence(finding).level === 'low') {
+      skipped.push({
+        finding,
+        reason: 'low confidence — reached only through weak signals; review before documenting',
       });
       continue;
     }

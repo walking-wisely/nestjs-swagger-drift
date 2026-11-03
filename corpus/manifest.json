@@ -1,0 +1,40 @@
+{
+  "repos": {
+    "ever-gauzy": {
+      "remote": "https://github.com/ever-co/ever-gauzy.git",
+      "sha": "7da5a66804a632d921d826ed5f35350e53af6769",
+      "tsconfig": "packages/core/tsconfig.lib.json",
+      "flags": [],
+      "prepare": [
+        "npx --yes yarn@1.22.22 install --frozen-lockfile --ignore-scripts --ignore-engines --network-timeout 600000"
+      ],
+      "tiers": ["smoke", "standard", "full"]
+    },
+    "novu": {
+      "remote": "https://github.com/novuhq/novu.git",
+      "sha": "4af47133e2cd5e3de296293e6b21bfd24a6b591f",
+      "tsconfig": "apps/api/tsconfig.json",
+      "flags": [],
+      "prepare": ["npx --yes pnpm@11.28.2 install --frozen-lockfile --ignore-scripts"],
+      "tiers": ["standard", "full"]
+    },
+    "immich": {
+      "remote": "https://github.com/immich-app/immich.git",
+      "sha": "2c87a17c87e68f0180d6982722faa0fbb0238cbc",
+      "tsconfig": "server/tsconfig.build.json",
+      "flags": [],
+      "prepare": [
+        "npx --yes pnpm@12.15.0 install --frozen-lockfile --ignore-scripts --filter immich..."
+      ],
+      "tiers": ["full"]
+    },
+    "amplication": {
+      "remote": "https://github.com/amplication/amplication.git",
+      "sha": "7656495d27f0dceff89657590c3f14149e45c7a6",
+      "tsconfig": "packages/amplication-server/tsconfig.app.json",
+      "flags": [],
+      "prepare": ["npm ci --ignore-scripts --legacy-peer-deps --no-audit --no-fund"],
+      "tiers": ["full"]
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "pin": "7656495d27f0dceff89657590c3f14149e45c7a6",
+  "toolVersion": "0.1.2",
+  "recordedAt": "2026-11-02",
+  "entries": {
+    "6316f47936f9a7308d0e2e6223ed5b09c8ad384a": {
+      "verdict": "TP",
+      "key": "packages/amplication-server/src/core/user/user.controller.ts::UserController.notifyUseFeatureAnnouncement undocumented-status 201",
+      "basis": "ai-triage:UserController.notifyUseFeatureAnnouncement#implicit-201 user.controller.ts:19 @Post with no @HttpCode and no @ApiResponse"
+    },
+    "0e871c4be6d86c9c0f926ff15d750e45b84900bf": {
+      "verdict": "FP",
+      "key": "packages/amplication-server/src/core/auth/auth.controller.ts::AuthController.github undocumented-status 200",
+      "basis": "ai-triage:AuthController.github#passport-redirect auth.controller.ts:46 GitHubAuthGuard extends AuthGuard('github'); passport-oauth2 strategy.redirect ends the response so canActivate never resolves and the handler body never runs; real status is 302"
+    },
+    "facbed6b54bf6567ba4525a48164e7181217a30d": {
+      "verdict": "TP",
+      "key": "packages/amplication-server/src/core/subscription/subscription.controller.ts::SubscriptionController.updateStatus undocumented-status 201",
+      "basis": "ai-triage:SubscriptionController.updateStatus#implicit-201 subscription.controller.ts:20 @Post with no @HttpCode and no @ApiResponse"
+    }
+  }
+}

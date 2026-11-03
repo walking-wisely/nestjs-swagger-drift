@@ -56,7 +56,10 @@ const CLASS_VALIDATOR_MODULE = 'class-validator';
 export const BODY_LIKE_DECORATOR_NAMES: ReadonlySet<string> = new Set(['Body', 'Param', 'Query']);
 
 /** `true` if `param` carries an accepted `@Body()`/`@Param()`/`@Query()` decorator. */
-export function hasBodyLikeDecorator(param: ts.ParameterDeclaration, checker: ts.TypeChecker): boolean {
+export function hasBodyLikeDecorator(
+  param: ts.ParameterDeclaration,
+  checker: ts.TypeChecker,
+): boolean {
   if (!ts.canHaveDecorators(param)) return false;
   const decorators = ts.getDecorators(param);
   if (!decorators) return false;
@@ -232,7 +235,10 @@ function callsClassValidator(
  * `class-validator`), or indirectly via a locally-composed decorator factory
  * whose own body calls one (issue #13b, see `callsClassValidator`).
  */
-function hasClassValidatorDecorator(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): boolean {
+function hasClassValidatorDecorator(
+  classDecl: ts.ClassDeclaration,
+  checker: ts.TypeChecker,
+): boolean {
   for (const member of classDecl.members) {
     if (!ts.isPropertyDeclaration(member) || !ts.canHaveDecorators(member)) continue;
     const decorators = ts.getDecorators(member);

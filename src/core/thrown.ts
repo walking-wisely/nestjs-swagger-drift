@@ -56,24 +56,30 @@
  *
  * ## Trivially unreachable throws
  *
- * Two cheap, deliberately partial reachability checks (NOT full control-flow
+ * Cheap, deliberately partial reachability checks (NOT full control-flow
  * analysis — documented gaps below):
  *
  * - A statement following an unconditional `return`/`throw` in the same
  *   block is unreachable and skipped (`return x; throw new Y()` — the throw
  *   never runs).
- * - An `if`/`while` whose condition is the literal `false` (or `0`) is
- *   never entered; its body is skipped.
+ * - An `if`/`while` whose condition `const-eval.ts` can decide from literals
+ *   and from parameters bound to a literal at the call site (`env`, see
+ *   `call-graph.ts`) skips the branch that can never run. The condition is
+ *   decided only when every operand is a literal or a bound parameter; an
+ *   unbound parameter, a property read, a call — anything else — leaves
+ *   both branches live.
+ * - After an `if` whose condition is decided true and whose `then` branch
+ *   always returns/throws, the rest of the block is unreachable.
  *
  * NOT attempted: a `throw` after an `if`/`else` where both branches
  * unconditionally return/throw (needs real reachability analysis across
  * branches), unreachability from a `switch` with no `default` and all cases
- * returning, or unreachability provable only by dead constant-folding a
- * non-trivial condition. These stay collected — i.e. this can still
- * under-collect an unreachable throw as producible, which is the FP-safe
- * direction (a missed *unreachability* only ever adds a spurious finding
- * for an exception that in fact never fires, never removes a real one), but
- * it is a documented, deliberate stopping point, not an oversight.
+ * returning, or unreachability provable only by constant-folding a condition
+ * that depends on something other than literals and bound parameters. These
+ * stay collected — i.e. this can still under-collect an unreachable throw as
+ * producible, which is the FP-safe direction in the sense that it never
+ * removes a real one, but it is a documented, deliberate stopping point, not
+ * an oversight.
  *
  * ## `return Promise.reject(...)`: treated as a throw
  *
@@ -126,6 +132,7 @@
  */
 
 import * as ts from 'typescript';
+import { EMPTY_ENV, evaluateTruthiness, withLocalConsts, type ArgEnv } from './const-eval.js';
 
 export interface ThrownExpression {
   /**
@@ -209,6 +216,53 @@ function getAwaitedPromiseRejectStatementArgument(expr: ts.Expression): ts.Expre
   return matchPromiseRejectCall(unwrapNonAwaitWrappers(unwrapped.expression));
 }
 
+function finallyAlwaysReturns(block: ts.Block): boolean {
+  return block.statements.some(ts.isReturnStatement);
+}
+
+function isAsyncDeclaration(declaration: ts.Declaration | undefined): boolean {
+  return (
+    declaration !== undefined &&
+    ts.isFunctionLike(declaration) &&
+    (ts.getCombinedModifierFlags(declaration) & ts.ModifierFlags.Async) !== 0
+  );
+}
+
+/**
+ * A `catch` is dead when nothing in its `try` block can raise synchronously:
+ * no `throw`, `await`, `yield` or `new`, and every call targets a function
+ * declared `async` (whose failures surface as a rejected promise, which a
+ * `return`ed or un-awaited call hands to the caller instead of the `catch`).
+ */
+function cannotReachCatch(tryBlock: ts.Block, checker: ts.TypeChecker | undefined): boolean {
+  if (checker === undefined) return false;
+  let safe = true;
+  const visit = (node: ts.Node): void => {
+    if (!safe) return;
+    if (isNestedFunctionLike(node) || ts.isClassLike(node)) return;
+    if (
+      ts.isThrowStatement(node) ||
+      ts.isAwaitExpression(node) ||
+      ts.isYieldExpression(node) ||
+      ts.isNewExpression(node) ||
+      (ts.isForOfStatement(node) && node.awaitModifier !== undefined)
+    ) {
+      safe = false;
+      return;
+    }
+    if (ts.isCallExpression(node)) {
+      const declaration = checker.getResolvedSignature(node)?.declaration;
+      if (!isAsyncDeclaration(declaration)) {
+        safe = false;
+        return;
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(tryBlock);
+  return safe;
+}
+
 function isNestedFunctionLike(node: ts.Node): boolean {
   return (
     ts.isFunctionExpression(node) ||
@@ -221,10 +275,11 @@ function isNestedFunctionLike(node: ts.Node): boolean {
   );
 }
 
-/** `expr` is the literal `false` or the literal `0` — see module doc's "trivially unreachable" section. */
-function isFalsyLiteral(expr: ts.Expression): boolean {
-  if (expr.kind === ts.SyntaxKind.FalseKeyword) return true;
-  return ts.isNumericLiteral(expr) && Number(expr.text) === 0;
+function alwaysExits(statement: ts.Statement): boolean {
+  if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) return true;
+  if (!ts.isBlock(statement)) return false;
+  const last = statement.statements[statement.statements.length - 1];
+  return last !== undefined && alwaysExits(last);
 }
 
 /**
@@ -250,9 +305,12 @@ function isFalsyLiteral(expr: ts.Expression): boolean {
 export function walkProducibleNodes(
   fn: ts.FunctionLikeDeclarationBase,
   onNode: (node: ts.Node, producible: boolean) => void,
+  env: ArgEnv = EMPTY_ENV,
+  checker?: ts.TypeChecker,
 ): void {
   const body = fn.body;
   if (body === undefined || !ts.isBlock(body)) return;
+  env = withLocalConsts(fn, env);
 
   function visit(node: ts.Node, producible: boolean): void {
     onNode(node, producible);
@@ -268,8 +326,12 @@ export function walkProducibleNodes(
 
     if (ts.isTryStatement(node)) {
       const caught = node.catchClause !== undefined;
-      visit(node.tryBlock, producible && !caught);
-      if (node.catchClause) visit(node.catchClause.block, producible);
+      const swallowed = node.finallyBlock !== undefined && finallyAlwaysReturns(node.finallyBlock);
+      visit(node.tryBlock, producible && !caught && !swallowed);
+      if (node.catchClause) {
+        const reachable = !swallowed && !cannotReachCatch(node.tryBlock, checker);
+        visit(node.catchClause.block, producible && reachable);
+      }
       if (node.finallyBlock) visit(node.finallyBlock, producible);
       return;
     }
@@ -279,18 +341,27 @@ export function walkProducibleNodes(
         visit(statement, producible);
         // Nothing after an unconditional return/throw in the same block runs.
         if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) break;
+        if (
+          ts.isIfStatement(statement) &&
+          statement.elseStatement === undefined &&
+          alwaysExits(statement.thenStatement) &&
+          evaluateTruthiness(statement.expression, env) === true
+        ) {
+          break;
+        }
       }
       return;
     }
 
     if (ts.isIfStatement(node)) {
-      if (!isFalsyLiteral(node.expression)) visit(node.thenStatement, producible);
-      if (node.elseStatement) visit(node.elseStatement, producible);
+      const truth = evaluateTruthiness(node.expression, env);
+      if (truth !== false) visit(node.thenStatement, producible);
+      if (node.elseStatement && truth !== true) visit(node.elseStatement, producible);
       return;
     }
 
     if (ts.isWhileStatement(node)) {
-      if (!isFalsyLiteral(node.expression)) visit(node.statement, producible);
+      if (evaluateTruthiness(node.expression, env) !== false) visit(node.statement, producible);
       return;
     }
 
@@ -309,23 +380,32 @@ export function walkProducibleNodes(
  * function's concise `() => expr` body can't syntactically contain a
  * `throw` statement).
  */
-export function collectDirectThrows(fn: ts.FunctionLikeDeclarationBase): ThrownExpression[] {
+export function collectDirectThrows(
+  fn: ts.FunctionLikeDeclarationBase,
+  env: ArgEnv = EMPTY_ENV,
+  checker?: ts.TypeChecker,
+): ThrownExpression[] {
   const results: ThrownExpression[] = [];
-  walkProducibleNodes(fn, (node, producible) => {
-    if (!producible) return;
-    if (ts.isThrowStatement(node) && node.expression) {
-      results.push({ node, expression: node.expression });
-      return;
-    }
-    if (ts.isReturnStatement(node) && node.expression) {
-      const rejectArgument = getPromiseRejectArgument(node.expression);
-      if (rejectArgument) results.push({ node, expression: rejectArgument });
-      return;
-    }
-    if (ts.isExpressionStatement(node)) {
-      const rejectArgument = getAwaitedPromiseRejectStatementArgument(node.expression);
-      if (rejectArgument) results.push({ node, expression: rejectArgument });
-    }
-  });
+  walkProducibleNodes(
+    fn,
+    (node, producible) => {
+      if (!producible) return;
+      if (ts.isThrowStatement(node) && node.expression) {
+        results.push({ node, expression: node.expression });
+        return;
+      }
+      if (ts.isReturnStatement(node) && node.expression) {
+        const rejectArgument = getPromiseRejectArgument(node.expression);
+        if (rejectArgument) results.push({ node, expression: rejectArgument });
+        return;
+      }
+      if (ts.isExpressionStatement(node)) {
+        const rejectArgument = getAwaitedPromiseRejectStatementArgument(node.expression);
+        if (rejectArgument) results.push({ node, expression: rejectArgument });
+      }
+    },
+    env,
+    checker,
+  );
   return results;
 }

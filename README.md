@@ -130,6 +130,11 @@ Options:
       --no-config             Skip loading/auto-discovering a config file entirely.
       --audit                 Ignore swagger-drift-disable-next-line directives, so
                                every finding they would otherwise hide is reported.
+      --explain               Show, per finding, the call hops and enclosing conditions
+                               that made each throw count as reachable.
+      --min-confidence <level> "high" hides findings reached only through weak signals
+                               (a throw in a catch block, or a bare parameter
+                               emptiness check); default "low" shows everything.
   -h, --help                  Print this message.
 ```
 
@@ -513,6 +518,30 @@ No undocumented status codes found.
   class (method- and class-level), finds its `canActivate`, and recurses into
   it with the same bounded call-graph traversal used for services, collecting
   whatever it throws (typically `UnauthorizedException`/`ForbiddenException`).
+- **`guardGuarantees`** (config file and ESLint rule option) — maps a guard class name to the
+  calls it guarantees to return a truthy value, for example
+  `{ "TenantGuard": ["RequestContext.currentTenantId"] }`. On a handler that
+  carries the guard through `@UseGuards` (class- or method-level, including
+  guards that extend a listed one), a service-level check such as
+  `const tenantId = RequestContext.currentTenantId(); if (!tenantId) throw ...`
+  is treated as unreachable and no longer reported. Only list guards that
+  really reject the request when the call would be falsy; a guard that is
+  skipped for `@Public()` routes still gets the guarantee.
+- **Local response decorators.** A project decorator that composes or forwards to
+  `@nestjs/swagger` response decorators (`applyDecorators(ApiResponse({ status: 202 }))`,
+  `Doc(404)`, a wrapper that picks the decorator with a `switch` on its status
+  argument) is read from its source, using the literal arguments at each use.
+  Anything it cannot prove (loops, a `reduce` over the swagger exports, a switch
+  on a value only known at runtime) is never guessed: the finding gets a hint
+  naming the decorator, and the status stays undocumented.
+- **`responseDecorators`** (config file and ESLint rule option) — maps a local
+  decorator name to the statuses it documents, for wrappers whose source cannot
+  be read, for example
+  `{ "ApiCommonResponses": [400, 401, 404, 500], "ApiOkResponse": [200] }`.
+  Values are numbers or ranges (`"4XX"`). It applies only to decorators not
+  declared in `@nestjs/swagger`, and replaces what the wrapper's body would
+  resolve to, so keep the list in step with the wrapper.
+
 - **`checkParsePipes`** (`parse-pipes.ts`) — treats `400` (or an overridden
   status, see below) as producible when a handler parameter decorated with
   `@Body()`/`@Param()`/`@Query()`/`@Headers()`/`@UploadedFile()`/

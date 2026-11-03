@@ -79,7 +79,10 @@ function getDecoratorCallArgument(decorator: ts.Decorator): ts.Expression | unde
  * `true` if any of `methodNode`'s parameters carries an accepted `@Res()`/
  * `@Response()` from `@nestjs/common` — see module doc's `@Res()` gap.
  */
-function hasResponseObjectParameter(methodNode: ts.MethodDeclaration, checker: ts.TypeChecker): boolean {
+function hasResponseObjectParameter(
+  methodNode: ts.MethodDeclaration,
+  checker: ts.TypeChecker,
+): boolean {
   for (const param of methodNode.parameters) {
     if (!ts.canHaveDecorators(param)) continue;
     const decorators = ts.getDecorators(param);

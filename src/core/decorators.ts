@@ -322,3 +322,28 @@ export function getHttpHandlerDecorators(
   }
   return results;
 }
+
+const EXCLUDE_DECORATORS = ['ApiExcludeController', 'ApiExcludeEndpoint'];
+
+function isExcludeDecoratorActive(
+  node: ts.ClassLikeDeclaration | ts.MethodDeclaration,
+  checker: ts.TypeChecker,
+): boolean {
+  return getDecoratorInfos(node, checker, '@nestjs/swagger').some((d) => {
+    if (d.provenance === 'mismatch') return false;
+    if (!EXCLUDE_DECORATORS.includes(d.resolvedName ?? d.name)) return false;
+    const arg = getDecoratorCallArgument(d.node);
+    return arg === undefined || arg.kind !== ts.SyntaxKind.FalseKeyword;
+  });
+}
+
+/** True when `@ApiExcludeController()` / `@ApiExcludeEndpoint()` keeps the handler out of the OpenAPI document. */
+export function isExcludedFromDocs(
+  methodNode: ts.MethodDeclaration,
+  classNode: ts.ClassLikeDeclaration,
+  checker: ts.TypeChecker,
+): boolean {
+  return (
+    isExcludeDecoratorActive(methodNode, checker) || isExcludeDecoratorActive(classNode, checker)
+  );
+}

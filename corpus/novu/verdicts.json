@@ -1,0 +1,137 @@
+{
+  "pin": "4af47133e2cd5e3de296293e6b21bfd24a6b591f",
+  "toolVersion": "0.1.2",
+  "recordedAt": "2026-11-02",
+  "entries": {
+    "7f79b091932d7cfebf79fc6a72f4272ffdefd9ad": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/activity/activity.controller.ts::ActivityController.getCharts undocumented-status 200",
+      "basis": "ai-triage:ActivityController.getCharts#no-200-documented handler has no response decorator for its 200"
+    },
+    "4c871c782f06b71e1cb0feff89c986731225721d": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/activity/activity.controller.ts::ActivityController.getCharts undocumented-status 402",
+      "basis": "site:apps/api/src/app/shared/services/activity-retention.service.ts:107#plan-retention-limit client-supplied after/before range exceeds tier"
+    },
+    "ac2a14afb8ddc18dd6ac075948a43d55f37ba1e4": {
+      "verdict": "UNCLEAR",
+      "key": "apps/api/src/app/activity/activity.controller.ts::ActivityController.getCharts undocumented-status 500",
+      "basis": "site:apps/api/src/app/shared/services/activity-retention.service.ts:77#org-missing authenticated organizationId has no organization row"
+    },
+    "855ce62036667112ed54743aafafcdefb9ddc98a": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/activity/activity.controller.ts::ActivityController.getLogs undocumented-status 200",
+      "basis": "ai-triage:ActivityController.getLogs#no-200-documented handler has no response decorator for its 200"
+    },
+    "afff021f6a54d7f4cbacfabc59a59efe9c9f2865": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/activity/activity.controller.ts::ActivityController.getRequestTraces undocumented-status 200",
+      "basis": "ai-triage:ActivityController.getRequestTraces#no-200-documented handler has no response decorator for its 200"
+    },
+    "a474a3ffb945d0cecc50d298b9fc49438ff8b250": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/activity/activity.controller.ts::ActivityController.getRequestTraces undocumented-status 404",
+      "basis": "ai-triage:ActivityController.getRequestTraces#unknown-requestId get-request.usecase.ts:38 client-supplied requestId"
+    },
+    "5a265cd0b578d2191024e2f256534eb8cfd4294e": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/activity/activity.controller.ts::ActivityController.getWorkflowRuns undocumented-status 200",
+      "basis": "ai-triage:ActivityController.getWorkflowRuns#no-200-documented handler has no response decorator for its 200"
+    },
+    "3d7187dd4e0a5b8afaef776dc7a76d5f11d5edd9": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/activity/activity.controller.ts::ActivityController.getWorkflowRun undocumented-status 200",
+      "basis": "ai-triage:ActivityController.getWorkflowRun#no-200-documented handler has no response decorator for its 200"
+    },
+    "891ed1772005bc3b27310fdf59c5413e2cffc2bc": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/agents/channels/integrations/agent-integrations.controller.ts::AgentIntegrationsController.addAgentIntegration undocumented-status 402",
+      "basis": "ai-triage:AgentIntegrationsController.addAgentIntegration#email-tier-gate add-agent-integration.usecase.ts:303 PAYMENT_REQUIRED when tier lacks AGENT_EMAIL_INTEGRATION; hosted-tier deployments only"
+    },
+    "55c1eafd7a363fc39c48dd03f90f206f4af05afa": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/channel-connections/channel-connections.controller.ts::ChannelConnectionsController.deleteChannelConnection undocumented-status 204",
+      "basis": "ai-triage:ChannelConnectionsController.deleteChannelConnection#no-204-documented handler has no response decorator for its 204"
+    },
+    "2078a27c6aa5e9f00d6203a5b92e7e5ab7a3e9f9": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/channel-endpoints/channel-endpoints.controller.ts::ChannelEndpointsController.deleteChannelEndpoint undocumented-status 204",
+      "basis": "ai-triage:ChannelEndpointsController.deleteChannelEndpoint#no-204-documented handler has no response decorator for its 204"
+    },
+    "d91ce3393f77591c4e853afc920b0c8cd691e0e8": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/contexts/contexts.controller.ts::ContextsController.deleteContext undocumented-status 204",
+      "basis": "ai-triage:ContextsController.deleteContext#no-204-documented handler has no response decorator for its 204"
+    },
+    "bd5ca7cf78a38d018ce1376ce8944b617f72f15a": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/environments-v1/environments-v1.controller.ts::EnvironmentsControllerV1.deleteEnvironment undocumented-status 200",
+      "basis": "ai-triage:EnvironmentsControllerV1.deleteEnvironment#no-200-documented handler has no response decorator for its 200"
+    },
+    "be98e5c7fa796f4c0bda5d470f887c76c4a9a135": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/integrations/integrations.controller.ts::IntegrationsController.autoConfigureIntegration undocumented-status 201",
+      "basis": "ai-triage:IntegrationsController.autoConfigureIntegration#documents-200-but-POST-sends-201 handler documents ApiResponse(Dto, 200) with no @HttpCode"
+    },
+    "fd5cba1c04f625e8d54d183cfdf1934d37e43175": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/integrations/integrations.controller.ts::IntegrationsController.configureIntegrationWebhook undocumented-status 502",
+      "basis": "site:apps/api/src/app/telegram-linking/configure-telegram-webhook/configure-telegram-webhook.usecase.ts:176#telegram-api-rejects client-supplied bot token"
+    },
+    "9f23c0b94d6b4e1cdc568b7d9e20cbe02390686d": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/integrations/integrations.controller.ts::IntegrationsController.linkChannelEndpoint undocumented-status 502",
+      "basis": "site:apps/api/src/app/telegram-linking/configure-telegram-webhook/configure-telegram-webhook.usecase.ts:176#telegram-api-rejects client-supplied bot token"
+    },
+    "2f225f37c81388ae999133602dba3105069e15d1": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/layouts-v2/layouts.controller.ts::LayoutsController.delete undocumented-status 204",
+      "basis": "ai-triage:LayoutsController.delete#no-204-documented handler has no response decorator for its 204"
+    },
+    "f6cbd7055eb63da847213225a0050c4415e86b9f": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/notifications/notification.controller.ts::NotificationsController.listNotifications undocumented-status 402",
+      "basis": "site:apps/api/src/app/shared/services/activity-retention.service.ts:107#plan-retention-limit client-supplied after/before range exceeds tier"
+    },
+    "d00fce0d68e49fc76f04d42b317e903650d1902e": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/subscribers-v2/subscribers.controller.ts::SubscribersController.deleteNotification undocumented-status 204",
+      "basis": "ai-triage:SubscribersController.deleteNotification#no-204-documented handler has no response decorator for its 204"
+    },
+    "6c8398bc729b7b357777db882b86268d0b56bef6": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/subscribers-v2/subscribers.controller.ts::SubscribersController.snoozeNotification undocumented-status 402",
+      "basis": "ai-triage:SubscribersController.snoozeNotification#snooze-tier-limit snooze-notification.usecase.ts:143 client-supplied duration exceeds tier max"
+    },
+    "292e27b0a56df81c1decedf31c56a94046dd547e": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/subscribers-v2/subscribers.controller.ts::SubscribersController.archiveAllNotifications undocumented-status 204",
+      "basis": "ai-triage:SubscribersController.archiveAllNotifications#no-204-documented handler has no response decorator for its 204"
+    },
+    "cf926581a00cfafb21f53c7880f305616cdf1c46": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/subscribers-v2/subscribers.controller.ts::SubscribersController.deleteAllNotifications undocumented-status 204",
+      "basis": "ai-triage:SubscribersController.deleteAllNotifications#no-204-documented handler has no response decorator for its 204"
+    },
+    "5a7b950415c095fedfe2db8dd233cd7b2d664839": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/subscribers-v2/subscribers.controller.ts::SubscribersController.markAllNotificationsAsRead undocumented-status 204",
+      "basis": "ai-triage:SubscribersController.markAllNotificationsAsRead#no-204-documented handler has no response decorator for its 204"
+    },
+    "e65f0ff6bf9b9ad79a0dd93a886b1998021a76da": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/subscribers-v2/subscribers.controller.ts::SubscribersController.archiveAllReadNotifications undocumented-status 204",
+      "basis": "ai-triage:SubscribersController.archiveAllReadNotifications#no-204-documented handler has no response decorator for its 204"
+    },
+    "4ebb732171d46f5106996005ca7390dbd278afba": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/subscribers-v2/subscribers.controller.ts::SubscribersController.markNotificationsAsSeen undocumented-status 204",
+      "basis": "ai-triage:SubscribersController.markNotificationsAsSeen#no-204-documented handler has no response decorator for its 204"
+    },
+    "e295b47ca4ad3cdb9a3c4550f19aa7418bb6c644": {
+      "verdict": "TP",
+      "key": "apps/api/src/app/workflows-v2/workflow.controller.ts::WorkflowController.removeWorkflow undocumented-status 204",
+      "basis": "ai-triage:WorkflowController.removeWorkflow#no-204-documented handler has no response decorator for its 204"
+    }
+  }
+}

@@ -309,7 +309,8 @@ function ensureDtoImport(
   const dtoImports = sourceFile
     .getImportDeclarations()
     .filter(
-      (declaration) => stripKnownExtension(declaration.getModuleSpecifierValue()) === targetSpecifierBase,
+      (declaration) =>
+        stripKnownExtension(declaration.getModuleSpecifierValue()) === targetSpecifierBase,
     );
 
   for (const declaration of dtoImports) {
@@ -409,6 +410,25 @@ function ensureSwaggerImport(sourceFile: SourceFile, decoratorNames: ReadonlySet
   });
 }
 
+function hasForeignBinding(sourceFile: SourceFile, name: string): boolean {
+  for (const declaration of sourceFile.getImportDeclarations()) {
+    const fromSwagger = declaration.getModuleSpecifierValue() === SWAGGER_MODULE;
+    if (!fromSwagger) {
+      if (declaration.getDefaultImport()?.getText() === name) return true;
+      if (declaration.getNamespaceImport()?.getText() === name) return true;
+    }
+    for (const named of declaration.getNamedImports()) {
+      const local = named.getAliasNode()?.getText() ?? named.getName();
+      if (local === name && (!fromSwagger || named.getName() !== name)) return true;
+    }
+  }
+  return (
+    sourceFile.getFunction(name) !== undefined ||
+    sourceFile.getClass(name) !== undefined ||
+    sourceFile.getVariableDeclaration(name) !== undefined
+  );
+}
+
 /** Groups `entries` (already all from the same file) by the method they target. */
 function groupByMethodPos(entries: readonly FixEntry[]): Map<number, FixEntry[]> {
   const byPos = new Map<number, FixEntry[]>();
@@ -506,6 +526,13 @@ export function applyFixesToFile(
     for (const entry of methodEntries) {
       if (decoratorAlreadyPresent(method, entry)) {
         notApplied.push({ entry, reason: 'decorator already present' });
+        continue;
+      }
+      if (hasForeignBinding(sourceFile, entry.decoratorName)) {
+        notApplied.push({
+          entry,
+          reason: `a different ${entry.decoratorName} is already in scope in this file`,
+        });
         continue;
       }
       // `insertDecorator(0, ...)` — prepend, not `addDecorator` (append) —

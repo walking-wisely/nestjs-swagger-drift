@@ -64,11 +64,11 @@ describe('loadConfigFile', () => {
 
   it('prefers .json over .mjs/.ts when more than one config file exists', async () => {
     const dir = makeTempDir();
+    fs.writeFileSync(path.join(dir, 'swagger-drift.config.json'), JSON.stringify({ maxDepth: 1 }));
     fs.writeFileSync(
-      path.join(dir, 'swagger-drift.config.json'),
-      JSON.stringify({ maxDepth: 1 }),
+      path.join(dir, 'swagger-drift.config.mjs'),
+      'export default { maxDepth: 2 };\n',
     );
-    fs.writeFileSync(path.join(dir, 'swagger-drift.config.mjs'), 'export default { maxDepth: 2 };\n');
     const result = await loadConfigFile(undefined, dir);
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.config).toEqual({ maxDepth: 1 });
@@ -126,7 +126,7 @@ describe('loadConfigFile', () => {
       if (!result.ok) expect(result.error).toContain('iggnore');
     });
 
-    it('rejects a negative maxDepth, matching --max-depth\'s own validation', async () => {
+    it("rejects a negative maxDepth, matching --max-depth's own validation", async () => {
       const dir = makeTempDir();
       fs.writeFileSync(
         path.join(dir, 'swagger-drift.config.json'),
@@ -246,6 +246,60 @@ describe('loadConfigFile', () => {
       const result = await loadConfigFile(undefined, dir);
       expect(result.ok).toBe(false);
       if (!result.ok) expect(result.error).toContain('checkParsePipes');
+    });
+
+    it('accepts "guardGuarantees" as a map of guard names to string arrays', async () => {
+      const dir = makeTempDir();
+      fs.writeFileSync(
+        path.join(dir, 'swagger-drift.config.json'),
+        JSON.stringify({ guardGuarantees: { TenantGuard: ['RequestContext.currentTenantId'] } }),
+      );
+      const result = await loadConfigFile(undefined, dir);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.config.guardGuarantees).toEqual({
+          TenantGuard: ['RequestContext.currentTenantId'],
+        });
+      }
+    });
+
+    it('rejects "guardGuarantees" values that are not string arrays', async () => {
+      const dir = makeTempDir();
+      fs.writeFileSync(
+        path.join(dir, 'swagger-drift.config.json'),
+        JSON.stringify({ guardGuarantees: { TenantGuard: 'RequestContext.currentTenantId' } }),
+      );
+      const result = await loadConfigFile(undefined, dir);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error).toContain('guardGuarantees');
+    });
+
+    it('accepts "responseDecorators" as a map of names to statuses and ranges', async () => {
+      const dir = makeTempDir();
+      fs.writeFileSync(
+        path.join(dir, 'swagger-drift.config.json'),
+        JSON.stringify({ responseDecorators: { ApiCommon: [400, 404, '5XX'] } }),
+      );
+      const result = await loadConfigFile(undefined, dir);
+      expect(result.ok).toBe(true);
+      if (result.ok)
+        expect(result.config.responseDecorators).toEqual({ ApiCommon: [400, 404, '5XX'] });
+    });
+
+    it.each([
+      [{ ApiCommon: 404 }],
+      [{ ApiCommon: [99] }],
+      [{ ApiCommon: ['6XX'] }],
+      [{ ApiCommon: [404.5] }],
+    ])('rejects invalid "responseDecorators" %j', async (value) => {
+      const dir = makeTempDir();
+      fs.writeFileSync(
+        path.join(dir, 'swagger-drift.config.json'),
+        JSON.stringify({ responseDecorators: value }),
+      );
+      const result = await loadConfigFile(undefined, dir);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error).toContain('responseDecorators');
     });
   });
 });

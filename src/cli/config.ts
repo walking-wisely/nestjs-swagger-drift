@@ -20,6 +20,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { pathToFileURL } from 'node:url';
 import * as ts from 'typescript';
+import { isStatusRange, type ResponseDecoratorStatuses } from '../core/index.js';
 
 export interface CliConfigFile {
   project?: string;
@@ -39,12 +40,15 @@ export interface CliConfigFile {
   checkGuards?: boolean;
   /** Issue #17. Mirrors `--check-parse-pipes`. */
   checkParsePipes?: boolean;
+  /** Guard class name to the `Receiver.method` calls it guarantees to be truthy; see `AnalysisOptions.guardGuarantees`. */
+  guardGuarantees?: Record<string, string[]>;
+  /** Local response decorator name to the statuses it documents; see `AnalysisOptions.responseDecorators`. */
+  responseDecorators?: ResponseDecoratorStatuses;
   baseDir?: string;
 }
 
 export type ConfigLoadResult =
-  | { ok: true; config: CliConfigFile; path: string | undefined }
-  | { ok: false; error: string };
+  { ok: true; config: CliConfigFile; path: string | undefined } | { ok: false; error: string };
 
 // PLAN.md §5 Phase 4 only asks for `.{ts,json}`; `.mjs`/`.js` are additional
 // scope, kept deliberately rather than dropped: `.ts` support already goes
@@ -65,6 +69,11 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isDocumentableStatus(item: unknown): boolean {
+  if (typeof item === 'number') return Number.isInteger(item) && item >= 100 && item <= 599;
+  return isStatusRange(item);
+}
+
 const CONFIG_KEYS = new Set<string>([
   'project',
   'reporter',
@@ -78,6 +87,8 @@ const CONFIG_KEYS = new Set<string>([
   'checkValidationPipe',
   'checkGuards',
   'checkParsePipes',
+  'guardGuarantees',
+  'responseDecorators',
   'baseDir',
 ]);
 
@@ -173,7 +184,9 @@ function validateConfig(
     for (const [key, ruleValue] of Object.entries(value)) {
       if (typeof ruleValue !== 'boolean') return fail(`rules.${key}`, 'a boolean', ruleValue);
     }
-    config.rules = value as Partial<Record<'documented-but-unreachable' | 'unresolvable-status', boolean>>;
+    config.rules = value as Partial<
+      Record<'documented-but-unreachable' | 'unresolvable-status', boolean>
+    >;
   }
 
   if ('treatDefaultAsWildcard' in raw) {
@@ -206,6 +219,42 @@ function validateConfig(
     const value = raw['checkParsePipes'];
     if (typeof value !== 'boolean') return fail('checkParsePipes', 'a boolean', value);
     config.checkParsePipes = value;
+  }
+
+  if ('guardGuarantees' in raw) {
+    const value = raw['guardGuarantees'];
+    const isMap =
+      typeof value === 'object' &&
+      value !== null &&
+      !Array.isArray(value) &&
+      Object.values(value).every(
+        (list) => Array.isArray(list) && list.every((item) => typeof item === 'string'),
+      );
+    if (!isMap) {
+      return fail(
+        'guardGuarantees',
+        'an object mapping guard class names to arrays of strings',
+        value,
+      );
+    }
+    config.guardGuarantees = value as Record<string, string[]>;
+  }
+
+  if ('responseDecorators' in raw) {
+    const value = raw['responseDecorators'];
+    const isMap =
+      typeof value === 'object' &&
+      value !== null &&
+      !Array.isArray(value) &&
+      Object.values(value).every((list) => Array.isArray(list) && list.every(isDocumentableStatus));
+    if (!isMap) {
+      return fail(
+        'responseDecorators',
+        'an object mapping decorator names to arrays of statuses (100-599 or "1XX"-"5XX")',
+        value,
+      );
+    }
+    config.responseDecorators = value as ResponseDecoratorStatuses;
   }
 
   if ('baseDir' in raw) {

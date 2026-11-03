@@ -137,8 +137,10 @@ export type StatusRange = '1XX' | '2XX' | '3XX' | '4XX' | '5XX';
  * `analyzeHandler` already knows how to treat as satisfying everything.
  * A `StatusRange` (`'4XX'`) documents every status in that range.
  */
+export type DocumentedStatusValue = number | 'default' | StatusRange;
+
 export interface DocumentedStatus {
-  status: number | 'default' | StatusRange;
+  status: DocumentedStatusValue;
   /** Decorator name, e.g. `'ApiNotFoundResponse'`. */
   decorator: string;
   /** For reporting / autofix anchoring. */
@@ -195,6 +197,8 @@ export type Finding =
       handler: HandlerInfo;
       sources: StatusSource[];
       node: ts.Node;
+      /** Local response decorators on this handler whose statuses could not be read; the finding may be a false positive. */
+      documentationGaps?: DocumentationGap[];
     }
   | {
       /** Opt-in, off by default. */
@@ -322,6 +326,33 @@ export interface AnalysisOptions {
    * runs at request time, only that the decorator call names one.
    */
   checkParsePipes?: boolean;
+
+  /**
+   * Guard class name to the calls (`Receiver.method`, e.g.
+   * `RequestContext.currentTenantId`) whose result that guard guarantees to
+   * be truthy. For a handler carrying the guard through `@UseGuards`, a
+   * service-level check that such a result is present is treated as dead
+   * code. Config-only: the tool cannot read what a custom guard enforces.
+   */
+  guardGuarantees?: Readonly<Record<string, readonly string[]>>;
+
+  /**
+   * Decorator name to the statuses it documents, for project-local response
+   * decorators whose definition the tool cannot read (a `reduce` over the
+   * swagger exports, a loop-built `applyDecorators`). Applies only to symbols
+   * not declared in `@nestjs/swagger`. A listed name replaces whatever its
+   * body would resolve to. Config-only.
+   */
+  responseDecorators?: ResponseDecoratorStatuses;
+}
+
+/** Decorator name to the statuses it documents. */
+export type ResponseDecoratorStatuses = Readonly<Record<string, readonly (number | StatusRange)[]>>;
+
+/** A response-related local decorator whose documented statuses could not be determined. */
+export interface DocumentationGap {
+  decorator: string;
+  reason: string;
 }
 
 declare const analysisCacheBrand: unique symbol;

@@ -119,6 +119,14 @@
 import * as ts from 'typescript';
 import type { AnalysisContext, AnalysisCache, ResolvedStatus, StatusSource } from './types.js';
 import { collectDirectThrows, walkProducibleNodes } from './thrown.js';
+import {
+  EMPTY_ENV,
+  bindArguments,
+  envKeyFor,
+  restrictEnv,
+  withLocalConsts,
+  type ArgEnv,
+} from './const-eval.js';
 import { resolveThrownStatus } from './resolve-status.js';
 
 /**
@@ -233,11 +241,20 @@ function getOwnerClass(decl: FunctionDeclWithBody): ts.ClassLikeDeclaration | un
  * try/catch-suppression and trivial-unreachability rules `collectDirectThrows`
  * applies to `throw`s (see module doc's "reuse, not duplication").
  */
-function collectProducibleCallSites(fn: ts.FunctionLikeDeclarationBase): ts.CallExpression[] {
+function collectProducibleCallSites(
+  fn: ts.FunctionLikeDeclarationBase,
+  env: ArgEnv = EMPTY_ENV,
+  checker?: ts.TypeChecker,
+): ts.CallExpression[] {
   const results: ts.CallExpression[] = [];
-  walkProducibleNodes(fn, (node, producible) => {
-    if (producible && ts.isCallExpression(node)) results.push(node);
-  });
+  walkProducibleNodes(
+    fn,
+    (node, producible) => {
+      if (producible && ts.isCallExpression(node)) results.push(node);
+    },
+    env,
+    checker,
+  );
   return results;
 }
 
@@ -332,12 +349,16 @@ function resolveCallTarget(
   return { decl, symbol: calleeSymbol };
 }
 
-function computeCacheEntry(decl: FunctionDeclWithBody, ctx: AnalysisContext): CacheEntry {
+function computeCacheEntry(
+  decl: FunctionDeclWithBody,
+  env: ArgEnv,
+  ctx: AnalysisContext,
+): CacheEntry {
   computeCount++; // testing-only instrumentation, see `__getCallGraphMemoStatsForTesting`
 
   const ownThrows: CacheEntry['ownThrows'] = [];
   const ownUnresolvedThrows: CacheEntry['ownUnresolvedThrows'] = [];
-  for (const { node, expression } of collectDirectThrows(decl)) {
+  for (const { node, expression } of collectDirectThrows(decl, env, ctx.checker)) {
     const resolved = resolveThrownStatus(expression, ctx.checker);
     if (resolved.kind === 'resolved') {
       ownThrows.push({ node, resolved });
@@ -347,7 +368,7 @@ function computeCacheEntry(decl: FunctionDeclWithBody, ctx: AnalysisContext): Ca
   }
 
   const calls: ResolvedCallTarget[] = [];
-  for (const callNode of collectProducibleCallSites(decl)) {
+  for (const callNode of collectProducibleCallSites(decl, env, ctx.checker)) {
     const target = resolveCallTarget(callNode, ctx.checker, ctx.program);
     if (!target) continue;
     calls.push({ callNode, decl: target.decl, symbol: target.symbol });
@@ -356,9 +377,11 @@ function computeCacheEntry(decl: FunctionDeclWithBody, ctx: AnalysisContext): Ca
   return { ownThrows, ownUnresolvedThrows, calls };
 }
 
-const callGraphCaches = new WeakMap<AnalysisCache, Map<ts.Symbol, CacheEntry>>();
+type CallGraphCacheMap = Map<ts.Symbol, Map<string, CacheEntry>>;
 
-function getCallGraphCache(cache: AnalysisCache): Map<ts.Symbol, CacheEntry> {
+const callGraphCaches = new WeakMap<AnalysisCache, CallGraphCacheMap>();
+
+function getCallGraphCache(cache: AnalysisCache): CallGraphCacheMap {
   let map = callGraphCaches.get(cache);
   if (!map) {
     map = new Map();
@@ -368,14 +391,21 @@ function getCallGraphCache(cache: AnalysisCache): Map<ts.Symbol, CacheEntry> {
 }
 
 function getOrComputeCacheEntry(
-  cacheMap: Map<ts.Symbol, CacheEntry>,
+  cacheMap: CallGraphCacheMap,
   target: { decl: FunctionDeclWithBody; symbol: ts.Symbol },
+  env: ArgEnv,
   ctx: AnalysisContext,
 ): CacheEntry {
-  const existing = cacheMap.get(target.symbol);
+  let byEnv = cacheMap.get(target.symbol);
+  if (!byEnv) {
+    byEnv = new Map();
+    cacheMap.set(target.symbol, byEnv);
+  }
+  const key = envKeyFor(target.decl, env);
+  const existing = byEnv.get(key);
   if (existing) return existing;
-  const computed = computeCacheEntry(target.decl, ctx);
-  cacheMap.set(target.symbol, computed);
+  const computed = computeCacheEntry(target.decl, restrictEnv(target.decl, env), ctx);
+  byEnv.set(key, computed);
   return computed;
 }
 
@@ -387,9 +417,10 @@ function expand(
   remainingSameClassHops: number,
   pathSoFar: ReadonlyArray<{ name: string; node: ts.Node }>,
   visited: Set<ts.Symbol>,
-  cacheMap: Map<ts.Symbol, CacheEntry>,
+  cacheMap: CallGraphCacheMap,
   results: CallGraphFinding[],
   unresolvedResults: CallGraphUnresolvedThrow[],
+  env: ArgEnv,
 ): void {
   // Budget exhaustion (`maxDepth`, or — once `SAME_CLASS_HOP_BUDGET` also
   // runs out — a long same-class helper chain) is a SILENT drop: there is no
@@ -415,7 +446,8 @@ function expand(
   const hop = { name: labelForDeclaration(target.decl), node: callNode };
   const hopPath = [...pathSoFar, hop];
 
-  const entry = getOrComputeCacheEntry(cacheMap, target, ctx);
+  const entry = getOrComputeCacheEntry(cacheMap, target, env, ctx);
+  const scopeEnv = withLocalConsts(target.decl, env);
 
   for (const { node, resolved } of entry.ownThrows) {
     results.push({
@@ -468,6 +500,7 @@ function expand(
       cacheMap,
       results,
       unresolvedResults,
+      bindArguments(nextCall.decl, nextCall.callNode, scopeEnv, ctx.checker),
     );
   }
   visited.delete(target.symbol);
@@ -502,6 +535,7 @@ export interface CallGraphResult {
 export function collectCallGraphStatuses(
   handlerBody: ts.FunctionLikeDeclarationBase,
   ctx: AnalysisContext,
+  handlerEnv: ArgEnv = EMPTY_ENV,
 ): CallGraphResult {
   const results: CallGraphFinding[] = [];
   const unresolvedResults: CallGraphUnresolvedThrow[] = [];
@@ -509,8 +543,9 @@ export function collectCallGraphStatuses(
 
   const cacheMap = getCallGraphCache(ctx.cache);
   const visited = new Set<ts.Symbol>();
+  const scopeEnv = withLocalConsts(handlerBody, handlerEnv);
 
-  for (const callNode of collectProducibleCallSites(handlerBody)) {
+  for (const callNode of collectProducibleCallSites(handlerBody, scopeEnv, ctx.checker)) {
     const target = resolveCallTarget(callNode, ctx.checker, ctx.program);
     if (!target) continue;
     expand(
@@ -524,6 +559,7 @@ export function collectCallGraphStatuses(
       cacheMap,
       results,
       unresolvedResults,
+      bindArguments(target.decl, callNode, scopeEnv, ctx.checker),
     );
   }
 
@@ -569,6 +605,7 @@ export function collectThrowsFromDeclaration(
     cacheMap,
     results,
     unresolvedResults,
+    EMPTY_ENV,
   );
   return { findings: results, unresolvedThrows: unresolvedResults };
 }

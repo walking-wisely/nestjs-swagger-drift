@@ -114,7 +114,10 @@ interface KeyIdentity {
 }
 
 /** Resolves an identifier to a string-literal VALUE where statically possible — mirrors `decorators.ts`'s own resolver. */
-function resolveStringLiteralValue(expr: ts.Expression, checker: ts.TypeChecker): string | undefined {
+function resolveStringLiteralValue(
+  expr: ts.Expression,
+  checker: ts.TypeChecker,
+): string | undefined {
   if (ts.isStringLiteralLike(expr)) return expr.text;
   if (ts.isIdentifier(expr)) {
     const sym = safeSymbol(checker, expr);
@@ -132,7 +135,10 @@ function resolveStringLiteralValue(expr: ts.Expression, checker: ts.TypeChecker)
   return undefined;
 }
 
-function resolveKeyIdentity(keyArg: ts.Expression, checker: ts.TypeChecker): KeyIdentity | undefined {
+function resolveKeyIdentity(
+  keyArg: ts.Expression,
+  checker: ts.TypeChecker,
+): KeyIdentity | undefined {
   if (!ts.isIdentifier(keyArg) && !ts.isStringLiteralLike(keyArg)) return undefined;
   const literal = resolveStringLiteralValue(keyArg, checker);
   if (!ts.isIdentifier(keyArg)) {
@@ -327,7 +333,10 @@ function isRequestMethodAccess(
 }
 
 /** Resolves a `Set`/array-of-string-literals expression to its literal contents, where statically possible. */
-function resolveStringLiteralSet(expr: ts.Expression, checker: ts.TypeChecker): Set<string> | undefined {
+function resolveStringLiteralSet(
+  expr: ts.Expression,
+  checker: ts.TypeChecker,
+): Set<string> | undefined {
   if (ts.isArrayLiteralExpression(expr)) {
     const out = new Set<string>();
     for (const el of expr.elements) {
@@ -336,7 +345,11 @@ function resolveStringLiteralSet(expr: ts.Expression, checker: ts.TypeChecker): 
     }
     return out;
   }
-  if (ts.isNewExpression(expr) && ts.isIdentifier(expr.expression) && expr.expression.text === 'Set') {
+  if (
+    ts.isNewExpression(expr) &&
+    ts.isIdentifier(expr.expression) &&
+    expr.expression.text === 'Set'
+  ) {
     const arg = expr.arguments?.[0];
     return arg ? resolveStringLiteralSet(arg, checker) : new Set();
   }
@@ -380,12 +393,16 @@ function isProvablyFalseHttpMethodCheck(
     const isEquals =
       op === ts.SyntaxKind.EqualsEqualsEqualsToken || op === ts.SyntaxKind.EqualsEqualsToken;
     const isNotEquals =
-      op === ts.SyntaxKind.ExclamationEqualsEqualsToken || op === ts.SyntaxKind.ExclamationEqualsToken;
+      op === ts.SyntaxKind.ExclamationEqualsEqualsToken ||
+      op === ts.SyntaxKind.ExclamationEqualsToken;
     if (isEquals || isNotEquals) {
       const [methodSide, literalSide] = isRequestMethodAccess(expr.left, requestSymbols, checker)
         ? [expr.left, expr.right]
         : [expr.right, expr.left];
-      if (isRequestMethodAccess(methodSide, requestSymbols, checker) && ts.isStringLiteralLike(literalSide)) {
+      if (
+        isRequestMethodAccess(methodSide, requestSymbols, checker) &&
+        ts.isStringLiteralLike(literalSide)
+      ) {
         return isEquals ? literalSide.text !== httpMethod : literalSide.text === httpMethod;
       }
     }
@@ -399,7 +416,10 @@ function isProvablyFalseHttpMethodCheck(
 function flattenAnd(expr: ts.Expression): ts.Expression[] {
   let current = expr;
   while (ts.isParenthesizedExpression(current)) current = current.expression;
-  if (ts.isBinaryExpression(current) && current.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) {
+  if (
+    ts.isBinaryExpression(current) &&
+    current.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
+  ) {
     return [...flattenAnd(current.left), ...flattenAnd(current.right)];
   }
   return [current];
@@ -416,7 +436,10 @@ interface NarrowingContext {
 function isConditionProvablyFalse(expr: ts.Expression, ctx: NarrowingContext): boolean {
   for (const operand of flattenAnd(expr)) {
     const metadataKey = metadataKeyIdentityForCondition(operand, ctx.checker);
-    if (metadataKey !== undefined && !ctx.appliedKeys.some((k) => keyIdentitiesMatch(k, metadataKey))) {
+    if (
+      metadataKey !== undefined &&
+      !ctx.appliedKeys.some((k) => keyIdentitiesMatch(k, metadataKey))
+    ) {
       return true;
     }
     if (isProvablyFalseHttpMethodCheck(operand, ctx.requestSymbols, ctx.httpMethod, ctx.checker)) {
@@ -477,7 +500,10 @@ export function computeExcludedGuardBranches(
 }
 
 /** Whether `node` (or any ancestor) is one of `excluded`'s roots — see `computeExcludedGuardBranches`. */
-export function isNodeInExcludedGuardBranch(node: ts.Node, excluded: ReadonlySet<ts.Node>): boolean {
+export function isNodeInExcludedGuardBranch(
+  node: ts.Node,
+  excluded: ReadonlySet<ts.Node>,
+): boolean {
   if (excluded.size === 0) return false;
   let current: ts.Node | undefined = node;
   while (current) {

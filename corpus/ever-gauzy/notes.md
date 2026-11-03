@@ -1,0 +1,59 @@
+# ever-gauzy: known false-positive classes
+
+## Fixed: flag-guarded throws in RequestContext
+
+`RequestContext.currentUser`, `hasPermissions`, `hasAnyPermission`, `hasRoles` and
+`currentToken` throw a 401 only under `if (throwError)`
+(`packages/core/src/lib/core/context/request-context.ts:417`, `482`, `508`, `532`, `572`).
+Every caller in `packages/` invokes them with no flag, or with `false`, directly or through
+`currentTenantId`, `currentUserId`, `currentRoleName` and friends. The throws never run, yet
+124 findings reported a 401 through them.
+
+Cause: the analyser treated any `if` whose condition was not a literal falsy value as possibly
+true and carried no call-site arguments into the callee. The call graph now binds literal
+arguments to callee parameters and skips branches they decide (`src/core/const-eval.ts`).
+
+Verified 2026-11-02 by a blind reviewer, an adversarial reviewer and a 5-chain hand check
+(grep-based over `packages/`, no type checker). After the fix: 824 findings became 700, none
+new, and 4 more findings lost only the dead source. Baseline rebaselined with the 700 findings
+as `UNTRIAGED`.
+
+## Triaged false-positive classes
+
+- Guard needs an input the caller never produces (`tenant-aware-crud.service.ts` delete empty-criteria 400, `assertNotForeignRow` 403): not fixable without object-shape data flow.
+- `!id` guard behind `UUIDValidationPipe` (`crud.service.ts:534`): pipe preconditions are not modelled. The pipe itself yields 404/406, which is not reported either.
+- `typeof` narrowing of a union-typed argument (`crud.service.ts:641`): fixed; call-site argument types now decide `typeof` guards.
+- Correlated guards across frames (`billing.service.ts:583`).
+- `@ApiExcludeController` / `@ApiExcludeEndpoint` handlers (`StripeWebhookController`): fixed; excluded handlers are no longer analysed.
+
+Implicit-success findings (357) were all true positives apart from the excluded controller. 126 handlers send 202 but document another 2xx; 43 document 200 while Nest sends 201.
+
+## Confidence marker
+
+On the 698 current findings, 205 are marked `confidence: low` (every source is a throw inside a catch block). Against the recorded verdicts: 35 of the 41 FPs and all 3 UNCLEAR are low; 65 TPs are low too (catch-all repository-error remaps), so low means "check before acting", not "wrong".
+
+## High-confidence triage (125 findings)
+
+Result: 111 TP, 11 FP, 3 UNCLEAR. New FP classes, none modelled by the tool:
+
+- Service-level "no tenant" / "no user" check behind `TenantPermissionGuard` or `TenantBaseGuard`, which already reject a null tenant (8 of the 11).
+- Guard excluded by a class-validator DTO (`@IsNotEmpty @IsUUID`, `@IsIn`, `@ArrayNotEmpty`) on a handler running under `UseValidationPipe`.
+- Defense-in-depth re-check of a value an upstream verifier guarantees (`verify-oauth-tokens.ts`).
+- Internal-only parameter that no route passes (`DailyPlanService.delete` options).
+- Dead `if (!x) throw NotFoundException` after a finder that already throws on a miss. These stay TP: the handler still returns the status through the callee (`crud.service.ts:563`, `:641`), and the tool attributes it to the wrong throw site. Worth investigating why the callee's own throw is not listed as a source.
+
+Reachability caveats recorded as TP: demo-only (`account-deletion.service.ts:448`), MikroORM-only (`organization-project.service.ts:841`), null `organizationId` rows (official holidays), self-hosted installs without a Stripe key (billing `requireBillingEnabled`).
+
+## Low-confidence triage (102 findings, all catch-remaps)
+
+Result: 73 TP, 21 UNCLEAR, 8 FP. Every finding now has a verdict.
+
+- FP: a `catch` that can never run. Seven handlers `return` an un-awaited promise inside `try`, so async rejections skip the catch (`OrganizationEmploymentTypeController.update`, `EmployeeLevelController.update`, `TaskService.findAll`, ...); one has `finally { return ... }`, which swallows every exception.
+- UNCLEAR: the try body only fails on a DB outage or race (fixed or server-built inputs).
+- TP: the try body throws an HttpException the catch remaps without rethrowing, a missing row, or unvalidated `relations`/`where`/ids reaching the DB (no global ValidationPipe).
+
+The tool now treats a catch as unreachable when its try body has no `throw`, `await`, `yield` or `new` and every call targets an `async` function, and treats `finally { return ... }` as swallowing everything. That removed 5 FPs. Three stay because the try awaits or calls a synchronous helper, so the catch can run; the tool is right to keep them.
+
+## guardGuarantees
+
+`swagger-drift.config.json` here declares `TenantBaseGuard` (and so `TenantPermissionGuard`, which extends it) as guaranteeing `RequestContext.currentTenantId` and `currentUserId`. It removed 7 FP findings and no TP or UNCLEAR ones. Caveat: `TenantPermissionGuard` skips `@Public()` handlers, which still get the guarantee.

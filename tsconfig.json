@@ -19,8 +19,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
 
+    "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "include": ["src", "test"],
+  "include": ["src", "test", "scripts"],
   "exclude": ["test/fixtures", "node_modules", "dist"]
 }

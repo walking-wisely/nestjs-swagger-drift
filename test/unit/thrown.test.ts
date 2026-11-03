@@ -313,3 +313,62 @@ describe('collectDirectThrows', () => {
     expect(collectDirectThrows(overload)).toEqual([]);
   });
 });
+
+describe('collectDirectThrows: unreachable catch blocks', () => {
+  function count(source: string): number {
+    const prog = createInMemoryProgram({ 'main.ts': source }, ['main.ts'], {
+      target: ts.ScriptTarget.ES2022,
+      experimentalDecorators: true,
+      module: ts.ModuleKind.ESNext,
+      moduleResolution: ts.ModuleResolutionKind.Bundler,
+    });
+    const file = prog.getSourceFile('main.ts')!;
+    let method: ts.MethodDeclaration | undefined;
+    ts.forEachChild(file, function visit(node) {
+      if (ts.isMethodDeclaration(node) && node.name.getText() === 'm') method = node;
+      ts.forEachChild(node, visit);
+    });
+    return collectDirectThrows(method!, undefined, prog.getTypeChecker()).length;
+  }
+  const svc = `class S { async load() { return 1; } sync() { return 1; } }`;
+
+  it('drops a catch throw when the try only returns an async call', () => {
+    expect(
+      count(
+        `${svc} class C { s = new S(); m() { try { return this.s.load(); } catch (e) { throw new Error('x'); } } }`,
+      ),
+    ).toBe(0);
+  });
+
+  it('keeps a catch throw when the try awaits', () => {
+    expect(
+      count(
+        `${svc} class C { s = new S(); async m() { try { return await this.s.load(); } catch (e) { throw new Error('x'); } } }`,
+      ),
+    ).toBe(1);
+  });
+
+  it('keeps a catch throw when the try calls a synchronous function', () => {
+    expect(
+      count(
+        `${svc} class C { s = new S(); m() { try { return this.s.sync(); } catch (e) { throw new Error('x'); } } }`,
+      ),
+    ).toBe(1);
+  });
+
+  it('keeps a catch throw without a checker', () => {
+    const source = `${svc} class C { s = new S(); m() { try { return this.s.load(); } catch (e) { throw new Error('x'); } } }`;
+    expect(collectDirectThrows(findMethod(source, 'm'))).toHaveLength(1);
+  });
+
+  it('drops throws a finally return swallows', () => {
+    expect(
+      count(
+        `class C { m() { try { throw new Error('a'); } catch (e) { throw new Error('b'); } finally { return 1; } } }`,
+      ),
+    ).toBe(0);
+    expect(count(`class C { m() { try { throw new Error('a'); } finally { return 1; } } }`)).toBe(
+      0,
+    );
+  });
+});

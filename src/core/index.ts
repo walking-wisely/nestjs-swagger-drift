@@ -2,6 +2,8 @@ export type {
   StatusSource,
   ResolvedStatus,
   ProducibleStatus,
+  DocumentationGap,
+  ResponseDecoratorStatuses,
   DocumentedStatus,
   StatusRange,
   HttpMethod,
@@ -24,6 +26,7 @@ export {
   getDecoratorInfos,
   getControllerInfo,
   getHttpHandlerDecorators,
+  isExcludedFromDocs,
 } from './decorators.js';
 
 export { joinPath } from './routes.js';
@@ -57,9 +60,9 @@ export { collectGuardStatuses } from './guards.js';
 export type { ParsePipeStatusSource } from './parse-pipes.js';
 export { collectParsePipesSources } from './parse-pipes.js';
 
-export { resolveStatusExpression } from './status-value.js';
+export { resolveStatusExpression, isStatusRange, STATUS_RANGE_PATTERN } from './status-value.js';
 
-export { getDocumentedStatuses } from './documented.js';
+export { getDocumentedStatuses, getDocumentationGaps } from './documented.js';
 
 export {
   isStatusSuppressed,
@@ -74,3 +77,6 @@ export { analyzeHandler, createAnalysisCache, createAnalysisContext } from './an
 
 export type { ResponseTypeResolution } from './resolve-response-type.js';
 export { resolveSuccessResponseType } from './resolve-response-type.js';
+
+export type { Confidence, SourceTrace, TraceArgument, TraceGuard, TraceHop } from './explain.js';
+export { findingConfidence, traceSource } from './explain.js';

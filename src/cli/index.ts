@@ -82,8 +82,18 @@ import {
   type FileFixResult,
   type FixNotApplied,
 } from './fix/index.js';
-import type { AnalysisOptions, Finding, HandlerInfo } from '../core/index.js';
-import { analyzeHandler, createAnalysisContext, listDirectiveCommentLines } from '../core/index.js';
+import type {
+  AnalysisOptions,
+  Finding,
+  HandlerInfo,
+  ResponseDecoratorStatuses,
+} from '../core/index.js';
+import {
+  analyzeHandler,
+  createAnalysisContext,
+  findingConfidence,
+  listDirectiveCommentLines,
+} from '../core/index.js';
 
 function printUsage(): void {
   console.log(
@@ -120,6 +130,11 @@ function printUsage(): void {
       '      --no-config             Skip loading/auto-discovering a config file entirely.',
       '      --audit                 Ignore swagger-drift-disable-next-line directives, so',
       '                               every finding they would otherwise hide is reported.',
+      '      --explain               Show, per finding, the call hops and enclosing conditions',
+      '                               that made each throw count as reachable.',
+      '      --min-confidence <level> "high" hides findings reached only through weak signals',
+      '                               (a throw in a catch block, or a bare parameter',
+      '                               emptiness check); default "low" shows everything.',
       '      --fix-dry-run           Print a unified diff of the @Api*Response decorators',
       '                               autofix would insert for undocumented-status findings',
       '                               with a deterministic source, without writing anything.',
@@ -257,8 +272,12 @@ interface ResolvedOptions {
   checkValidationPipe: boolean;
   checkGuards: boolean;
   checkParsePipes: boolean;
+  guardGuarantees: Record<string, string[]>;
+  responseDecorators: ResponseDecoratorStatuses;
   baseDir: string | undefined;
   audit: boolean;
+  explain: boolean;
+  minConfidence: 'low' | 'high';
   fixDryRun: boolean;
   fix: boolean;
 }
@@ -344,8 +363,12 @@ export function mergeOptions(
       checkValidationPipe: flags.checkValidationPipe ?? config.checkValidationPipe ?? false,
       checkGuards: flags.checkGuards ?? config.checkGuards ?? false,
       checkParsePipes: flags.checkParsePipes ?? config.checkParsePipes ?? false,
+      guardGuarantees: config.guardGuarantees ?? {},
+      responseDecorators: config.responseDecorators ?? {},
       baseDir: flags.baseDir ?? resolveFromConfig(config.baseDir),
       audit: flags.audit,
+      explain: flags.explain,
+      minConfidence: flags.minConfidence,
       fixDryRun: flags.fixDryRun,
       fix: flags.fix,
     },
@@ -541,6 +564,8 @@ export async function main(argv: string[]): Promise<number> {
     checkValidationPipe: options.checkValidationPipe,
     checkGuards: options.checkGuards,
     checkParsePipes: options.checkParsePipes,
+    guardGuarantees: options.guardGuarantees,
+    responseDecorators: options.responseDecorators,
     // `--audit` (post-Phase-4-review fix, finding S6): ignore inline
     // suppression directives entirely, so every finding they'd otherwise
     // hide — including a directive in a shared service silently affecting
@@ -579,7 +604,7 @@ export async function main(argv: string[]): Promise<number> {
   // flagged as unused — same "silence over noise" contract `--ignore`
   // gives everything else.
   const analyzedFiles = new Set<string>();
-  const findings = sortFindings(
+  const allFindings = sortFindings(
     methodNodes.flatMap((node) =>
       analyzeHandler(
         node,
@@ -592,6 +617,10 @@ export async function main(argv: string[]): Promise<number> {
       ),
     ),
   );
+  const findings =
+    options.minConfidence === 'high'
+      ? allFindings.filter((f) => findingConfidence(f).level === 'high')
+      : allFindings;
   const failingFindings = findings.filter((f) => options.failOn.has(f.rule));
 
   if (!options.audit) {
@@ -620,11 +649,13 @@ export async function main(argv: string[]): Promise<number> {
   }
 
   if (options.reporter === 'json') {
-    console.log(reportFindingsJson(findings, baseDir, failingFindings, suppressedCount));
+    console.log(
+      reportFindingsJson(findings, baseDir, failingFindings, suppressedCount, options.explain),
+    );
   } else if (findings.length === 0) {
     console.log('No undocumented status codes found.');
   } else {
-    console.log(reportFindingsPretty(findings, baseDir));
+    console.log(reportFindingsPretty(findings, baseDir, options.explain));
   }
 
   if (findings.length > 0 || suppressedCount > 0) {
@@ -748,10 +779,12 @@ export async function main(argv: string[]): Promise<number> {
 const entryUrl = process.argv[1] === undefined ? undefined : pathToFileURL(process.argv[1]).href;
 if (import.meta.url === entryUrl) {
   main(process.argv.slice(2)).then(
-    (code) => process.exit(code),
+    (code) => {
+      process.exitCode = code;
+    },
     (err: unknown) => {
       console.error('nestjs-swagger-drift: unexpected error:', err);
-      process.exit(EXIT_UNEXPECTED_ERROR);
+      process.exitCode = EXIT_UNEXPECTED_ERROR;
     },
   );
 }
