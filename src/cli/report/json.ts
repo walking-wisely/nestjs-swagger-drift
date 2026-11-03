@@ -16,6 +16,7 @@ import {
   findingConfidence,
   traceSource,
   type Finding,
+  type DocumentationGap,
   type HandlerInfo,
   type StatusSource,
 } from '../../core/index.js';
@@ -130,6 +131,7 @@ interface JsonFinding {
   unresolvableKind: 'throw' | 'success' | undefined;
   confidence?: 'low';
   confidenceReasons?: string[];
+  documentationGaps?: DocumentationGap[];
 }
 
 function findingToJson(finding: Finding, baseDir: string, explain: boolean): JsonFinding {
@@ -147,6 +149,9 @@ function findingToJson(finding: Finding, baseDir: string, explain: boolean): Jso
     unresolvableKind: finding.rule === 'unresolvable-status' ? finding.unresolvableKind : undefined,
     ...(confidence.level === 'low'
       ? { confidence: 'low' as const, confidenceReasons: confidence.reasons }
+      : {}),
+    ...(finding.rule === 'undocumented-status' && finding.documentationGaps
+      ? { documentationGaps: finding.documentationGaps }
       : {}),
   };
 }

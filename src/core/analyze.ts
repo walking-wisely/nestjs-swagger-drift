@@ -118,7 +118,7 @@ import { collectDirectThrows } from './thrown.js';
 import { collectAppliedGuardNames } from './guards.js';
 import { EMPTY_ENV, guaranteeEnv, type ArgEnv } from './const-eval.js';
 import { resolveThrownStatus } from './resolve-status.js';
-import { getDocumentedStatuses } from './documented.js';
+import { collectDocumentation } from './documented.js';
 import { collectCallGraphStatuses } from './call-graph.js';
 import { checkHandlerSuppression, checkSourceSuppression } from './suppress.js';
 import { findUnresolvableHttpCode, resolveSuccessStatus } from './success.js';
@@ -423,7 +423,11 @@ export function analyzeHandler(
     }
   }
 
-  const documented = getDocumentedStatuses(methodNode, ctx.checker, ctx.options);
+  const { statuses: documented, gaps: documentationGaps } = collectDocumentation(
+    methodNode,
+    ctx.checker,
+    ctx.options,
+  );
   const documentedStatuses = new Set<number>();
   // A `StatusRange` (`'4XX'`) documents every status whose first digit
   // matches — tracked by that leading digit (`'4'`) rather than by
@@ -537,7 +541,14 @@ export function analyzeHandler(
             continue;
           }
         }
-        findings.push({ rule: 'undocumented-status', status, handler, sources, node: methodNode });
+        findings.push({
+          rule: 'undocumented-status',
+          status,
+          handler,
+          sources,
+          node: methodNode,
+          ...(documentationGaps.length > 0 ? { documentationGaps } : {}),
+        });
       }
 
       // `documented-but-unreachable` (Phase 5, opt-in): see module doc for

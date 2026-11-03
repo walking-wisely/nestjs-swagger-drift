@@ -10,9 +10,8 @@
   wrong. Needs a config escape hatch: `ignoreStatuses` / per-file ignores.
 - Dynamically computed status (`throw new HttpException(msg, someVar)`) →
   `unknown`, silent by default.
-- Composed decorators via `applyDecorators` (V1 gap). Two distinct cases: a
-  composed `@ApiResponse` (§4.3), and a composed _route_ decorator — the latter
-  is worse, because a controller or handler declared only through a composed
+- Composed _route_ decorators via `applyDecorators`. (A composed
+  `@ApiResponse` is resolved; see §4.3.) A composed route decorator is worse, because a controller or handler declared only through a composed
   factory is invisible to discovery entirely (nothing is literally named
   `Controller`/`Get`), so the endpoint is silently absent rather than merely
   under-documented. Common in real Nest code.

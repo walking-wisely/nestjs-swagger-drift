@@ -82,7 +82,12 @@ import {
   type FileFixResult,
   type FixNotApplied,
 } from './fix/index.js';
-import type { AnalysisOptions, Finding, HandlerInfo } from '../core/index.js';
+import type {
+  AnalysisOptions,
+  Finding,
+  HandlerInfo,
+  ResponseDecoratorStatuses,
+} from '../core/index.js';
 import {
   analyzeHandler,
   createAnalysisContext,
@@ -268,6 +273,7 @@ interface ResolvedOptions {
   checkGuards: boolean;
   checkParsePipes: boolean;
   guardGuarantees: Record<string, string[]>;
+  responseDecorators: ResponseDecoratorStatuses;
   baseDir: string | undefined;
   audit: boolean;
   explain: boolean;
@@ -358,6 +364,7 @@ export function mergeOptions(
       checkGuards: flags.checkGuards ?? config.checkGuards ?? false,
       checkParsePipes: flags.checkParsePipes ?? config.checkParsePipes ?? false,
       guardGuarantees: config.guardGuarantees ?? {},
+      responseDecorators: config.responseDecorators ?? {},
       baseDir: flags.baseDir ?? resolveFromConfig(config.baseDir),
       audit: flags.audit,
       explain: flags.explain,
@@ -558,6 +565,7 @@ export async function main(argv: string[]): Promise<number> {
     checkGuards: options.checkGuards,
     checkParsePipes: options.checkParsePipes,
     guardGuarantees: options.guardGuarantees,
+    responseDecorators: options.responseDecorators,
     // `--audit` (post-Phase-4-review fix, finding S6): ignore inline
     // suppression directives entirely, so every finding they'd otherwise
     // hide — including a directive in a shared service silently affecting

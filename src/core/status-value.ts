@@ -27,6 +27,13 @@
 import * as ts from 'typescript';
 import { checkProvenance } from './provenance.js';
 import { HTTP_STATUS_ENUM_VALUES } from './nest-exceptions.js';
+import type { StatusRange } from './types.js';
+
+export const STATUS_RANGE_PATTERN = /^[1-5]XX$/;
+
+export function isStatusRange(value: unknown): value is StatusRange {
+  return typeof value === 'string' && STATUS_RANGE_PATTERN.test(value);
+}
 
 const NEST_COMMON_MODULE = '@nestjs/common';
 

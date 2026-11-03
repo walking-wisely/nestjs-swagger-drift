@@ -273,5 +273,33 @@ describe('loadConfigFile', () => {
       expect(result.ok).toBe(false);
       if (!result.ok) expect(result.error).toContain('guardGuarantees');
     });
+
+    it('accepts "responseDecorators" as a map of names to statuses and ranges', async () => {
+      const dir = makeTempDir();
+      fs.writeFileSync(
+        path.join(dir, 'swagger-drift.config.json'),
+        JSON.stringify({ responseDecorators: { ApiCommon: [400, 404, '5XX'] } }),
+      );
+      const result = await loadConfigFile(undefined, dir);
+      expect(result.ok).toBe(true);
+      if (result.ok)
+        expect(result.config.responseDecorators).toEqual({ ApiCommon: [400, 404, '5XX'] });
+    });
+
+    it.each([
+      [{ ApiCommon: 404 }],
+      [{ ApiCommon: [99] }],
+      [{ ApiCommon: ['6XX'] }],
+      [{ ApiCommon: [404.5] }],
+    ])('rejects invalid "responseDecorators" %j', async (value) => {
+      const dir = makeTempDir();
+      fs.writeFileSync(
+        path.join(dir, 'swagger-drift.config.json'),
+        JSON.stringify({ responseDecorators: value }),
+      );
+      const result = await loadConfigFile(undefined, dir);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error).toContain('responseDecorators');
+    });
   });
 });

@@ -2,6 +2,8 @@ export type {
   StatusSource,
   ResolvedStatus,
   ProducibleStatus,
+  DocumentationGap,
+  ResponseDecoratorStatuses,
   DocumentedStatus,
   StatusRange,
   HttpMethod,
@@ -58,9 +60,9 @@ export { collectGuardStatuses } from './guards.js';
 export type { ParsePipeStatusSource } from './parse-pipes.js';
 export { collectParsePipesSources } from './parse-pipes.js';
 
-export { resolveStatusExpression } from './status-value.js';
+export { resolveStatusExpression, isStatusRange, STATUS_RANGE_PATTERN } from './status-value.js';
 
-export { getDocumentedStatuses } from './documented.js';
+export { getDocumentedStatuses, getDocumentationGaps } from './documented.js';
 
 export {
   isStatusSuppressed,

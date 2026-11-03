@@ -611,10 +611,6 @@
       "verdict": "UNTRIAGED",
       "key": "server/src/controllers/config-user.controller.ts::ConfigUserController.getUserConfigDefaults undocumented-status 200"
     },
-    "91a70621cf7f0fa6c3cccee98d3398e3be140e43": {
-      "verdict": "UNTRIAGED",
-      "key": "server/src/controllers/download.controller.ts::DownloadController.downloadArchive undocumented-status 200"
-    },
     "1ff52e2a7025916e871450eb30a07dfd3921032a": {
       "verdict": "UNTRIAGED",
       "key": "server/src/controllers/download.controller.ts::DownloadController.getDownloadInfo undocumented-status 201"
